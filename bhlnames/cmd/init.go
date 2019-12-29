@@ -1,5 +1,5 @@
 /*
-Copyright © 2019 Dmitry Mozzherin <dmozzherin@gmail.com>
+Copyright © 2020 Dmitry Mozzherin <dmozzherin@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,9 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
+	"log"
 
+	"github.com/gnames/bhlnames"
 	"github.com/spf13/cobra"
 )
 
@@ -33,9 +34,19 @@ var initCmd = &cobra.Command{
 	Short: "Creates database for bhlnames",
 	Long: `Downloads BHL metadata and uses it to create local BHL database.
 Then it uses bhlindex grpc service to build additional data
-about names. When the process is finished, the program can be used`,
+about names. When the process is finished, the program can be used for
+generating list of publications for names.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("init called")
+		rebuild, err := cmd.Flags().GetBool("rebuild")
+		if err != nil {
+			log.Fatal(err)
+		}
+		opts = append(opts, bhlnames.OptRebuild(rebuild))
+		bhln := bhlnames.NewBHLnames(opts...)
+		err = bhln.Init()
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
@@ -50,5 +61,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	initCmd.Flags().BoolP("rebuild", "r", false, "Delete data and rebuild")
 }

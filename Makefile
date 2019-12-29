@@ -9,7 +9,6 @@ GOCMD=go
 GOINSTALL=$(GOCMD) install $(FLAGS_LD)
 GOBUILD=$(GOCMD) build $(FLAGS_LD)
 GOCLEAN=$(GOCMD) clean
-GOGENERATE=$(GOCMD) generate
 GOGET = $(GOCMD) get
 
 all: install
@@ -21,10 +20,8 @@ deps:
 	$(FLAG_MODULE) $(GOGET) github.com/spf13/cobra/cobra@f2b07da; \
 	$(FLAG_MODULE) $(GOGET) github.com/onsi/ginkgo/ginkgo@505cc35; \
 	$(FLAG_MODULE) $(GOGET) github.com/onsi/gomega@ce690c5; \
-	$(GOGENERATE)
 
 build:
-	$(GOGENERATE)
 	cd bhlnames; \
 	$(GOCLEAN); \
 	$(FLAGS_SHARED) GOOS=linux $(GOBUILD);
@@ -40,6 +37,5 @@ release:
 	$(GOCLEAN); \
 
 install:
-	$(GOGENERATE)
 	cd bhlnames; \
 	$(FLAGS_SHARED) $(GOINSTALL);

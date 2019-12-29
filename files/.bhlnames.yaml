@@ -1,10 +1,13 @@
 ---
 
 # BHL download URL
-BhlDump: https://www.biodiversitylibrary.org/data/data.zip
+BHLDumpURL: https://www.biodiversitylibrary.org/data/data.zip
+
+# gRPC URL for bhlindex service
+BHLindexHost: bhlrpc.globalnames.org:80
 
 # Path to keep downloaded data
-Input: /tmp/bhlnames
+InputDir: /tmp/bhlnames
 
 # Postgresql host
 DbHost: localhost
@@ -16,7 +19,7 @@ DbUser: postgres
 DbPass:
 
 # Postgresql database
-Db: bhlnames
+DbName: bhlnames
 
 # ProgressNum tells how many titles have to be processed before sending a
 # progress report to the STDOUT. If the number is 0 reports do not generate.

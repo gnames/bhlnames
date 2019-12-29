@@ -1,5 +1,5 @@
 /*
-Copyright © 2019 Dmitry Mozzherin <dmozzherin@gmail.com>
+Copyright © 2020 Dmitry Mozzherin <dmozzherin@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,23 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	cfgFile string
+	opts    []bhlnames.Option
+)
+
+// config purpose is to achieve automatic import of data from the
+// configuration file, if it exists.
+type config struct {
+	BHLdump      string
+	BHLindexHost string
+	InputDir     string
+	DbHost       string
+	DbUser       string
+	DbPass       string
+	DbName       string
+	ProgressNum  int
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -110,4 +126,42 @@ func initConfig() {
 		fmt.Println("Config file $HOME/.bhlnames.yaml not found")
 		os.Exit(1)
 	}
+	opts = getOpts()
+}
+
+// getOpts imports data from the configuration file. These settings can be
+// overriden by command line flags.
+func getOpts() []bhlnames.Option {
+	var opts []bhlnames.Option
+	cfg := &config{}
+	err := viper.Unmarshal(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if cfg.BHLdump != "" {
+		opts = append(opts, bhlnames.OptBHLdump(cfg.BHLdump))
+	}
+	if cfg.BHLindexHost != "" {
+		opts = append(opts, bhlnames.OptBHLindexHost(cfg.BHLindexHost))
+	}
+	if cfg.InputDir != "" {
+		opts = append(opts, bhlnames.OptInputDir(cfg.InputDir))
+	}
+	if cfg.DbHost != "" {
+		opts = append(opts, bhlnames.OptDbHost(cfg.DbHost))
+	}
+	if cfg.DbUser != "" {
+		opts = append(opts, bhlnames.OptDbUser(cfg.DbUser))
+	}
+	if cfg.DbPass != "" {
+		opts = append(opts, bhlnames.OptDbPass(cfg.DbPass))
+	}
+	if cfg.DbName != "" {
+		opts = append(opts, bhlnames.OptDbName(cfg.DbName))
+	}
+	if cfg.ProgressNum != 0 {
+		opts = append(opts, bhlnames.OptProgressNum(cfg.ProgressNum))
+	}
+	return opts
 }

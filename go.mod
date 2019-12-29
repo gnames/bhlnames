@@ -3,9 +3,7 @@ module github.com/gnames/bhlnames
 go 1.13
 
 require (
-	github.com/gnames/gnfinder v0.9.1 // indirect
-	github.com/gnames/htindex v0.0.6 // indirect
-	github.com/json-iterator/go v1.1.9 // indirect
+	github.com/jinzhu/gorm v1.9.11
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pelletier/go-toml v1.6.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
