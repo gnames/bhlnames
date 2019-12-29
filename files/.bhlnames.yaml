@@ -1,0 +1,23 @@
+---
+
+# BHL download URL
+BhlDump: https://www.biodiversitylibrary.org/data/data.zip
+
+# Path to keep downloaded data
+Input: /tmp/bhlnames
+
+# Postgresql host
+DbHost: localhost
+
+# Postgresql user
+DbUser: postgres
+
+# Postgresql password
+DbPass:
+
+# Postgresql database
+Db: bhlnames
+
+# ProgressNum tells how many titles have to be processed before sending a
+# progress report to the STDOUT. If the number is 0 reports do not generate.
+ProgressNum: 10000
