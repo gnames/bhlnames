@@ -41,14 +41,13 @@ var (
 // config purpose is to achieve automatic import of data from the
 // configuration file, if it exists.
 type config struct {
-	BHLdump      string
+	DumpURL      string
 	BHLindexHost string
 	InputDir     string
 	DbHost       string
 	DbUser       string
 	DbPass       string
 	DbName       string
-	ProgressNum  int
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -139,8 +138,8 @@ func getOpts() []bhlnames.Option {
 		log.Fatal(err)
 	}
 
-	if cfg.BHLdump != "" {
-		opts = append(opts, bhlnames.OptBHLdump(cfg.BHLdump))
+	if cfg.DumpURL != "" {
+		opts = append(opts, bhlnames.OptDumpURL(cfg.DumpURL))
 	}
 	if cfg.BHLindexHost != "" {
 		opts = append(opts, bhlnames.OptBHLindexHost(cfg.BHLindexHost))
@@ -159,9 +158,6 @@ func getOpts() []bhlnames.Option {
 	}
 	if cfg.DbName != "" {
 		opts = append(opts, bhlnames.OptDbName(cfg.DbName))
-	}
-	if cfg.ProgressNum != 0 {
-		opts = append(opts, bhlnames.OptProgressNum(cfg.ProgressNum))
 	}
 	return opts
 }

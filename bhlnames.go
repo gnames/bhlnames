@@ -1,23 +1,21 @@
 package bhlnames
 
+import (
+	"github.com/gnames/bhlnames/bhl"
+	"github.com/gnames/bhlnames/db"
+)
+
 type BHLnames struct {
-	Rebuild      bool
-	BHLdump      string
-	BHLindexHost string
-	InputDir     string
-	DbHost       string
-	DbUser       string
-	DbPass       string
-	DbName       string
-	ProgressNum  int
+	db.DbOpts
+	bhl.MetaData
 }
 
 // Option type for changing GNfinder settings.
 type Option func(*BHLnames)
 
-func OptBHLdump(d string) Option {
+func OptDumpURL(d string) Option {
 	return func(bhln *BHLnames) {
-		bhln.BHLdump = d
+		bhln.MetaData.DumpURL = d
 	}
 }
 
@@ -29,39 +27,34 @@ func OptBHLindexHost(bh string) Option {
 
 func OptInputDir(i string) Option {
 	return func(bhln *BHLnames) {
-		bhln.InputDir = i
+		bhln.MetaData.InputDir = i
 	}
 }
 
 func OptDbHost(h string) Option {
 	return func(bhln *BHLnames) {
-		bhln.DbHost = h
+		bhln.DbOpts.Host = h
 	}
 }
 
 func OptDbUser(u string) Option {
 	return func(bhln *BHLnames) {
-		bhln.DbUser = u
+		bhln.DbOpts.User = u
 	}
 }
 
 func OptDbPass(p string) Option {
 	return func(bhln *BHLnames) {
-		bhln.DbPass = p
+		bhln.DbOpts.Pass = p
 	}
 }
 
 func OptDbName(n string) Option {
 	return func(bhln *BHLnames) {
-		bhln.DbName = n
+		bhln.DbOpts.Name = n
 	}
 }
 
-func OptProgressNum(n int) Option {
-	return func(bhln *BHLnames) {
-		bhln.ProgressNum = n
-	}
-}
 func OptRebuild(r bool) Option {
 	return func(bhln *BHLnames) {
 		bhln.Rebuild = r
@@ -73,5 +66,6 @@ func NewBHLnames(opts ...Option) BHLnames {
 	for _, opt := range opts {
 		opt(&bhln)
 	}
+	bhln.MetaData.Configure(bhln.DbOpts)
 	return bhln
 }
