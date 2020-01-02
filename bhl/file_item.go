@@ -83,7 +83,7 @@ func (md MetaData) uploadItems(items []*db.Item) error {
 	log.Printf("Uploading %d records to items table.", len(items))
 	columns := []string{"id", "bar_code", "vol", "year_start", "year_end",
 		"title_id", "title_doi", "title_name", "title_year_start", "title_year_end",
-		"title_lang", "class", "context"}
+		"title_lang"}
 	transaction, err := md.DB.Begin()
 	if err != nil {
 		return err
@@ -97,11 +97,16 @@ func (md MetaData) uploadItems(items []*db.Item) error {
 	for _, v := range items {
 		_, err = stmt.Exec(v.ID, v.BarCode, v.Vol, v.YearStart, v.YearEnd,
 			v.TitleID, v.TitleDOI, v.TitleName, v.TitleYearStart, v.TitleYearEnd,
-			v.TitleLang, nil, nil)
+			v.TitleLang)
 		if err != nil {
 			return err
 		}
 	}
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	_, err = stmt.Exec()
 	if err != nil {
 		return err

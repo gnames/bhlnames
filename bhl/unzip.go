@@ -28,6 +28,12 @@ func (md MetaData) unzip() error {
 	if err != nil {
 		return err
 	}
+
+	err = sys.MakeDir(md.KeyValDir)
+	if err != nil {
+		return err
+	}
+
 	r, err := zip.OpenReader(md.DownloadFile)
 	if err != nil {
 		return err

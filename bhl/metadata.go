@@ -21,6 +21,7 @@ type MetaData struct {
 	InputDir     string
 	DownloadFile string
 	DownloadDir  string
+	KeyValDir    string
 	Rebuild      bool
 	BHLindexHost string
 	DB           *sql.DB
@@ -29,6 +30,7 @@ type MetaData struct {
 func (md *MetaData) Configure(dbOpts db.DbOpts) {
 	md.DownloadFile = filepath.Join(md.InputDir, "data.zip")
 	md.DownloadDir = filepath.Join(md.InputDir, "Data")
+	md.KeyValDir = filepath.Join(md.InputDir, "keyval")
 	md.DB = dbOpts.NewDb()
 }
 

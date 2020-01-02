@@ -50,3 +50,27 @@ func Truncate(d *gorm.DB) error {
 	}
 	return rows.Close()
 }
+
+func TruncateNames(d *sql.DB) error {
+	tables := []string{"name_strings"}
+	for _, v := range tables {
+		q := fmt.Sprintf("TRUNCATE TABLE %s", v)
+		_, err := d.Exec(q)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func TruncateOccur(d *sql.DB) error {
+	tables := []string{"page_name_strings"}
+	for _, v := range tables {
+		q := fmt.Sprintf("TRUNCATE TABLE %s", v)
+		_, err := d.Exec(q)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

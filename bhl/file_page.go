@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	badger "github.com/dgraph-io/badger/v2"
 	"github.com/gnames/bhlnames/db"
 	"github.com/lib/pq"
 )
@@ -21,10 +22,15 @@ const (
 	pageNumberF  = 7
 )
 
-const BatchSize = 500000
+const BatchSize = 100_000
 
 func (md MetaData) uploadPage() error {
 	log.Println("Uploading page.txt data for db.")
+	err := db.ResetKeyVal(md.KeyValDir)
+	if err != nil {
+		return err
+	}
+	kv := db.InitKeyVal(md.KeyValDir)
 	total := 0
 	pMap := make(map[int]struct{})
 	res := make([]*db.Page, 0, BatchSize)
@@ -34,6 +40,7 @@ func (md MetaData) uploadPage() error {
 		return err
 	}
 	defer f.Close()
+	defer kv.Close()
 	scanner := bufio.NewScanner(f)
 	count := 0
 	header := true
@@ -49,6 +56,7 @@ func (md MetaData) uploadPage() error {
 		if err != nil {
 			return err
 		}
+
 		if _, ok := pMap[id]; ok {
 			continue
 		} else {
@@ -80,7 +88,7 @@ func (md MetaData) uploadPage() error {
 			total += len(res)
 			pages := make([]*db.Page, len(res))
 			copy(pages, res)
-			err := md.uploadPages(pages, total)
+			err := md.uploadPages(kv, pages, total)
 			if err != nil {
 				return err
 			}
@@ -89,12 +97,12 @@ func (md MetaData) uploadPage() error {
 		}
 	}
 	total += len(res)
-	err = md.uploadPages(res, total)
+	err = md.uploadPages(kv, res, total)
 	fmt.Println()
 	return err
 }
 
-func (md MetaData) uploadPages(items []*db.Page, total int) error {
+func (md MetaData) uploadPages(kv *badger.DB, pages []*db.Page, total int) error {
 	columns := []string{"id", "item_id", "file_num", "page_num"}
 	transaction, err := md.DB.Begin()
 	if err != nil {
@@ -105,13 +113,35 @@ func (md MetaData) uploadPages(items []*db.Page, total int) error {
 	if err != nil {
 		return err
 	}
+	kvTxn := kv.NewTransaction(true)
 
-	for _, v := range items {
+	for _, v := range pages {
+		key := fmt.Sprintf("%d|%d", v.FileNum, v.ItemID)
+		val := strconv.Itoa(int(v.ID))
+		if err = kvTxn.Set([]byte(key), []byte(val)); err == badger.ErrTxnTooBig {
+			err = kvTxn.Commit()
+			if err != nil {
+				return err
+			}
+
+			kvTxn = kv.NewTransaction(true)
+			err = kvTxn.Set([]byte(key), []byte(val))
+			if err != nil {
+				return err
+			}
+		}
+
 		_, err = stmt.Exec(v.ID, v.ItemID, v.FileNum, v.PageNum)
 		if err != nil {
 			return err
 		}
 	}
+
+	err = kvTxn.Commit()
+	if err != nil {
+		return err
+	}
+
 	_, err = stmt.Exec()
 	if err != nil {
 		return err
