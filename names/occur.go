@@ -161,7 +161,7 @@ func (n Names) uploadOccurences(occurs []*db.PageNameString) error {
 }
 
 func (n Names) saveMissingItems(data map[string]struct{}) error {
-	log.Println("Wriging down items not found in BarCode field of item.txt file.")
+	log.Println("Writing down items not found in BarCode field of item.txt file.")
 	path := filepath.Join(n.InputDir, "missing_items.txt")
 	f, err := os.Create(path)
 	if err != nil {

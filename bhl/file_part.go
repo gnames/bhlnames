@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	badger "github.com/dgraph-io/badger/v2"
 	"github.com/gnames/bhlnames/db"
 	"github.com/lib/pq"
 )
@@ -57,7 +58,13 @@ func (md MetaData) uploadPart(doiMap map[int]string) error {
 	if err != nil {
 		return err
 	}
+	err = db.ResetKeyVal(md.PartDir)
+	if err != nil {
+		return err
+	}
+	kv := db.InitKeyVal(md.PartDir)
 	defer f.Close()
+	defer kv.Close()
 	scanner := bufio.NewScanner(f)
 	header := true
 	for scanner.Scan() {
@@ -118,10 +125,10 @@ func (md MetaData) uploadPart(doiMap map[int]string) error {
 
 		res = append(res, &part)
 	}
-	return md.uploadParts(res)
+	return md.uploadParts(kv, res)
 }
 
-func (md MetaData) uploadParts(items []*db.Part) error {
+func (md MetaData) uploadParts(kv *badger.DB, items []*db.Part) error {
 	log.Printf("Uploading %d records to parts table.", len(items))
 	columns := []string{"id", "page_id", "item_id", "length", "doi",
 		"contributor_name", "sequence_order", "segment_type", "title",
@@ -132,6 +139,7 @@ func (md MetaData) uploadParts(items []*db.Part) error {
 	if err != nil {
 		return err
 	}
+	kvTxn := kv.NewTransaction(true)
 
 	stmt, err := transaction.Prepare(pq.CopyIn("parts", columns...))
 	if err != nil {
@@ -139,6 +147,25 @@ func (md MetaData) uploadParts(items []*db.Part) error {
 	}
 
 	for _, v := range items {
+		if v.PageID.Valid {
+			length := int(v.Length.Int64)
+			for i := 0; i < length; i++ {
+				key := strconv.Itoa(int(v.PageID.Int64) + i)
+				val := strconv.Itoa(int(v.ID))
+				if err = kvTxn.Set([]byte(key), []byte(val)); err == badger.ErrTxnTooBig {
+					err = kvTxn.Commit()
+					if err != nil {
+						return err
+					}
+
+					kvTxn = kv.NewTransaction(true)
+					err = kvTxn.Set([]byte(key), []byte(val))
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
 		_, err = stmt.Exec(v.ID, v.PageID, v.ItemID, v.Length, v.DOI,
 			v.ContributorName, v.SequenceOrder, v.SegmentType, v.Title,
 			v.ContainerTitle, v.PublicationDetails, v.Volume, v.Series,
@@ -147,6 +174,11 @@ func (md MetaData) uploadParts(items []*db.Part) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	err = kvTxn.Commit()
+	if err != nil {
+		return err
 	}
 	_, err = stmt.Exec()
 	if err != nil {

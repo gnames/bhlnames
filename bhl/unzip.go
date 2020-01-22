@@ -34,6 +34,11 @@ func (md MetaData) unzip() error {
 		return err
 	}
 
+	err = sys.MakeDir(md.PartDir)
+	if err != nil {
+		return err
+	}
+
 	r, err := zip.OpenReader(md.DownloadFile)
 	if err != nil {
 		return err
