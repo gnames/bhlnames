@@ -11,7 +11,6 @@ import (
 // InitBadger finds and initializes connection to a badger key-value store.
 // If the store does not exist, InitBadger creates it.
 func InitKeyVal(dir string) *badger.DB {
-	log.Println("Connecting to key-value store")
 	options := badger.DefaultOptions(dir)
 	options.Logger = nil
 	bdb, err := badger.Open(options)
@@ -23,7 +22,12 @@ func InitKeyVal(dir string) *badger.DB {
 
 func GetValue(kv *badger.DB, key string) int {
 	txn := kv.NewTransaction(false)
-	defer txn.Commit()
+	defer func() {
+		err := txn.Commit()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 	val, err := txn.Get([]byte(key))
 	if err == badger.ErrKeyNotFound {
 		// log.Printf("%s not found", key)
@@ -42,6 +46,5 @@ func GetValue(kv *badger.DB, key string) int {
 }
 
 func ResetKeyVal(dir string) error {
-	log.Println("Cleaning up key value store")
 	return sys.CleanDir(dir)
 }

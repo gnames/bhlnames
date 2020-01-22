@@ -37,22 +37,16 @@ func (do DbOpts) NewDb() *sql.DB {
 	return db
 }
 
-func Truncate(d *gorm.DB) error {
-	var tbl string
-	rows, err := d.Raw("select tablename from pg_tables where schemaname='public'").Rows()
-	if err != nil {
-		return err
-	}
-	for rows.Next() {
-		rows.Scan(&tbl)
-		q := fmt.Sprintf("TRUNCATE TABLE %s", tbl)
+func TruncateBHL(d *gorm.DB) {
+	tables := []string{"items", "pages", "parts"}
+	for _, v := range tables {
+		q := fmt.Sprintf("TRUNCATE TABLE %s", v)
 		d.Exec(q)
 	}
-	return rows.Close()
 }
 
 func TruncateNames(d *sql.DB) error {
-	tables := []string{"name_strings"}
+	tables := []string{"name_strings", "page_name_strings"}
 	for _, v := range tables {
 		q := fmt.Sprintf("TRUNCATE TABLE %s", v)
 		_, err := d.Exec(q)
@@ -73,4 +67,12 @@ func TruncateOccur(d *sql.DB) error {
 		}
 	}
 	return nil
+}
+
+func RunQuery(d *sql.DB, q string) *sql.Rows {
+	rows, err := d.Query(q)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return rows
 }

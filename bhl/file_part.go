@@ -34,16 +34,16 @@ const (
 )
 
 type partDate struct {
-	year    sql.NullInt64
-	yearEnd sql.NullInt64
-	month   sql.NullInt64
-	day     sql.NullInt64
+	year    sql.NullInt32
+	yearEnd sql.NullInt32
+	month   sql.NullInt32
+	day     sql.NullInt32
 }
 
 type partPages struct {
-	first  sql.NullInt64
-	last   sql.NullInt64
-	length sql.NullInt64
+	first  sql.NullInt32
+	last   sql.NullInt32
+	length sql.NullInt32
 }
 
 var dateRe = regexp.MustCompile(`\b([\d]{4})\b\s*(-\s*([\d]{1,4})\b(-([\d]{1,2}))?)?`)
@@ -89,19 +89,20 @@ func (md MetaData) uploadPart(doiMap map[int]string) error {
 
 		pageID, err := strconv.Atoi(fields[partPageIDF])
 		if err == nil {
-			part.PageID = sql.NullInt64{Int64: int64(pageID), Valid: true}
+			part.PageID = sql.NullInt32{Int32: int32(pageID), Valid: true}
 		}
 
 		itemID, err := strconv.Atoi(fields[partItemIDF])
 		if err == nil {
-			part.ItemID = sql.NullInt64{Int64: int64(itemID), Valid: true}
+			part.ItemID = sql.NullInt32{Int32: int32(itemID), Valid: true}
 		}
 
 		seqOrder, err := strconv.Atoi(fields[partSeqOrderF])
 		if err == nil {
-			part.SequenceOrder = sql.NullInt64{Int64: int64(seqOrder), Valid: true}
+			part.SequenceOrder = sql.NullInt32{Int32: int32(seqOrder), Valid: true}
 		}
-
+		part.DOI = doiMap[id]
+		part.ContributorName = fields[partContributorF]
 		part.SegmentType = fields[partSegTypeF]
 		part.Title = fields[partTitleF]
 		part.ContainerTitle = fields[partContainerTitleF]
@@ -148,9 +149,9 @@ func (md MetaData) uploadParts(kv *badger.DB, items []*db.Part) error {
 
 	for _, v := range items {
 		if v.PageID.Valid {
-			length := int(v.Length.Int64)
-			for i := 0; i < length; i++ {
-				key := strconv.Itoa(int(v.PageID.Int64) + i)
+			length := int(v.Length.Int32)
+			for i := 0; i <= length; i++ {
+				key := strconv.Itoa(int(v.PageID.Int32) + i)
 				val := strconv.Itoa(int(v.ID))
 				if err = kvTxn.Set([]byte(key), []byte(val)); err == badger.ErrTxnTooBig {
 					err = kvTxn.Commit()
@@ -199,16 +200,16 @@ func parsePages(pgs string) partPages {
 		return res
 	}
 	num, _ := strconv.Atoi(match[1])
-	res.first = sql.NullInt64{Int64: int64(num), Valid: true}
+	res.first = sql.NullInt32{Int32: int32(num), Valid: true}
 	num, err := strconv.Atoi(match[4])
 	if err != nil {
 		return res
 	}
-	last := sql.NullInt64{Int64: int64(num), Valid: true}
-	size := last.Int64 - res.first.Int64
+	last := sql.NullInt32{Int32: int32(num), Valid: true}
+	size := last.Int32 - res.first.Int32
 	if size > 0 {
 		res.last = last
-		res.length = sql.NullInt64{Int64: size, Valid: true}
+		res.length = sql.NullInt32{Int32: size, Valid: true}
 	}
 	return res
 }
@@ -220,20 +221,20 @@ func parseDate(date string) partDate {
 		return res
 	}
 	num, _ := strconv.Atoi(match[1])
-	res.year = sql.NullInt64{Int64: int64(num), Valid: true}
+	res.year = sql.NullInt32{Int32: int32(num), Valid: true}
 	num, err := strconv.Atoi(match[3])
 	if err != nil {
 		return res
 	}
 	if num <= 12 {
-		res.month = sql.NullInt64{Int64: int64(num), Valid: true}
+		res.month = sql.NullInt32{Int32: int32(num), Valid: true}
 	} else if num > 999 {
-		res.yearEnd = sql.NullInt64{Int64: int64(num), Valid: true}
+		res.yearEnd = sql.NullInt32{Int32: int32(num), Valid: true}
 	}
 	num, err = strconv.Atoi(match[5])
 	if err != nil || num > 31 {
 		return res
 	}
-	res.day = sql.NullInt64{Int64: int64(num), Valid: true}
+	res.day = sql.NullInt32{Int32: int32(num), Valid: true}
 	return res
 }

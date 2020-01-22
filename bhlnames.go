@@ -8,6 +8,9 @@ import (
 type BHLnames struct {
 	db.DbOpts
 	bhl.MetaData
+	Format   string
+	JobsNum  int
+	SortDesc bool
 }
 
 // Option type for changing GNfinder settings.
@@ -55,9 +58,28 @@ func OptDbName(n string) Option {
 	}
 }
 
+func OptFormat(f string) Option {
+	return func(bhln *BHLnames) {
+		f = checkFormat(f)
+		bhln.Format = f
+	}
+}
+
 func OptRebuild(r bool) Option {
 	return func(bhln *BHLnames) {
 		bhln.Rebuild = r
+	}
+}
+
+func OptJobsNum(j int) Option {
+	return func(bhln *BHLnames) {
+		bhln.JobsNum = j
+	}
+}
+
+func OptSortDesc(d bool) Option {
+	return func(bhln *BHLnames) {
+		bhln.SortDesc = d
 	}
 }
 
@@ -68,4 +90,11 @@ func NewBHLnames(opts ...Option) BHLnames {
 	}
 	bhln.MetaData.Configure(bhln.DbOpts)
 	return bhln
+}
+
+func checkFormat(f string) string {
+	if f != "compact" && f != "pretty" {
+		return "compact"
+	}
+	return f
 }

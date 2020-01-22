@@ -19,7 +19,7 @@ func (bhln BHLnames) Init() error {
 }
 
 func (bhln BHLnames) Names() error {
-	log.Println("Populating database with names occurances data")
+	log.Println("Populating database with names occurences data")
 	n := names.NewNames(bhln.BHLindexHost, bhln.DbOpts, bhln.InputDir)
 	err := n.ImportNames()
 	if err != nil {
@@ -45,7 +45,7 @@ func migrate(d *gorm.DB) {
 		&db.NameString{},
 		&db.PageNameString{},
 	)
-	db.Truncate(d)
+	db.TruncateBHL(d)
 }
 
 func (bhln BHLnames) getMetadata() error {

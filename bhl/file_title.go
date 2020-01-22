@@ -13,8 +13,8 @@ import (
 type Title struct {
 	ID        int
 	Name      string
-	YearStart sql.NullInt64
-	YearEnd   sql.NullInt64
+	YearStart sql.NullInt32
+	YearEnd   sql.NullInt32
 	Language  string
 	DOI       string
 }
@@ -57,15 +57,15 @@ func (md MetaData) prepareTitle(doiMap map[int]string) (map[int]*Title, error) {
 		}
 		ys, err := strconv.Atoi(fields[yearStartF])
 		if err == nil {
-			t.YearStart = sql.NullInt64{Int64: int64(ys), Valid: true}
+			t.YearStart = sql.NullInt32{Int32: int32(ys), Valid: true}
 		} else {
-			t.YearStart = sql.NullInt64{Valid: false}
+			t.YearStart = sql.NullInt32{Valid: false}
 		}
 		ye, err := strconv.Atoi(fields[yearEndF])
 		if err == nil {
-			t.YearEnd = sql.NullInt64{Int64: int64(ye), Valid: true}
+			t.YearEnd = sql.NullInt32{Int32: int32(ye), Valid: true}
 		} else {
-			t.YearEnd = sql.NullInt64{Valid: false}
+			t.YearEnd = sql.NullInt32{Valid: false}
 		}
 		t.DOI = doiMap[t.ID]
 		res[t.ID] = t

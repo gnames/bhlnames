@@ -48,6 +48,7 @@ type config struct {
 	DbUser       string
 	DbPass       string
 	DbName       string
+	JobsNum      int
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -69,7 +70,7 @@ usages found at BHL for a scientific name.`,
 		}
 
 		if len(args) == 0 {
-			cmd.Help()
+			_ = cmd.Help()
 			os.Exit(0)
 		}
 	},
@@ -120,7 +121,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		//log.Println("Using config file:", viper.ConfigFileUsed())
 	} else {
 		fmt.Println("Config file $HOME/.bhlnames.yaml not found")
 		os.Exit(1)
@@ -158,6 +159,9 @@ func getOpts() []bhlnames.Option {
 	}
 	if cfg.DbName != "" {
 		opts = append(opts, bhlnames.OptDbName(cfg.DbName))
+	}
+	if cfg.JobsNum != 0 {
+		opts = append(opts, bhlnames.OptJobsNum(cfg.JobsNum))
 	}
 	return opts
 }

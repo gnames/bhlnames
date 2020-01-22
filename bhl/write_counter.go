@@ -23,6 +23,5 @@ func NewWriteCounter(total int) *WriteCounter {
 func (wc *WriteCounter) Write(p []byte) (int, error) {
 	n := len(p)
 	wc.n += n
-	wc.bar.Set(wc.n)
-	return n, nil
+	return n, wc.bar.Set(wc.n)
 }

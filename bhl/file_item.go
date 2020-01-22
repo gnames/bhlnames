@@ -119,7 +119,7 @@ func (md MetaData) uploadItems(items []*db.Item) error {
 	return transaction.Commit()
 }
 
-func itemYears(years string) (sql.NullInt64, sql.NullInt64) {
+func itemYears(years string) (sql.NullInt32, sql.NullInt32) {
 	finds := yrRe.FindStringSubmatch(years)
 	yrStart := ""
 	yrEnd := ""
@@ -129,15 +129,15 @@ func itemYears(years string) (sql.NullInt64, sql.NullInt64) {
 	if len(finds) > 3 {
 		yrEnd = finds[3]
 	}
-	yearStart := sql.NullInt64{}
-	yearEnd := sql.NullInt64{}
+	yearStart := sql.NullInt32{}
+	yearEnd := sql.NullInt32{}
 	res, err := strconv.Atoi(yrStart)
 	if err == nil {
-		yearStart = sql.NullInt64{Int64: int64(res), Valid: true}
+		yearStart = sql.NullInt32{Int32: int32(res), Valid: true}
 	}
 	res, err = strconv.Atoi(yrEnd)
 	if err == nil {
-		yearEnd = sql.NullInt64{Int64: int64(res), Valid: true}
+		yearEnd = sql.NullInt32{Int32: int32(res), Valid: true}
 	}
 	return yearStart, yearEnd
 }

@@ -45,7 +45,12 @@ func (n Names) ImportNamesOccur(keyValDir string) error {
 
 func (n Names) getItems(kv *badger.DB, stream protob.BHLIndex_PagesClient) error {
 	missingItems := make(map[string]struct{})
-	defer n.saveMissingItems(missingItems)
+	defer func() {
+		err := n.saveMissingItems(missingItems)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 	item := &db.Item{}
 	pathMap := make(map[string]struct{})
 	var count, itemCount int
@@ -70,8 +75,9 @@ func (n Names) getItems(kv *badger.DB, stream protob.BHLIndex_PagesClient) error
 			count = 0
 			if item.BarCode != "" {
 				itemCount++
-				if itemCount%5_000 == 0 {
-					fmt.Printf("; %d items processed\n", itemCount)
+				if itemCount%10_000 == 0 {
+					fmt.Println()
+					log.Printf("%d items processed\n", itemCount)
 				}
 				err := n.processItem(item, pathMap)
 				if err != nil {
@@ -168,8 +174,16 @@ func (n Names) saveMissingItems(data map[string]struct{}) error {
 		return err
 	}
 	defer f.Close()
-	defer f.Sync()
-	f.WriteString("List of item BarCodes not found in item.txt\n")
+	defer func() {
+		err := f.Sync()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+	_, err = f.WriteString("List of item BarCodes not found in item.txt\n")
+	if err != nil {
+		return err
+	}
 	for k := range data {
 		_, err = f.WriteString(k + "\n")
 		if err != nil {

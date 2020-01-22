@@ -20,3 +20,6 @@ DbPass:
 
 # Postgresql database
 DbName: bhlnames
+
+# Number of parallel jobs to fetch references
+JobsNum: 1

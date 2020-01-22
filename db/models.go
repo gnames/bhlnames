@@ -6,24 +6,24 @@ import (
 
 type Item struct {
 	ID             uint   `gorm:"primary_key;auto_increment:false"`
-	BarCode        string `gorm:"unique_index;not null"`
-	Vol            string
-	YearStart      sql.NullInt64
-	YearEnd        sql.NullInt64
-	TitleID        uint `gorm:"not null"`
-	TitleDOI       string
-	TitleName      string
-	TitleYearStart sql.NullInt64
-	TitleYearEnd   sql.NullInt64
-	TitleLang      string
+	BarCode        string `gorm:"type:varchar(60);unique_index;not null"`
+	Vol            string `gorm:"type:varchar(100)"`
+	YearStart      sql.NullInt32
+	YearEnd        sql.NullInt32
+	TitleID        uint   `gorm:"not null"`
+	TitleDOI       string `gorm:"type:varchar(100)"`
+	TitleName      string `gorm:"type:varchar(255)"`
+	TitleYearStart sql.NullInt32
+	TitleYearEnd   sql.NullInt32
+	TitleLang      string `gorm:"type:varchar(20)"`
 	PathsTotal     uint
 	AnimaliaNum    uint
 	PlantaeNum     uint
 	FungiNum       uint
 	BacteriaNum    uint
-	MajorKingdom   string
+	MajorKingdom   string `gorm:"type:varchar(100)"`
 	KingdomPercent uint
-	Context        string
+	Context        string `gorm:"type:varchar(100)"`
 }
 
 type Page struct {
@@ -35,48 +35,48 @@ type Page struct {
 
 type Part struct {
 	ID                 uint `gorm:"primary_key;auto_increment:false"`
-	PageID             sql.NullInt64
-	ItemID             sql.NullInt64
-	Length             sql.NullInt64
-	DOI                string
-	ContributorName    string
-	SequenceOrder      sql.NullInt64
-	SegmentType        string
-	Title              string
-	ContainerTitle     string
-	PublicationDetails string
-	Volume             string
-	Series             string
-	Issue              string
-	Date               string
-	Year               sql.NullInt64 `gorm:"index:year"`
-	YearEnd            sql.NullInt64
-	Month              sql.NullInt64
-	Day                sql.NullInt64
-	PageNumStart       sql.NullInt64
-	PageNumEnd         sql.NullInt64
-	Language           string
+	PageID             sql.NullInt32
+	ItemID             sql.NullInt32
+	Length             sql.NullInt32
+	DOI                string `gorm:"type:varchar(100)"`
+	ContributorName    string `gorm:"type:varchar(255)"`
+	SequenceOrder      sql.NullInt32
+	SegmentType        string        `gorm:"type:varchar(100)"`
+	Title              string        `gorm:"type:text"`
+	ContainerTitle     string        `gorm:"type:text"`
+	PublicationDetails string        `gorm:"type:text"`
+	Volume             string        `gorm:"type:varchar(100)"`
+	Series             string        `gorm:"type:varchar(100)"`
+	Issue              string        `gorm:"type:varchar(100)"`
+	Date               string        `gorm:"type:varchar(100)"`
+	Year               sql.NullInt32 `gorm:"index:year"`
+	YearEnd            sql.NullInt32
+	Month              sql.NullInt32
+	Day                sql.NullInt32
+	PageNumStart       sql.NullInt32
+	PageNumEnd         sql.NullInt32
+	Language           string `gorm:"type:varchar(20)"`
 }
 
 type NameString struct {
 	ID                string `sql:"type:uuid;primary_key"`
-	Name              string
-	TaxonID           string
-	MatchType         string
+	Name              string `gorm:"type:varchar(255)"`
+	TaxonID           string `gorm:"type:varchar(100)"`
+	MatchType         string `gorm:"type:varchar(100)"`
 	EditDistance      uint
 	StemEditDistance  uint
-	MatchedName       string
-	MatchedCanonical  string `gorm:"index:canonical"`
-	CurrentName       string
-	CurrentCanonical  string `gorm:"index:current_canonical"`
+	MatchedName       string `gorm:"type:varchar(255)"`
+	MatchedCanonical  string `gorm:"type:varchar(255);index:canonical"`
+	CurrentName       string `gorm:"type:varchar(255)"`
+	CurrentCanonical  string `gorm:"type:varchar(255);index:current_canonical"`
 	Classification    string
-	DataSourceId      sql.NullInt64
-	DataSourceTitle   string
+	DataSourceId      sql.NullInt32
+	DataSourceTitle   string `gorm:"type:varchar(255)"`
 	DataSourcesNumber uint
 	Curation          bool `gorm:"index:curation"`
 	Occurences        uint
 	Odds              float32
-	Error             string
+	Error             string `gorm:"type:varchar(255)"`
 }
 
 type PageNameString struct {
