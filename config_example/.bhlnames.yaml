@@ -6,7 +6,7 @@ DumpURL: https://www.biodiversitylibrary.org/data/data.zip
 # gRPC URL for bhlindex service
 BHLindexHost: bhlrpc.globalnames.org:80
 
-# Path to keep downloaded data
+# Path to keep downloaded data and key-value stores
 InputDir: /tmp/bhlnames
 
 # Postgresql host
