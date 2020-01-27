@@ -48,6 +48,7 @@ type PreReference struct {
 type Reference struct {
 	YearAggr           int    `json:"year_aggr"`
 	YearType           string `json:"year_type"`
+	URL                string `json:"url,omitempty"`
 	TitleDOI           string `json:"doi_title,omitempty"`
 	PartDOI            string `json:"doi_part,omitempty"`
 	Name               string `json:"name"`
@@ -208,6 +209,13 @@ func checkPart(kv *badger.DB, pageID int) int {
 	return db.GetValue(kv, strconv.Itoa(pageID))
 }
 
+func getURL(pageID int) string {
+	if pageID == 0 {
+		return ""
+	}
+	return fmt.Sprintf("https://www.biodiversitylibrary.org/page/%d", pageID)
+}
+
 func (r Refs) genReferences(prs []*PreReference) []*Reference {
 	res := make([]*Reference, len(prs))
 	for i, v := range prs {
@@ -215,6 +223,7 @@ func (r Refs) genReferences(prs []*PreReference) []*Reference {
 		res[i] = &Reference{
 			YearAggr:           yr,
 			YearType:           tp,
+			URL:                getURL(v.item.pageID),
 			TitleDOI:           v.item.titleDOI,
 			PartDOI:            v.part.DOI,
 			Name:               v.item.name,

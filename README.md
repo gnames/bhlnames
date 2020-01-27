@@ -103,6 +103,11 @@ a more human-readable form with:
 ```bash
 bhlnames refs "Pardosa moesta" -f pretty
 ```
+You can also use [jq] or a similar tool
+
+```bash
+bhlnames refs "Pardosa moesta" | jq
+```
 
 In case if it is preferable to have the oldest publications last, you can reverse
 sorting order with:
@@ -159,3 +164,4 @@ website. For example to find `page_id` 26895127 use:
 [col]: https://www.catalogueoflife.org/col/
 [latest release]: https://github.com/gnames/bhlnames/releases/latest
 [config]: https://raw.githubusercontent.com/gnames/bhlnames/master/config_example/.bhlnames.yaml
+[jq]: https://github.com/stedolan/jq
