@@ -197,7 +197,7 @@ func (n Names) processPage(pageData *protob.Page, pageID int,
 	ch chan<- *db.PageNameString) []string {
 	paths := make([]string, 0, len(pageData.Names))
 	for _, n := range pageData.Names {
-		if strings.Contains(n.MatchedCanonical, " ") && n.DataSourceId == 1 {
+		if n.DataSourceId == 1 {
 			paths = append(paths, n.Classification)
 			pn := &db.PageNameString{
 				PageID:       uint(pageID),
