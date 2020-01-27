@@ -7,7 +7,7 @@ bhlnames takes one or more scientific names and finds their usage in Biodiversit
 (books, scientific journals, diaries of explorers, etc.) that contain some
 important biodiversity information. Since the middle of 18th century, scientists
 use Latinized scientific names as identifiers for known species. For biologists,
-it is crucial to get information about species. This program takes a
+it is crucial to get information about species in publications. This program takes a
 scientific name or a list of scientific names and returns references found
 in BHL about the name. Quite often, species names change with time. In such
 cases, we need to find information attached to older names as well as newer
