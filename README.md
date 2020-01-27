@@ -10,9 +10,10 @@ use Latinized scientific names as identifiers for known species. For biologists,
 it is crucial to get information about species in publications. This program takes a
 scientific name or a list of scientific names and returns references found
 in BHL about the name. Quite often, species names change with time. In such
-cases, we need to find information attached to older names as well as newer
-ones. The `bhlnames` uses [Catalogue Of Life (CoL)][col] synonymy information to
-find publications not only about given name but also about its synonyms.
+cases, we need to find information attached to older names as well as currently
+accepted by community. The `bhlnames` uses [Catalogue Of Life (CoL)][col] synonymy
+information to find publications not only about given name but also about its
+synonyms.
 
 ## Prerequisites
 
