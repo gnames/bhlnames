@@ -12,7 +12,7 @@ scientific name or a list of scientific names and returns references found
 in BHL about the name. Quite often, species names change with time. In such
 cases, we need to find information attached to older names as well as currently
 accepted by community. The `bhlnames` uses [Catalogue Of Life (CoL)][col] synonymy
-information to find publications not only about given name but also about its
+information to find publications not only about a given name but also about its
 synonyms.
 
 ## Prerequisites
