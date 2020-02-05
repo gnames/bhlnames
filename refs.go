@@ -14,7 +14,7 @@ func (bhln BHLnames) Refs(name string) (*refs.Output, error) {
 	kv := db.InitKeyVal(bhln.MetaData.PartDir)
 	defer kv.Close()
 	r := refs.NewRefs(bhln.DbOpts, bhln.MetaData, bhln.JobsNum,
-		bhln.SortDesc)
+		bhln.SortDesc, bhln.Short)
 	gnp := gnparser.NewGNparser()
 	output := r.Output(gnp, kv, name)
 	return output, nil
@@ -45,7 +45,7 @@ func RefsStream(bhln BHLnames, chIn <-chan string,
 	wg.Add(bhln.JobsNum)
 	for i := 0; i < bhln.JobsNum; i++ {
 		r := refs.NewRefs(bhln.DbOpts, bhln.MetaData, bhln.JobsNum,
-			bhln.SortDesc)
+			bhln.SortDesc, bhln.Short)
 		go r.RefsWorker(kv, chIn, chOut, &wg)
 	}
 	wg.Wait()

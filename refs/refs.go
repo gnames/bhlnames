@@ -19,15 +19,18 @@ type Refs struct {
 	PartDir  string
 	JobsNum  int
 	SortDesc bool
+	Short    bool
 	DB       *sql.DB
 	GormDB   *gorm.DB
 }
 
-func NewRefs(dbOpts db.DbOpts, md bhl.MetaData, jobs int, sortDesc bool) Refs {
+func NewRefs(dbOpts db.DbOpts, md bhl.MetaData, jobs int, sortDesc bool,
+	short bool) Refs {
 	res := Refs{
 		PartDir:  md.PartDir,
 		JobsNum:  jobs,
 		SortDesc: sortDesc,
+		Short:    short,
 	}
 	res.DB = dbOpts.NewDb()
 	res.GormDB = dbOpts.NewDbGorm()
@@ -35,9 +38,11 @@ func NewRefs(dbOpts db.DbOpts, md bhl.MetaData, jobs int, sortDesc bool) Refs {
 }
 
 type Output struct {
-	NameString string       `json:"name_string"`
-	Canonical  string       `json:"canonical"`
-	References []*Reference `json:"references"`
+	NameString       string       `json:"name_string"`
+	Canonical        string       `json:"canonical,omitempty"`
+	CurrentCanonical string       `json:"current_canonical,omitempty"`
+	ReferenceNumber  int          `json:"refs_num"`
+	References       []*Reference `json:"references,omitempty"`
 }
 
 type PreReference struct {
@@ -96,16 +101,16 @@ type Row struct {
 
 func (r Refs) Output(gnp gnparser.GNparser, kv *badger.DB,
 	name string) *Output {
-	res := &Output{NameString: name, Canonical: "N/A",
+	res := &Output{NameString: name, Canonical: "", CurrentCanonical: "",
 		References: make([]*Reference, 0)}
 	can, err := getCanonical(gnp, name)
 	if err != nil {
 		return res
 	}
 	res.Canonical = can
-	raw := r.currentQuery(can)
+	raw := r.currentAcceptQuery(can)
 	if len(raw) == 0 {
-		raw = r.matchQuery(can)
+		raw = r.matchQuery(res, can)
 	}
 	r.updateOutput(kv, res, raw)
 	return res
@@ -120,7 +125,7 @@ func getCanonical(gnp gnparser.GNparser, name string) (string, error) {
 	return can, nil
 }
 
-func (r Refs) currentQuery(name string) []*Row {
+func (r Refs) currentAcceptQuery(name string) []*Row {
 	var res []*Row
 	var itemID, titleID, pageID int
 	var yearStart, yearEnd, titleYearStart, titleYearEnd,
@@ -170,21 +175,26 @@ func (r Refs) currentQuery(name string) []*Row {
 	return res
 }
 
-func (r Refs) matchQuery(name string) []*Row {
+func (r Refs) matchQuery(o *Output, name string) []*Row {
 	rec := &db.NameString{}
 	r.GormDB.Where("matched_canonical = ?", name).First(rec)
 	if rec.ID == "" {
 		var emptyRes []*Row
 		return emptyRes
 	}
-	return r.currentQuery(rec.CurrentCanonical)
+	o.CurrentCanonical = rec.CurrentCanonical
+	return r.currentAcceptQuery(o.CurrentCanonical)
 }
 
 func (r Refs) updateOutput(kv *badger.DB, o *Output, raw []*Row) {
+	o.ReferenceNumber = len(raw)
 	partsMap := make(map[int]struct{})
 	itemsMap := make(map[int]struct{})
 	var preRefs []*PreReference
 	for _, v := range raw {
+		if r.Short {
+			break
+		}
 		partID := checkPart(kv, v.pageID)
 		if partID == 0 {
 			if _, ok := itemsMap[v.itemID]; !ok {

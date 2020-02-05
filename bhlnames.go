@@ -11,6 +11,7 @@ type BHLnames struct {
 	Format   string
 	JobsNum  int
 	SortDesc bool
+	Short    bool
 }
 
 // Option type for changing GNfinder settings.
@@ -80,6 +81,12 @@ func OptJobsNum(j int) Option {
 func OptSortDesc(d bool) Option {
 	return func(bhln *BHLnames) {
 		bhln.SortDesc = d
+	}
+}
+
+func OptShort(s bool) Option {
+	return func(bhln *BHLnames) {
+		bhln.Short = s
 	}
 }
 

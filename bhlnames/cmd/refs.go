@@ -42,7 +42,9 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		f := formatFlag(cmd)
 		d := descFlag(cmd)
-		opts = append(opts, bhlnames.OptFormat(f), bhlnames.OptSortDesc(d))
+		s := shortFlag(cmd)
+		opts = append(opts, bhlnames.OptFormat(f), bhlnames.OptSortDesc(d),
+			bhlnames.OptShort(s))
 		j := jobsFlag(cmd)
 		if j > 0 {
 			opts = append(opts, bhlnames.OptJobsNum(j))
@@ -76,6 +78,9 @@ func init() {
 
 	refsCmd.Flags().BoolP("sort_desc", "d", false,
 		"Sort references by year in descendent order.")
+
+	refsCmd.Flags().BoolP("short_output", "s", false,
+		"Return only summary (no references data).")
 }
 
 func formatFlag(cmd *cobra.Command) string {
@@ -103,6 +108,15 @@ func descFlag(cmd *cobra.Command) bool {
 		os.Exit(1)
 	}
 	return b
+}
+
+func shortFlag(cmd *cobra.Command) bool {
+	s, err := cmd.Flags().GetBool("short_output")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return s
 }
 
 func processStdin(cmd *cobra.Command, bhln bhlnames.BHLnames) {
