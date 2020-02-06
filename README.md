@@ -131,6 +131,12 @@ jobs. Usually, there is no much gain to go over 8 jobs.
 bhlnames refs names.txt -j 8
 ```
 
+To get a short version of data vithout details for references:
+
+```bash
+bhlnames refs names.txt -s
+```
+
 On a 12-core laptop, processing of 10000 names took about 40 seconds with 8
 parallel jobs, and 2m 45sec with a single job. 10000 names generated 120MB of
 results.

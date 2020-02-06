@@ -17,7 +17,7 @@ func (bhln BHLnames) Refs(name string) (*refs.Output, error) {
 		bhln.SortDesc, bhln.Short)
 	gnp := gnparser.NewGNparser()
 	output := r.Output(gnp, kv, name)
-	return output, nil
+	return output, r.DB.Close()
 }
 
 func FormatOutput(output *refs.Output, format string) string {
