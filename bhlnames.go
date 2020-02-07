@@ -8,10 +8,11 @@ import (
 type BHLnames struct {
 	db.DbOpts
 	bhl.MetaData
-	Format   string
-	JobsNum  int
-	SortDesc bool
-	Short    bool
+	Format     string
+	JobsNum    int
+	SortDesc   bool
+	Short      bool
+	NoSynonyms bool
 }
 
 // Option type for changing GNfinder settings.
@@ -87,6 +88,12 @@ func OptSortDesc(d bool) Option {
 func OptShort(s bool) Option {
 	return func(bhln *BHLnames) {
 		bhln.Short = s
+	}
+}
+
+func OptNoSynonyms(n bool) Option {
+	return func(bhln *BHLnames) {
+		bhln.NoSynonyms = n
 	}
 }
 

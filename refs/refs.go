@@ -16,21 +16,23 @@ import (
 )
 
 type Refs struct {
-	PartDir  string
-	JobsNum  int
-	SortDesc bool
-	Short    bool
-	DB       *sql.DB
-	GormDB   *gorm.DB
+	PartDir    string
+	JobsNum    int
+	SortDesc   bool
+	Short      bool
+	NoSynonyms bool
+	DB         *sql.DB
+	GormDB     *gorm.DB
 }
 
-func NewRefs(dbOpts db.DbOpts, md bhl.MetaData, jobs int, sortDesc bool,
-	short bool) Refs {
+func NewRefs(dbOpts db.DbOpts, md bhl.MetaData, jobs int, sortDesc,
+	short, noSynonyms bool) Refs {
 	res := Refs{
-		PartDir:  md.PartDir,
-		JobsNum:  jobs,
-		SortDesc: sortDesc,
-		Short:    short,
+		PartDir:    md.PartDir,
+		JobsNum:    jobs,
+		SortDesc:   sortDesc,
+		Short:      short,
+		NoSynonyms: noSynonyms,
 	}
 	res.DB = dbOpts.NewDb()
 	res.GormDB = dbOpts.NewDbGorm()
@@ -108,7 +110,7 @@ func (r Refs) Output(gnp gnparser.GNparser, kv *badger.DB,
 		return res
 	}
 	res.Canonical = can
-	raw := r.currentAcceptQuery(can)
+	raw := r.nameQuery(can, "current_canonical")
 	if len(raw) == 0 {
 		raw = r.matchQuery(res, can)
 	}
@@ -125,7 +127,7 @@ func getCanonical(gnp gnparser.GNparser, name string) (string, error) {
 	return can, nil
 }
 
-func (r Refs) currentAcceptQuery(name string) []*Row {
+func (r Refs) nameQuery(name string, field string) []*Row {
 	var res []*Row
 	var itemID, titleID, pageID int
 	var yearStart, yearEnd, titleYearStart, titleYearEnd,
@@ -142,9 +144,9 @@ func (r Refs) currentAcceptQuery(name string) []*Row {
 			JOIN page_name_strings pns ON ns.id = pns.name_string_id
 			JOIN pages pg ON pg.id = pns.page_id
 			JOIN items itm ON itm.id = pg.item_id
-	WHERE ns.current_canonical = '%s'
+	WHERE ns.%s = '%s'
 	ORDER BY title_year_start`
-	q := fmt.Sprintf(qs, name)
+	q := fmt.Sprintf(qs, field, name)
 
 	rows := db.RunQuery(r.DB, q)
 	defer rows.Close()
@@ -176,14 +178,18 @@ func (r Refs) currentAcceptQuery(name string) []*Row {
 }
 
 func (r Refs) matchQuery(o *Output, name string) []*Row {
-	rec := &db.NameString{}
-	r.GormDB.Where("matched_canonical = ?", name).First(rec)
-	if rec.ID == "" {
-		var emptyRes []*Row
-		return emptyRes
+	if r.NoSynonyms {
+		return r.nameQuery(name, "matched_canonical")
+	} else {
+		rec := &db.NameString{}
+		r.GormDB.Where("matched_canonical = ?", name).First(rec)
+		if rec.ID == "" {
+			var emptyRes []*Row
+			return emptyRes
+		}
+		o.CurrentCanonical = rec.CurrentCanonical
+		return r.nameQuery(o.CurrentCanonical, "current_canonical")
 	}
-	o.CurrentCanonical = rec.CurrentCanonical
-	return r.currentAcceptQuery(o.CurrentCanonical)
 }
 
 func (r Refs) updateOutput(kv *badger.DB, o *Output, raw []*Row) {

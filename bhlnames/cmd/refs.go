@@ -43,8 +43,11 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 		f := formatFlag(cmd)
 		d := descFlag(cmd)
 		s := shortFlag(cmd)
-		opts = append(opts, bhlnames.OptFormat(f), bhlnames.OptSortDesc(d),
-			bhlnames.OptShort(s))
+		n := noSynonymsFlag(cmd)
+		opts = append(opts,
+			bhlnames.OptFormat(f), bhlnames.OptSortDesc(d),
+			bhlnames.OptShort(s), bhlnames.OptNoSynonyms(n),
+		)
 		j := jobsFlag(cmd)
 		if j > 0 {
 			opts = append(opts, bhlnames.OptJobsNum(j))
@@ -81,6 +84,9 @@ func init() {
 
 	refsCmd.Flags().BoolP("short_output", "s", false,
 		"Return only summary (no references data).")
+
+	refsCmd.Flags().BoolP("no_synonyms", "n", false,
+		"Do not expand name to synonyms.")
 }
 
 func formatFlag(cmd *cobra.Command) string {
@@ -117,6 +123,15 @@ func shortFlag(cmd *cobra.Command) bool {
 		os.Exit(1)
 	}
 	return s
+}
+
+func noSynonymsFlag(cmd *cobra.Command) bool {
+	n, err := cmd.Flags().GetBool("no_synonyms")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return n
 }
 
 func processStdin(cmd *cobra.Command, bhln bhlnames.BHLnames) {
