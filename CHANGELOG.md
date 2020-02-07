@@ -2,7 +2,13 @@
 
 ## Unreleased
 
-- Add [#7] add documentation
+## [v0.0.4]
+
+- Add [#10] currently accepted canonical in output. Add option for
+            for a short output.
+- Add [#8] option to return result without synonyms.
+- Add [#7] add documentation.
+- Fix [#9] close DB connections in the end of Refs methods.
 
 ## [v0.0.3]
 
@@ -26,6 +32,7 @@
 
 This document follows [changelog guidelines]
 
+[v0.0.4]: https://github.com/gnames/bhlnames/compare/v0.0.3...v0.0.4
 [v0.0.3]: https://github.com/gnames/bhlnames/compare/v0.0.2...v0.0.3
 [v0.0.2]: https://github.com/gnames/bhlnames/compare/v0.0.1...v0.0.2
 [v0.0.1]: https://github.com/gnames/bhlnames/compare/v0.0.0...v0.0.1

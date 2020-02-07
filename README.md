@@ -137,6 +137,12 @@ To get a short version of data vithout details for references:
 bhlnames refs names.txt -s
 ```
 
+To get results without synonyms:
+
+```bash
+bhlnames refs names.txt -n
+```
+
 On a 12-core laptop, processing of 10000 names took about 40 seconds with 8
 parallel jobs, and 2m 45sec with a single job. 10000 names generated 120MB of
 results.
