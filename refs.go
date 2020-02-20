@@ -2,6 +2,7 @@ package bhlnames
 
 import (
 	"log"
+	"strings"
 	"sync"
 
 	"github.com/gnames/bhlnames/db"
@@ -34,6 +35,7 @@ func FormatOutput(output *refs.Output, format string) string {
 		log.Println(err)
 	}
 	res = string(resByte)
+	res = strings.Replace(res, "\\u0026", "&", -1)
 	return res
 }
 

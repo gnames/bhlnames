@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/url"
 	"sort"
 	"strconv"
 
@@ -43,6 +44,7 @@ type Output struct {
 	NameString       string       `json:"name_string"`
 	Canonical        string       `json:"canonical,omitempty"`
 	CurrentCanonical string       `json:"current_canonical,omitempty"`
+	ImagesUrl        string       `json:"images_url,omitempty"`
 	ReferenceNumber  int          `json:"refs_num"`
 	References       []*Reference `json:"references,omitempty"`
 }
@@ -104,16 +106,18 @@ type Row struct {
 func (r Refs) Output(gnp gnparser.GNparser, kv *badger.DB,
 	name string) *Output {
 	res := &Output{NameString: name, Canonical: "", CurrentCanonical: "",
-		References: make([]*Reference, 0)}
+		ImagesUrl: "", References: make([]*Reference, 0)}
 	can, err := getCanonical(gnp, name)
 	if err != nil {
 		return res
 	}
 	res.Canonical = can
+	res.CurrentCanonical = can
 	raw := r.nameQuery(can, "current_canonical")
 	if len(raw) == 0 {
 		raw = r.matchQuery(res, can)
 	}
+	res.ImagesUrl = getImagesUrl(res.CurrentCanonical)
 	r.updateOutput(kv, res, raw)
 	return res
 }
@@ -223,6 +227,12 @@ func (r Refs) updateOutput(kv *badger.DB, o *Output, raw []*Row) {
 
 func checkPart(kv *badger.DB, pageID int) int {
 	return db.GetValue(kv, strconv.Itoa(pageID))
+}
+
+func getImagesUrl(name string) string {
+	q := url.PathEscape(name)
+	url := "https://www.google.com/search?tbm=isch&q=%s"
+	return fmt.Sprintf(url, q)
 }
 
 func getURL(pageID int) string {
