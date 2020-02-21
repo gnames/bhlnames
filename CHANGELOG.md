@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## [v0.0.5]
+
+- Add list of detected synonyms for the summary.
+- Add images url from Google Images
+
 ## [v0.0.4]
 
 - Add [#10] currently accepted canonical in output. Add option for
@@ -32,6 +37,7 @@
 
 This document follows [changelog guidelines]
 
+[v0.0.5]: https://github.com/gnames/bhlnames/compare/v0.0.4...v0.0.5
 [v0.0.4]: https://github.com/gnames/bhlnames/compare/v0.0.3...v0.0.4
 [v0.0.3]: https://github.com/gnames/bhlnames/compare/v0.0.2...v0.0.3
 [v0.0.2]: https://github.com/gnames/bhlnames/compare/v0.0.1...v0.0.2
