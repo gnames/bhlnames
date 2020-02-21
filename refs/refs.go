@@ -113,12 +113,16 @@ func (r Refs) Output(gnp gnparser.GNparser, kv *badger.DB,
 		return res
 	}
 	res.Canonical = can
-	res.CurrentCanonical = can
+	if !r.NoSynonyms {
+		res.CurrentCanonical = can
+	}
 	raw := r.nameQuery(can, "current_canonical")
 	if len(raw) == 0 {
 		raw = r.matchQuery(res, can)
 	}
-	res.ImagesUrl = getImagesUrl(res.CurrentCanonical)
+	if !r.NoSynonyms {
+		res.ImagesUrl = getImagesUrl(res.CurrentCanonical)
+	}
 	r.updateOutput(kv, res, raw)
 	return res
 }
@@ -221,7 +225,9 @@ func (r Refs) updateOutput(kv *badger.DB, o *Output, raw []*Row) {
 		}
 	}
 	refs := r.genReferences(preRefs)
-	o.Synonyms = genSynonyms(refs, o.CurrentCanonical)
+	if !r.NoSynonyms {
+		o.Synonyms = genSynonyms(refs, o.CurrentCanonical)
+	}
 	if !r.Short {
 		o.References = refs
 	}
