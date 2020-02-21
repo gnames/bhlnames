@@ -44,6 +44,7 @@ type Output struct {
 	NameString       string       `json:"name_string"`
 	Canonical        string       `json:"canonical,omitempty"`
 	CurrentCanonical string       `json:"current_canonical,omitempty"`
+	Synonyms         []string     `json:"synonyms,omitempty"`
 	ImagesUrl        string       `json:"images_url,omitempty"`
 	ReferenceNumber  int          `json:"refs_num"`
 	References       []*Reference `json:"references,omitempty"`
@@ -202,9 +203,6 @@ func (r Refs) updateOutput(kv *badger.DB, o *Output, raw []*Row) {
 	itemsMap := make(map[int]struct{})
 	var preRefs []*PreReference
 	for _, v := range raw {
-		if r.Short {
-			break
-		}
 		partID := checkPart(kv, v.pageID)
 		if partID == 0 {
 			if _, ok := itemsMap[v.itemID]; !ok {
@@ -222,7 +220,26 @@ func (r Refs) updateOutput(kv *badger.DB, o *Output, raw []*Row) {
 			}
 		}
 	}
-	o.References = r.genReferences(preRefs)
+	refs := r.genReferences(preRefs)
+	o.Synonyms = genSynonyms(refs, o.CurrentCanonical)
+	if !r.Short {
+		o.References = refs
+	}
+}
+
+func genSynonyms(refs []*Reference, current string) []string {
+	syn := make(map[string]struct{})
+	for _, v := range refs {
+		if v.MatchName != current {
+			syn[v.MatchName] = struct{}{}
+		}
+	}
+	res := make([]string, 0, len(syn))
+	for k := range syn {
+		res = append(res, k)
+	}
+	sort.Strings(res)
+	return res
 }
 
 func checkPart(kv *badger.DB, pageID int) int {
