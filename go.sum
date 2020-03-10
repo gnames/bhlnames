@@ -86,8 +86,11 @@ github.com/gnames/bhlindex v0.7.1-0.20200109224139-a1f3650ae4d1 h1:QhDfiQ7J7oahU
 github.com/gnames/bhlindex v0.7.1-0.20200109224139-a1f3650ae4d1/go.mod h1:8rr6WWH5A1elGJuwu3jalFdbWta79ur1ipd/UgpLjPE=
 github.com/gnames/bhlindex v0.8.0 h1:C6XewdTo8ffLC1VGMyfsWBEUaN5t0y4x6ehT88xm3sg=
 github.com/gnames/bhlindex v0.8.0/go.mod h1:8rr6WWH5A1elGJuwu3jalFdbWta79ur1ipd/UgpLjPE=
+github.com/gnames/bhlindex v0.9.1-0.20200309183110-6f1d80629e2b h1:i5+Kdh1GXGOHCBZNg3J4XNIotZRFvtylXoF9vFkocTI=
+github.com/gnames/bhlindex v0.9.1-0.20200309183110-6f1d80629e2b/go.mod h1:tP7TS6ONYkuguvgYEPdqlgw+Zf7MNbafkeEQsZ3ke78=
 github.com/gnames/gnfinder v0.9.1 h1:7RCR42cPFUWLdceinID+jgSPNyGACkCaBxeLsthXN0c=
 github.com/gnames/gnfinder v0.9.1/go.mod h1:g/JgrLMu3EVc3s++16q+MHPn8gwzY92dZNPNcLVqYVw=
+github.com/gnames/gnfinder v0.9.2-0.20200306200412-bfc655c5b708/go.mod h1:g/JgrLMu3EVc3s++16q+MHPn8gwzY92dZNPNcLVqYVw=
 github.com/gnames/uuid5 v0.1.1 h1:qr+CCfsmvCNeDe8s8YMUSV/XbxWSy+2UQap5jbZ5C6k=
 github.com/gnames/uuid5 v0.1.1/go.mod h1:Zv9jJ66GOpZ8UmYglISzaC2QFh370Rvzz701zzWrjWM=
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=

@@ -7,7 +7,7 @@ require (
 	code.cloudfoundry.org/bytefmt v0.0.0-20190819182555-854d396b647c // indirect
 	github.com/cloudfoundry/bytefmt v0.0.0-20190819182555-854d396b647c
 	github.com/dgraph-io/badger/v2 v2.0.1
-	github.com/gnames/bhlindex v0.8.0
+	github.com/gnames/bhlindex v0.9.1-0.20200309183110-6f1d80629e2b
 	github.com/gnames/uuid5 v0.1.1
 	github.com/gosuri/uilive v0.0.3 // indirect
 	github.com/gosuri/uiprogress v0.0.1

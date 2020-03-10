@@ -80,9 +80,11 @@ type NameString struct {
 }
 
 type PageNameString struct {
-	PageID       uint
-	NameStringID string `sql:"type:uuid;index:name_string"`
-	OffsetStart  uint
-	OffsetEnd    uint
-	Odds         float64
+	PageID         uint
+	NameStringID   string `sql:"type:uuid;index:name_string"`
+	OffsetStart    uint
+	OffsetEnd      uint
+	Odds           float64
+	Annotation     string `gorm:"type:varchar(50)"`
+	AnnotationType string `gorm:"type:varchar(50);index:annot"`
 }

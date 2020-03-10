@@ -52,6 +52,7 @@ func (n Names) getItems(kv *badger.DB, stream protob.BHLIndex_PagesClient) error
 		}
 	}()
 	item := &db.Item{}
+	// collects classifications
 	pathMap := make(map[string]struct{})
 	var count, itemCount int
 
@@ -143,7 +144,8 @@ func (n Names) saveOccurences(ch <-chan *db.PageNameString,
 }
 
 func (n Names) uploadOccurences(occurs []*db.PageNameString) error {
-	columns := []string{"page_id", "name_string_id", "offset_start", "offset_end", "odds"}
+	columns := []string{"page_id", "name_string_id", "offset_start",
+		"offset_end", "odds", "annotation", "annotation_type"}
 	transaction, err := n.DB.Begin()
 	if err != nil {
 		return err
@@ -154,7 +156,7 @@ func (n Names) uploadOccurences(occurs []*db.PageNameString) error {
 	}
 	for _, v := range occurs {
 		_, err = stmt.Exec(v.PageID, v.NameStringID, v.OffsetStart, v.OffsetEnd,
-			v.Odds)
+			v.Odds, v.Annotation, v.AnnotationType)
 		if err != nil {
 			return err
 		}
@@ -193,18 +195,22 @@ func (n Names) saveMissingItems(data map[string]struct{}) error {
 	return nil
 }
 
+// process Page saves occurences that were verified by Catalogue of Life
 func (n Names) processPage(pageData *protob.Page, pageID int,
 	ch chan<- *db.PageNameString) []string {
+	// classifications collections
 	paths := make([]string, 0, len(pageData.Names))
 	for _, n := range pageData.Names {
 		if n.DataSourceId == 1 {
 			paths = append(paths, n.Classification)
 			pn := &db.PageNameString{
-				PageID:       uint(pageID),
-				NameStringID: uuid5.UUID5(n.Value).String(),
-				OffsetStart:  uint(n.OffsetStart),
-				OffsetEnd:    uint(n.OffsetEnd),
-				Odds:         float64(n.Odds),
+				PageID:         uint(pageID),
+				NameStringID:   uuid5.UUID5(n.Value).String(),
+				OffsetStart:    uint(n.OffsetStart),
+				OffsetEnd:      uint(n.OffsetEnd),
+				Odds:           float64(n.Odds),
+				Annotation:     n.Annotation,
+				AnnotationType: n.AnnotType.String(),
 			}
 			ch <- pn
 		}

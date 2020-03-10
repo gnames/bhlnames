@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add [#11] use nomenclatural annotations in output and collection of reference
+            data.
+
 ## [v0.0.5]
 
 - Add list of detected synonyms for the summary.

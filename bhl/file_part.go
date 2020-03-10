@@ -51,6 +51,7 @@ var pagesRe = regexp.MustCompile(`\b([\d]+)\b\s*((,|-|--|–)\s*\b([\d]+)\b)?`)
 
 func (md MetaData) uploadPart(doiMap map[int]string) error {
 	log.Println("Preparing part.txt data for db.")
+	//keeps unique IDs of the parts
 	pMap := make(map[int]struct{})
 	var res []*db.Part
 	path := filepath.Join(md.DownloadDir, "part.txt")

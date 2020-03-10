@@ -64,6 +64,7 @@ type Reference struct {
 	Name               string `json:"name"`
 	MatchName          string `json:"match_name"`
 	EditDistance       int    `json:"edit_distance,omitempty"`
+	AnnotNomen         string `json:"annot_nomen,omitempty"`
 	PageID             int    `json:"page_id"`
 	ItemID             int    `json:"item_id"`
 	TitleID            int    `json:"title_id"`
@@ -99,11 +100,19 @@ type Row struct {
 	pathsTotal       int
 	nameID           string
 	name             string
+	annotation       string
 	matchedCanonical string
 	matchType        string
 	editDistance     int
 }
 
+// Output takes a name-string and returns back back references where this
+// name-string was detected.  If a name string has a nomenclatural annotaion
+// (like 'sp. nov.') attached to it somewhere in the reference, we return that
+// position, if we do not find such annotation, we return first detection of
+// the name-string in the reference.  When a reference is an `item` with
+// `parts`, we return one occurrence for every `part`, but also first occurence
+// of a name-string in the `item`, if it exists outside of all `parts.
 func (r Refs) Output(gnp gnparser.GNparser, kv *badger.DB,
 	name string) *Output {
 	res := &Output{NameString: name, Canonical: "", CurrentCanonical: "",
@@ -143,12 +152,13 @@ func (r Refs) nameQuery(name string, field string) []*Row {
 		kingdomPercent, pathsTotal, editDistance sql.NullInt32
 	var nameID string
 	var titleName, context, majorKingdom, nameString, matchedCanonical,
-		matchType, vol, titleDOI sql.NullString
+		matchType, vol, titleDOI, annot sql.NullString
 	qs := `SELECT
-	itm.id, itm.title_id, pns.page_id, itm.title_year_start, itm.title_year_end,
-	itm.year_start, itm.year_end, itm.title_name, itm.vol, itm.title_doi,
-	itm.context, itm.major_kingdom, itm.kingdom_percent, itm.paths_total,
-	ns.id, ns.name, ns.matched_canonical, ns.match_type, ns.edit_distance
+	itm.id, itm.title_id, pns.page_id, pns.annotation_type, itm.title_year_start,
+	itm.title_year_end, itm.year_start, itm.year_end, itm.title_name, itm.vol,
+	itm.title_doi, itm.context, itm.major_kingdom, itm.kingdom_percent,
+	itm.paths_total, ns.id, ns.name, ns.matched_canonical, ns.match_type,
+	ns.edit_distance
 	FROM name_strings ns
 			JOIN page_name_strings pns ON ns.id = pns.name_string_id
 			JOIN pages pg ON pg.id = pns.page_id
@@ -160,24 +170,31 @@ func (r Refs) nameQuery(name string, field string) []*Row {
 	rows := db.RunQuery(r.DB, q)
 	defer rows.Close()
 	for rows.Next() {
-		err := rows.Scan(&itemID, &titleID, &pageID, &titleYearStart, &titleYearEnd,
-			&yearStart, &yearEnd, &titleName, &vol, &titleDOI,
+		err := rows.Scan(&itemID, &titleID, &pageID, &annot, &titleYearStart,
+			&titleYearEnd, &yearStart, &yearEnd, &titleName, &vol, &titleDOI,
 			&context, &majorKingdom, &kingdomPercent, &pathsTotal, &nameID,
 			&nameString, &matchedCanonical, &matchType, &editDistance)
 		if err != nil {
 			log.Fatal(err)
 		}
 		res = append(res, &Row{
-			itemID: itemID, titleID: titleID, pageID: pageID,
-			titleDOI:       titleDOI.String,
-			titleYearStart: int(titleYearStart.Int32),
-			titleYearEnd:   int(titleYearEnd.Int32),
-			yearStart:      int(yearStart.Int32), yearEnd: int(yearEnd.Int32),
-			titleName: titleName.String, volume: vol.String,
-			context: context.String, kingdom: majorKingdom.String,
-			kingdomPercent: int(kingdomPercent.Int32),
-			pathsTotal:     int(pathsTotal.Int32),
-			nameID:         nameID, name: nameString.String,
+			itemID:           itemID,
+			titleID:          titleID,
+			pageID:           pageID,
+			titleDOI:         titleDOI.String,
+			titleYearStart:   int(titleYearStart.Int32),
+			titleYearEnd:     int(titleYearEnd.Int32),
+			yearStart:        int(yearStart.Int32),
+			yearEnd:          int(yearEnd.Int32),
+			titleName:        titleName.String,
+			volume:           vol.String,
+			context:          context.String,
+			kingdom:          majorKingdom.String,
+			kingdomPercent:   int(kingdomPercent.Int32),
+			pathsTotal:       int(pathsTotal.Int32),
+			nameID:           nameID,
+			name:             nameString.String,
+			annotation:       annot.String,
 			matchedCanonical: matchedCanonical.String,
 			matchType:        matchType.String,
 			editDistance:     int(editDistance.Int32),
@@ -201,28 +218,49 @@ func (r Refs) matchQuery(o *Output, name string) []*Row {
 	}
 }
 
+func genMapID(id int, name string) string {
+	return strconv.Itoa(id) + "-" + name
+}
+
+// updateOutput makes sure that every item part and title get only one unique
+// name to avoid information overload.
 func (r Refs) updateOutput(kv *badger.DB, o *Output, raw []*Row) {
 	o.ReferenceNumber = len(raw)
-	partsMap := make(map[int]struct{})
-	itemsMap := make(map[int]struct{})
+	partsMap := make(map[string]*PreReference)
+	itemsMap := make(map[string]*PreReference)
 	var preRefs []*PreReference
 	for _, v := range raw {
 		partID := checkPart(kv, v.pageID)
 		if partID == 0 {
-			if _, ok := itemsMap[v.itemID]; !ok {
-				itemsMap[v.itemID] = struct{}{}
-				preRefs = append(preRefs, &PreReference{item: v, part: &db.Part{}})
+			id := genMapID(v.itemID, v.matchedCanonical)
+			if ref, ok := itemsMap[id]; !ok {
+				itemsMap[id] = &PreReference{item: v, part: &db.Part{}}
+			} else if ref.item.annotation == "NO_ANNOT" && v.annotation != "NO_ANNOT" {
+				itemsMap[id] = &PreReference{item: v, part: &db.Part{}}
 			}
 		} else {
-			if _, ok := partsMap[partID]; !ok {
+			id := genMapID(partID, v.matchedCanonical)
+			if ref, ok := partsMap[id]; !ok {
 				part := &db.Part{}
 				r.GormDB.Where("id = ?", partID).First(part)
-				partsMap[partID] = struct{}{}
 				if part != nil {
-					preRefs = append(preRefs, &PreReference{item: v, part: part})
+					partsMap[id] = &PreReference{item: v, part: part}
+				}
+			} else if ref.item.annotation == "NO_ANNOT" &&
+				v.annotation != "NO_ANNOT" {
+				part := &db.Part{}
+				r.GormDB.Where("id = ?", partID).First(part)
+				if part != nil {
+					partsMap[id] = &PreReference{item: v, part: part}
 				}
 			}
 		}
+	}
+	for _, v := range itemsMap {
+		preRefs = append(preRefs, v)
+	}
+	for _, v := range partsMap {
+		preRefs = append(preRefs, v)
 	}
 	refs := r.genReferences(preRefs)
 	if !r.NoSynonyms {
@@ -233,6 +271,8 @@ func (r Refs) updateOutput(kv *badger.DB, o *Output, raw []*Row) {
 	}
 }
 
+// genSynonyms collects unique name-strings from references and saves all
+// of them except the currently accepted name into slice of strings.
 func genSynonyms(refs []*Reference, current string) []string {
 	syn := make(map[string]struct{})
 	for _, v := range refs {
@@ -248,6 +288,9 @@ func genSynonyms(refs []*Reference, current string) []string {
 	return res
 }
 
+// checks if a page ID is included into any parts. All pageIDs that correspond
+// to a particular `part` are saved to key-value store. So if a pageID is not
+// found in the store, it means it is not associated with any `parts`. In such case we return 0.
 func checkPart(kv *badger.DB, pageID int) int {
 	return db.GetValue(kv, strconv.Itoa(pageID))
 }
@@ -278,6 +321,7 @@ func (r Refs) genReferences(prs []*PreReference) []*Reference {
 			Name:               v.item.name,
 			MatchName:          v.item.matchedCanonical,
 			EditDistance:       v.item.editDistance,
+			AnnotNomen:         v.item.annotation,
 			PageID:             v.item.pageID,
 			PartID:             int(v.part.ID),
 			ItemID:             v.item.itemID,
