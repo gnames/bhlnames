@@ -1,114 +1,92 @@
 package bhlnames
 
 import (
+	"database/sql"
+	"log"
+	"strings"
+	"sync"
+
+	"github.com/dgraph-io/badger/v2"
 	"github.com/gnames/bhlnames/bhl"
+	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/db"
+	"github.com/gnames/bhlnames/domain/entity"
+	"github.com/gnames/bhlnames/refs"
+	"github.com/gnames/gnames/lib/format"
+	"github.com/gnames/gnames/lib/sys"
+	"github.com/jinzhu/gorm"
+	jsoniter "github.com/json-iterator/go"
+	"gitlab.com/gogna/gnparser"
 )
 
 type BHLnames struct {
-	db.DbOpts
-	bhl.MetaData
-	Format     string
-	JobsNum    int
-	SortDesc   bool
-	Short      bool
-	NoSynonyms bool
+	config.Config
+	KV     *badger.DB
+	DB     *sql.DB
+	GormDB *gorm.DB
 }
 
-// Option type for changing GNfinder settings.
-type Option func(*BHLnames)
-
-func OptDumpURL(d string) Option {
-	return func(bhln *BHLnames) {
-		bhln.MetaData.DumpURL = d
-	}
-}
-
-func OptBHLindexHost(bh string) Option {
-	return func(bhln *BHLnames) {
-		bhln.BHLindexHost = bh
-	}
-}
-
-func OptInputDir(i string) Option {
-	return func(bhln *BHLnames) {
-		bhln.MetaData.InputDir = i
-	}
-}
-
-func OptDbHost(h string) Option {
-	return func(bhln *BHLnames) {
-		bhln.DbOpts.Host = h
-	}
-}
-
-func OptDbUser(u string) Option {
-	return func(bhln *BHLnames) {
-		bhln.DbOpts.User = u
-	}
-}
-
-func OptDbPass(p string) Option {
-	return func(bhln *BHLnames) {
-		bhln.DbOpts.Pass = p
-	}
-}
-
-func OptDbName(n string) Option {
-	return func(bhln *BHLnames) {
-		bhln.DbOpts.Name = n
-	}
-}
-
-func OptFormat(f string) Option {
-	return func(bhln *BHLnames) {
-		f = checkFormat(f)
-		bhln.Format = f
-	}
-}
-
-func OptRebuild(r bool) Option {
-	return func(bhln *BHLnames) {
-		bhln.Rebuild = r
-	}
-}
-
-func OptJobsNum(j int) Option {
-	return func(bhln *BHLnames) {
-		bhln.JobsNum = j
-	}
-}
-
-func OptSortDesc(d bool) Option {
-	return func(bhln *BHLnames) {
-		bhln.SortDesc = d
-	}
-}
-
-func OptShort(s bool) Option {
-	return func(bhln *BHLnames) {
-		bhln.Short = s
-	}
-}
-
-func OptNoSynonyms(n bool) Option {
-	return func(bhln *BHLnames) {
-		bhln.NoSynonyms = n
-	}
-}
-
-func NewBHLnames(opts ...Option) BHLnames {
-	bhln := BHLnames{}
-	for _, opt := range opts {
-		opt(&bhln)
-	}
-	bhln.MetaData.Configure(bhln.DbOpts)
+func NewBHLnames(cnf config.Config) BHLnames {
+	bhln := BHLnames{Config: cnf}
+	md := bhl.NewMetaData(bhln.Config)
+	bhln.KV = db.InitKeyVal(md.PartDir)
+	bhln.DB = db.NewDb(cnf.DB)
+	bhln.GormDB = db.NewDbGorm(cnf.DB)
+	bhln.initDirs()
 	return bhln
 }
 
-func checkFormat(f string) string {
-	if f != "compact" && f != "pretty" {
-		return "compact"
+// Init creates all the needed paths
+func (bhln BHLnames) initDirs() {
+	var err error
+	m := bhl.NewMetaData(bhln.Config)
+	dirs := []string{m.DownloadDir, m.KeyValDir, m.PartDir}
+	for _, dir := range dirs {
+		err = sys.MakeDir(dir)
+		if err != nil {
+			log.Fatalf("Cannot initiate dir '%s': %s.", dir, err)
+		}
 	}
-	return f
+}
+
+func (bhln BHLnames) Refs(name string) (*entity.Output, error) {
+	md := bhl.NewMetaData(bhln.Config)
+	kv := bhln.KV
+	r := refs.NewRefs(bhln.DB, bhln.GormDB, md, bhln.JobsNum,
+		bhln.SortDesc, bhln.Short, bhln.NoSynonyms)
+	gnp := gnparser.NewGNparser()
+	output := r.Output(gnp, kv, name)
+	return output, nil
+}
+
+func (bhln BHLnames) RefsStream(chIn <-chan string, chOut chan<- *entity.RefsResult) {
+	md := bhl.NewMetaData(bhln.Config)
+	kv := bhln.KV
+	var wg sync.WaitGroup
+	wg.Add(bhln.JobsNum)
+	for i := 0; i < bhln.JobsNum; i++ {
+		r := refs.NewRefs(bhln.DB, bhln.GormDB, md, bhln.JobsNum,
+			bhln.SortDesc, bhln.Short, bhln.NoSynonyms)
+		go r.RefsWorker(kv, chIn, chOut, &wg)
+	}
+	wg.Wait()
+	close(chOut)
+}
+
+func FormatOutput(output *entity.Output, f format.Format) string {
+	var resByte []byte
+	var err error
+	var res string
+
+	if f == format.PrettyJSON {
+		resByte, err = jsoniter.MarshalIndent(output, "", "  ")
+	} else {
+		resByte, err = jsoniter.Marshal(output)
+	}
+	if err != nil {
+		log.Println(err)
+	}
+	res = string(resByte)
+	res = strings.Replace(res, "\\u0026", "&", -1)
+	return res
 }

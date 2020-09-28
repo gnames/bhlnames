@@ -11,29 +11,28 @@ import (
 	"strconv"
 
 	"github.com/cloudfoundry/bytefmt"
+	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/db"
-	"github.com/gnames/bhlnames/sys"
+	"github.com/gnames/gnames/lib/sys"
 	"github.com/gosuri/uiprogress"
 )
 
 type MetaData struct {
-	DumpURL      string
-	InputDir     string
+	config.Config
 	DownloadFile string
 	DownloadDir  string
 	KeyValDir    string
 	PartDir      string
-	Rebuild      bool
-	BHLindexHost string
 	DB           *sql.DB
 }
 
-func (md *MetaData) Configure(dbOpts db.DbOpts) {
-	md.DownloadFile = filepath.Join(md.InputDir, "data.zip")
-	md.DownloadDir = filepath.Join(md.InputDir, "Data")
-	md.KeyValDir = filepath.Join(md.InputDir, "keyval")
-	md.PartDir = filepath.Join(md.InputDir, "part")
-	md.DB = dbOpts.NewDb()
+func NewMetaData(cfg config.Config) MetaData {
+	md := MetaData{Config: cfg}
+	md.DownloadFile = filepath.Join(cfg.InputDir, "data.zip")
+	md.DownloadDir = filepath.Join(cfg.InputDir, "Data")
+	md.KeyValDir = filepath.Join(cfg.InputDir, "keyval")
+	md.PartDir = filepath.Join(cfg.InputDir, "part")
+	return md
 }
 
 // Download will download a url to a local file. It's efficient because it will
@@ -94,11 +93,12 @@ func (md MetaData) Extract() error {
 }
 
 func (md MetaData) Prepare() error {
+	md.DB = db.NewDb(md.Config.DB)
+
 	titleDOImap, partDOImap, err := md.prepareDOI()
 	if err != nil {
 		return err
 	}
-
 	titlesMap, err := md.prepareTitle(titleDOImap)
 	if err != nil {
 		return err
@@ -111,7 +111,6 @@ func (md MetaData) Prepare() error {
 	if err != nil {
 		return err
 	}
-
 	err = md.uploadPage()
 	if err != nil {
 		return err

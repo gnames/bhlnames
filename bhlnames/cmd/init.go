@@ -25,6 +25,7 @@ import (
 	"log"
 
 	"github.com/gnames/bhlnames"
+	"github.com/gnames/bhlnames/config"
 	"github.com/spf13/cobra"
 )
 
@@ -44,8 +45,9 @@ after enother. The resul will be identical to "bhlnames init".`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		opts = append(opts, bhlnames.OptRebuild(rebuild))
-		bhln := bhlnames.NewBHLnames(opts...)
+		opts = append(opts, config.OptRebuild(rebuild))
+		cfg := config.NewConfig(opts...)
+		bhln := bhlnames.NewBHLnames(cfg)
 		err = bhln.Init()
 		if err != nil {
 			log.Fatal(err)

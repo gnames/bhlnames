@@ -12,6 +12,7 @@ import (
 	"github.com/dgraph-io/badger/v2"
 	"github.com/gnames/bhlnames/bhl"
 	"github.com/gnames/bhlnames/db"
+	"github.com/gnames/bhlnames/domain/entity"
 	"github.com/jinzhu/gorm"
 	"gitlab.com/gogna/gnparser"
 )
@@ -26,7 +27,7 @@ type Refs struct {
 	GormDB     *gorm.DB
 }
 
-func NewRefs(dbOpts db.DbOpts, md bhl.MetaData, jobs int, sortDesc,
+func NewRefs(d *sql.DB, gd *gorm.DB, md bhl.MetaData, jobs int, sortDesc,
 	short, noSynonyms bool) Refs {
 	res := Refs{
 		PartDir:    md.PartDir,
@@ -35,52 +36,14 @@ func NewRefs(dbOpts db.DbOpts, md bhl.MetaData, jobs int, sortDesc,
 		Short:      short,
 		NoSynonyms: noSynonyms,
 	}
-	res.DB = dbOpts.NewDb()
-	res.GormDB = dbOpts.NewDbGorm()
+	res.DB = d
+	res.GormDB = gd
 	return res
-}
-
-type Output struct {
-	NameString       string       `json:"name_string"`
-	Canonical        string       `json:"canonical,omitempty"`
-	CurrentCanonical string       `json:"current_canonical,omitempty"`
-	Synonyms         []string     `json:"synonyms,omitempty"`
-	ImagesUrl        string       `json:"images_url,omitempty"`
-	ReferenceNumber  int          `json:"refs_num"`
-	References       []*Reference `json:"references,omitempty"`
 }
 
 type PreReference struct {
 	item *Row
 	part *db.Part
-}
-
-type Reference struct {
-	YearAggr           int    `json:"year_aggr"`
-	YearType           string `json:"year_type"`
-	URL                string `json:"url,omitempty"`
-	TitleDOI           string `json:"doi_title,omitempty"`
-	PartDOI            string `json:"doi_part,omitempty"`
-	Name               string `json:"name"`
-	MatchName          string `json:"match_name"`
-	EditDistance       int    `json:"edit_distance,omitempty"`
-	AnnotNomen         string `json:"annot_nomen,omitempty"`
-	PageID             int    `json:"page_id"`
-	ItemID             int    `json:"item_id"`
-	TitleID            int    `json:"title_id"`
-	PartID             int    `json:"part_id,omitempty"`
-	TitleName          string `json:"title_name"`
-	Volume             string `json:"volume,omitempty"`
-	PartPages          string `json:"part_pages,omitempty"`
-	PartName           string `json:"part_name,omitempty"`
-	ItemKingdom        string `json:"item_kingdom"`
-	ItemKingdomPercent int    `json:"item_kingdom_percent"`
-	StatNamesNum       int    `json:"stat_names_num"`
-	ItemContext        string `json:"item_context"`
-	TitleYearStart     int    `json:"title_year_start"`
-	TitleYearEnd       int    `json:"title_year_end,omitempty"`
-	ItemYearStart      int    `json:"item_year_start,omitempty"`
-	ItemYearEnd        int    `json:"item_year_end,omitempty"`
 }
 
 type Row struct {
@@ -114,9 +77,9 @@ type Row struct {
 // `parts`, we return one occurrence for every `part`, but also first occurence
 // of a name-string in the `item`, if it exists outside of all `parts.
 func (r Refs) Output(gnp gnparser.GNparser, kv *badger.DB,
-	name string) *Output {
-	res := &Output{NameString: name, Canonical: "", CurrentCanonical: "",
-		ImagesUrl: "", References: make([]*Reference, 0)}
+	name string) *entity.Output {
+	res := &entity.Output{NameString: name, Canonical: "", CurrentCanonical: "",
+		ImagesUrl: "", References: make([]*entity.Reference, 0)}
 	can, err := getCanonical(gnp, name)
 	if err != nil {
 		return res
@@ -203,7 +166,7 @@ func (r Refs) nameQuery(name string, field string) []*Row {
 	return res
 }
 
-func (r Refs) matchQuery(o *Output, name string) []*Row {
+func (r Refs) matchQuery(o *entity.Output, name string) []*Row {
 	if r.NoSynonyms {
 		return r.nameQuery(name, "matched_canonical")
 	} else {
@@ -224,7 +187,7 @@ func genMapID(id int, name string) string {
 
 // updateOutput makes sure that every item part and title get only one unique
 // name to avoid information overload.
-func (r Refs) updateOutput(kv *badger.DB, o *Output, raw []*Row) {
+func (r Refs) updateOutput(kv *badger.DB, o *entity.Output, raw []*Row) {
 	o.ReferenceNumber = len(raw)
 	partsMap := make(map[string]*PreReference)
 	itemsMap := make(map[string]*PreReference)
@@ -273,7 +236,7 @@ func (r Refs) updateOutput(kv *badger.DB, o *Output, raw []*Row) {
 
 // genSynonyms collects unique name-strings from references and saves all
 // of them except the currently accepted name into slice of strings.
-func genSynonyms(refs []*Reference, current string) []string {
+func genSynonyms(refs []*entity.Reference, current string) []string {
 	syn := make(map[string]struct{})
 	for _, v := range refs {
 		if v.MatchName != current {
@@ -308,11 +271,11 @@ func getURL(pageID int) string {
 	return fmt.Sprintf("https://www.biodiversitylibrary.org/page/%d", pageID)
 }
 
-func (r Refs) genReferences(prs []*PreReference) []*Reference {
-	res := make([]*Reference, len(prs))
+func (r Refs) genReferences(prs []*PreReference) []*entity.Reference {
+	res := make([]*entity.Reference, len(prs))
 	for i, v := range prs {
 		yr, tp := getYearAggr(v)
-		res[i] = &Reference{
+		res[i] = &entity.Reference{
 			YearAggr:           yr,
 			YearType:           tp,
 			URL:                getURL(v.item.pageID),

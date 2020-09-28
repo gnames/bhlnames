@@ -24,6 +24,7 @@ import (
 	"log"
 
 	"github.com/gnames/bhlnames"
+	"github.com/gnames/bhlnames/config"
 	"github.com/spf13/cobra"
 )
 
@@ -39,8 +40,9 @@ Postgresql database.`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		opts = append(opts, bhlnames.OptRebuild(rebuild))
-		bhln := bhlnames.NewBHLnames(opts...)
+		opts = append(opts, config.OptRebuild(rebuild))
+		cnf := config.NewConfig(opts...)
+		bhln := bhlnames.NewBHLnames(cnf)
 		err = bhln.BHL()
 		if err != nil {
 			log.Fatal(err)

@@ -1,19 +1,21 @@
 # bhlnames
-bhlnames takes one or more scientific names and finds their usage in Biodiversity Heritage Library
+
+bhlnames takes one or more scientific names and finds their usage in
+Biodiversity Heritage Library
 
 ## Introduction
 
 [Biodiversity Heritage Library (BHL)][bhl] contains more than 200 000 volumes
 (books, scientific journals, diaries of explorers, etc.) that contain some
-important biodiversity information. Since the middle of 18th century, scientists
-use Latinized scientific names as identifiers for known species. For biologists,
-it is crucial to get information about species in publications. This program takes a
-scientific name or a list of scientific names and returns references found
-in BHL about the name. Quite often, species names change with time. In such
-cases, we need to find information attached to older names as well as currently
-accepted by community. The `bhlnames` uses [Catalogue Of Life (CoL)][col] synonymy
-information to find publications not only about a given name but also about its
-synonyms.
+important biodiversity information. Since the middle of 18th century,
+scientists use Latinized scientific names as identifiers for known species. For
+biologists, it is crucial to get information about species in publications.
+This program takes a scientific name or a list of scientific names and returns
+references found in BHL about the name. Quite often, species names change with
+time. In such cases, we need to find information attached to older names as
+well as currently accepted by community. The `bhlnames` uses [Catalogue Of Life
+(CoL)][col] synonymy information to find publications not only about a given
+name but also about its synonyms.
 
 ## Prerequisites
 
@@ -79,9 +81,9 @@ bhlnames init -r
 
 In this case, everything will start from the beginning. In case if you
 downloaded a newer version of `bhlnames` instead of older ones, you might need
-to drop the database and create it again, and do init from scratch. Note that the BHL
-dump is updated regularly, and it is good to rebuild your metadata set from
-time to time from scratch.
+to drop the database and create it again, and do init from scratch. Note that
+the BHL dump is updated regularly, and it is good to rebuild your metadata set
+from time to time from scratch.
 
 ## Usage
 
@@ -104,6 +106,7 @@ a more human-readable form with:
 ```bash
 bhlnames refs "Pardosa moesta" -f pretty
 ```
+
 You can also use [jq] or a similar tool
 
 ```bash
@@ -148,10 +151,10 @@ parallel jobs, and 2m 45sec with a single job. 10000 names generated 120MB of
 results.
 
 When you find the optimal number of jobs for your computer you can modify
-`JobsNum` parameter in your version of the [`.bhlnames.yaml`][config] file
+`JobsNum` parameter in your version of the [`bhlnames.yaml`][config] file
 accordingly.
 
-## Explanation of received data.
+## Explanation of received data
 
 Returning information can be quite large. You will get data in chronological
 order. If there is data about a specific paper, we return information about

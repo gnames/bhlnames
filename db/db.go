@@ -5,32 +5,26 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gnames/bhlnames/config"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-type DbOpts struct {
-	Host string
-	User string
-	Pass string
-	Name string
+func opts(cnf config.DB) string {
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
+		cnf.Host, cnf.User, cnf.Pass, cnf.Name)
 }
 
-func (do DbOpts) NewDbGorm() *gorm.DB {
-	db, err := gorm.Open("postgres", do.opts())
+func NewDbGorm(cnf config.DB) *gorm.DB {
+	db, err := gorm.Open("postgres", opts(cnf))
 	if err != nil {
 		log.Fatal(err)
 	}
 	return db
 }
 
-func (do DbOpts) opts() string {
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
-		do.Host, do.User, do.Pass, do.Name)
-}
-
-func (do DbOpts) NewDb() *sql.DB {
-	db, err := sql.Open("postgres", do.opts())
+func NewDb(cnf config.DB) *sql.DB {
+	db, err := sql.Open("postgres", opts(cnf))
 	if err != nil {
 		log.Fatal(err)
 	}

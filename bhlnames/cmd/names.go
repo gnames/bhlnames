@@ -24,6 +24,7 @@ import (
 	"log"
 
 	"github.com/gnames/bhlnames"
+	"github.com/gnames/bhlnames/config"
 	"github.com/spf13/cobra"
 )
 
@@ -40,8 +41,9 @@ command.`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		opts = append(opts, bhlnames.OptRebuild(rebuild))
-		bhln := bhlnames.NewBHLnames(opts...)
+		opts = append(opts, config.OptRebuild(rebuild))
+		cnf := config.NewConfig(opts...)
+		bhln := bhlnames.NewBHLnames(cnf)
 		err = bhln.Names()
 		if err != nil {
 			log.Fatal(err)

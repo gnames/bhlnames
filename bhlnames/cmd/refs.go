@@ -29,7 +29,9 @@ import (
 	"sync"
 
 	"github.com/gnames/bhlnames"
-	rfs "github.com/gnames/bhlnames/refs"
+	"github.com/gnames/bhlnames/config"
+	"github.com/gnames/bhlnames/domain/entity"
+	"github.com/gnames/gnames/lib/format"
 	"github.com/spf13/cobra"
 )
 
@@ -45,14 +47,18 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 		s := shortFlag(cmd)
 		n := noSynonymsFlag(cmd)
 		opts = append(opts,
-			bhlnames.OptFormat(f), bhlnames.OptSortDesc(d),
-			bhlnames.OptShort(s), bhlnames.OptNoSynonyms(n),
+			config.OptFormat(f), config.OptSortDesc(d),
+			config.OptShort(s), config.OptNoSynonyms(n),
 		)
 		j := jobsFlag(cmd)
 		if j > 0 {
-			opts = append(opts, bhlnames.OptJobsNum(j))
+			opts = append(opts, config.OptJobsNum(j))
 		}
-		bhln := bhlnames.NewBHLnames(opts...)
+		cnf := config.NewConfig(opts...)
+		bhln := bhlnames.NewBHLnames(cnf)
+		defer bhln.KV.Close()
+		defer bhln.DB.Close()
+		defer bhln.GormDB.Close()
 		if len(args) == 0 {
 			processStdin(cmd, bhln)
 			os.Exit(0)
@@ -80,7 +86,7 @@ func init() {
 		"Number of parallel jobs to get references.")
 
 	refsCmd.Flags().BoolP("sort_desc", "d", false,
-		"Sort references by year in descendent order.")
+		"Sort references by year in descending order.")
 
 	refsCmd.Flags().BoolP("short_output", "s", false,
 		"Return only summary (no references data).")
@@ -189,11 +195,11 @@ func fileExists(path string) bool {
 
 func refsFile(bhln bhlnames.BHLnames, f io.Reader) {
 	in := make(chan string)
-	out := make(chan *rfs.RefsResult)
+	out := make(chan *entity.RefsResult)
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	go bhlnames.RefsStream(bhln, in, out)
+	go bhln.RefsStream(in, out)
 	go processResults(bhln.Format, out, &wg)
 	sc := bufio.NewScanner(f)
 	count := 0
@@ -211,14 +217,14 @@ func refsFile(bhln bhlnames.BHLnames, f io.Reader) {
 	log.Println("Finish finding references")
 }
 
-func processResults(format string, out <-chan *rfs.RefsResult,
+func processResults(f format.Format, out <-chan *entity.RefsResult,
 	wg *sync.WaitGroup) {
 	defer wg.Done()
 	for r := range out {
 		if r.Error != nil {
 			log.Println(r.Error)
 		}
-		fmt.Println(bhlnames.FormatOutput(r.Output, format))
+		fmt.Println(bhlnames.FormatOutput(r.Output, f))
 	}
 }
 

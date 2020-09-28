@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/gnames/bhlindex/protob"
+	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/db"
 	"github.com/gnames/bhlnames/rpc"
 	"github.com/gnames/uuid5"
@@ -26,13 +27,13 @@ type Names struct {
 	BatchSize int
 }
 
-func NewNames(host string, dbOpts db.DbOpts, inputDir string) Names {
+func NewNames(host string, cnf config.DB, inputDir string) Names {
 
 	n := Names{
 		InputDir:  inputDir,
 		HostRPC:   host,
-		DB:        dbOpts.NewDb(),
-		GormDB:    dbOpts.NewDbGorm(),
+		DB:        db.NewDb(cnf),
+		GormDB:    db.NewDbGorm(cnf),
 		BatchSize: 100_000,
 	}
 	return n

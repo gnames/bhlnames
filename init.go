@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gnames/bhlnames/bhl"
 	"github.com/gnames/bhlnames/db"
 	"github.com/gnames/bhlnames/names"
-	"github.com/gnames/bhlnames/sys"
+	"github.com/gnames/gnames/lib/sys"
 	"github.com/jinzhu/gorm"
 )
 
@@ -19,18 +20,19 @@ func (bhln BHLnames) Init() error {
 }
 
 func (bhln BHLnames) Names() error {
+	md := bhl.NewMetaData(bhln.Config)
 	log.Println("Populating database with names occurences data")
-	n := names.NewNames(bhln.BHLindexHost, bhln.DbOpts, bhln.InputDir)
+	n := names.NewNames(bhln.BHLindexHost, bhln.Config.DB, bhln.InputDir)
 	err := n.ImportNames()
 	if err != nil {
 		return err
 	}
-	return n.ImportNamesOccur(bhln.KeyValDir)
+	return n.ImportNamesOccur(md.KeyValDir)
 }
 
 func (bhln BHLnames) BHL() error {
-	log.Printf("Run Migrations for Postgresql database '%s'", bhln.DbOpts.Name)
-	d := bhln.DbOpts.NewDbGorm()
+	log.Printf("Run Migrations for Postgresql database '%s'", bhln.Config.DB.Name)
+	d := db.NewDbGorm(bhln.Config.DB)
 	migrate(d)
 	d.Close()
 	log.Println("Migrations done")
@@ -49,7 +51,7 @@ func migrate(d *gorm.DB) {
 }
 
 func (bhln BHLnames) getMetadata() error {
-	md := bhln.MetaData
+	md := bhl.NewMetaData(bhln.Config)
 	err := sys.MakeDir(bhln.InputDir)
 	if err != nil {
 		return nil
