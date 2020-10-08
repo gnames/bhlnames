@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 
 	"github.com/cloudfoundry/bytefmt"
@@ -19,19 +18,11 @@ import (
 
 type MetaData struct {
 	config.Config
-	DownloadFile string
-	DownloadDir  string
-	KeyValDir    string
-	PartDir      string
-	DB           *sql.DB
+	DB *sql.DB
 }
 
 func NewMetaData(cfg config.Config) MetaData {
 	md := MetaData{Config: cfg}
-	md.DownloadFile = filepath.Join(cfg.InputDir, "data.zip")
-	md.DownloadDir = filepath.Join(cfg.InputDir, "Data")
-	md.KeyValDir = filepath.Join(cfg.InputDir, "keyval")
-	md.PartDir = filepath.Join(cfg.InputDir, "part")
 	return md
 }
 

@@ -12,11 +12,17 @@ import (
 type Config struct {
 	DB
 	BHL
-	Format     format.Format
-	JobsNum    int
-	SortDesc   bool
-	Short      bool
-	NoSynonyms bool
+	FilesBHL
+	JobsNum int
+	RefParams
+}
+
+type RefParams struct {
+	Format       format.Format `json:"-"`
+	FormatString string        `json:"format"`
+	SortDesc     bool          `json:"sortDescending"`
+	Short        bool          `json:"shortOutput"`
+	NoSynonyms   bool          `json:"noSynonyms"`
 }
 
 type DB struct {
@@ -24,6 +30,13 @@ type DB struct {
 	User string
 	Pass string
 	Name string
+}
+
+type FilesBHL struct {
+	DownloadFile string
+	DownloadDir  string
+	KeyValDir    string
+	PartDir      string
 }
 
 type BHL struct {
@@ -93,6 +106,7 @@ func OptFormat(s string) Option {
 			f = format.CSV
 		}
 		cnf.Format = f
+		cnf.FormatString = f.String()
 	}
 }
 
@@ -131,5 +145,9 @@ func NewConfig(opts ...Option) Config {
 	for _, opt := range opts {
 		opt(&cfg)
 	}
+	cfg.FilesBHL.DownloadFile = filepath.Join(cfg.InputDir, "data.zip")
+	cfg.FilesBHL.DownloadDir = filepath.Join(cfg.InputDir, "Data")
+	cfg.FilesBHL.KeyValDir = filepath.Join(cfg.InputDir, "keyval")
+	cfg.FilesBHL.PartDir = filepath.Join(cfg.InputDir, "part")
 	return cfg
 }

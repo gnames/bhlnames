@@ -1,20 +1,29 @@
 package entity
 
-type RefsResult struct {
-	Output *Output
-	Error  error
+import "github.com/gnames/bhlnames/config"
+
+// NameRefs provides apparent occurrences of a name-string in BHL.
+type NameRefs struct {
+	// NameString is the input name-string (verbatim).
+	NameString string `json:"nameString"`
+	// Canonical is a full canonical form of the input name-string.
+	Canonical string `json:"canonical,omitempty"`
+	// CurrentCanonical is a full canonical form of a currently accepted
+	// name for the taxon of the input name-string.
+	CurrentCanonical string `json:"currentCanonical,omitempty"`
+	// Synonyms is a list of synonyms for the name-string.
+	Synonyms []string `json:"synonyms,omitempty"`
+	// ImagesURL provides URL that contains images of the taxon.
+	ImagesUrl string `json:"imagesURL,omitempty"`
+	// ReferenceNumber is the number of references found for the name-string.
+	ReferenceNumber int `json:"refsNum"`
+	// References is a list of all unique BHL references to the name occurence.
+	References []*Reference `json:"references,omitempty"`
+	// Parameters are settings of the query
+	Params config.RefParams
 }
 
-type Output struct {
-	NameString       string       `json:"nameString"`
-	Canonical        string       `json:"canonical,omitempty"`
-	CurrentCanonical string       `json:"currentCanonical,omitempty"`
-	Synonyms         []string     `json:"synonyms,omitempty"`
-	ImagesUrl        string       `json:"imagesURL,omitempty"`
-	ReferenceNumber  int          `json:"refsNum"`
-	References       []*Reference `json:"references,omitempty"`
-}
-
+// Reference
 type Reference struct {
 	YearAggr           int    `json:"yearAggr"`
 	YearType           string `json:"yearType"`

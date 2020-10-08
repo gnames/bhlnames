@@ -30,7 +30,9 @@ import (
 
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
+	"github.com/gnames/bhlnames/data/librarian_pg"
 	"github.com/gnames/bhlnames/domain/entity"
+	"github.com/gnames/gnames/lib/encode"
 	"github.com/gnames/gnames/lib/format"
 	"github.com/spf13/cobra"
 )
@@ -55,10 +57,9 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 			opts = append(opts, config.OptJobsNum(j))
 		}
 		cnf := config.NewConfig(opts...)
-		bhln := bhlnames.NewBHLnames(cnf)
-		defer bhln.KV.Close()
-		defer bhln.DB.Close()
-		defer bhln.GormDB.Close()
+		l := librarian_pg.NewLibrarianPG(cnf)
+		bhln := bhlnames.NewBHLnames(cnf, l)
+		defer l.Close()
 		if len(args) == 0 {
 			processStdin(cmd, bhln)
 			os.Exit(0)
@@ -195,7 +196,7 @@ func fileExists(path string) bool {
 
 func refsFile(bhln bhlnames.BHLnames, f io.Reader) {
 	in := make(chan string)
-	out := make(chan *entity.RefsResult)
+	out := make(chan *entity.NameRefs)
 	var wg sync.WaitGroup
 	wg.Add(1)
 
@@ -217,22 +218,21 @@ func refsFile(bhln bhlnames.BHLnames, f io.Reader) {
 	log.Println("Finish finding references")
 }
 
-func processResults(f format.Format, out <-chan *entity.RefsResult,
+func processResults(f format.Format, chOut <-chan *entity.NameRefs,
 	wg *sync.WaitGroup) {
+	enc := encode.GNjson{}
 	defer wg.Done()
-	for r := range out {
-		if r.Error != nil {
-			log.Println(r.Error)
-		}
-		fmt.Println(bhlnames.FormatOutput(r.Output, f))
+	for nameRef := range chOut {
+		enc.Output(nameRef, f)
 	}
 }
 
 func refsString(bhln bhlnames.BHLnames, name string) {
+	enc := encode.GNjson{}
 	res, err := bhln.Refs(name)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-	fmt.Println(bhlnames.FormatOutput(res, bhln.Format))
+	fmt.Println(enc.Output(res, bhln.Format))
 }

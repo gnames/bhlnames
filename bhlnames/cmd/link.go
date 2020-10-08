@@ -35,7 +35,9 @@ import (
 	linkent "github.com/gdower/bhlinker/domain/entity"
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
+	"github.com/gnames/bhlnames/data/librarian_pg"
 	"github.com/gnames/gnames/lib/encode"
+	"github.com/gnames/gnames/lib/format"
 	"github.com/gnames/gnames/lib/sys"
 	"github.com/spf13/cobra"
 )
@@ -59,16 +61,15 @@ name of to find synonyms. Use "refs" command for such purposes.`,
 		j := jobsFlag(cmd)
 		y := yearFlag(cmd)
 		opts = append(opts,
-			config.OptFormat(f), config.OptNoSynonyms(true),
+			config.OptFormat(f),
 		)
 		if j > 0 {
 			opts = append(opts, config.OptJobsNum(j))
 		}
 		cnf := config.NewConfig(opts...)
-		bhln := bhlnames.NewBHLnames(cnf)
-		defer bhln.KV.Close()
-		defer bhln.DB.Close()
-		defer bhln.GormDB.Close()
+		l := librarian_pg.NewLibrarianPG(cnf)
+		bhln := bhlnames.NewBHLnames(cnf, l)
+		defer l.Close()
 		if len(args) == 0 {
 			processStdin(cmd, bhln)
 			os.Exit(0)
@@ -114,7 +115,7 @@ func linksFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 	wg.Add(1)
 
 	go lnkr.GetLinks(chIn, chOut)
-	go processLinkResults(chOut, &wg)
+	go processLinkResults(format.CompactJSON, chOut, &wg)
 
 	r := csv.NewReader(f)
 
@@ -162,7 +163,7 @@ func linksFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 	log.Println("Finish finding references")
 }
 
-func processLinkResults(out <-chan linkent.Output,
+func processLinkResults(f format.Format, out <-chan linkent.Output,
 	wg *sync.WaitGroup) {
 	defer wg.Done()
 	enc := encode.GNjson{}
@@ -170,15 +171,13 @@ func processLinkResults(out <-chan linkent.Output,
 		if r.Error != nil {
 			log.Println(r.Error)
 		}
-		out, _ := enc.Encode(r)
-		fmt.Println(string(out))
+		fmt.Println(enc.Output(r, f))
 	}
 }
 
 func linkFromString(lnkr bhlinker.BHLinker, name string, year string) {
 	enc := encode.GNjson{}
 	inp := linkent.Input{
-		ID:        "1",
 		Name:      linkent.Name{NameString: name},
 		Reference: linkent.Reference{Year: year},
 	}
