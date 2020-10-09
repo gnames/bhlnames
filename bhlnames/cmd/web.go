@@ -16,11 +16,9 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/gnames/bhlnames"
-	"github.com/gnames/bhlnames/config"
-	"github.com/gnames/bhlnames/data/librarian_pg"
+	"fmt"
+
 	"github.com/spf13/cobra"
-	"gitlab.com/gnames/bhlnames/web"
 )
 
 // webCmd represents the web command
@@ -28,10 +26,12 @@ var webCmd = &cobra.Command{
 	Use:   "web",
 	Short: "Runs web server for GUI",
 	Run: func(cmd *cobra.Command, args []string) {
-		cnf := config.NewConfig()
-		l := librarian_pg.NewLibrarianPG(cnf)
-		bhln := bhlnames.NewBHLnames(cnf, l)
-		web.Run(bhln)
+		fmt.Println("web")
+		// cnf := config.NewConfig()
+		// l := librarian_pg.NewLibrarianPG(cnf)
+		// bhln := bhlnames.NewBHLnames(cnf, l)
+		// fmt.Println(bhln)
+		// web.Run(bhln)
 	},
 }
 
