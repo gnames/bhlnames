@@ -42,20 +42,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// linkCmd represents the link command
-var linkCmd = &cobra.Command{
-	Use:   "link",
-	Short: "returns an apparent link to the first description of a name-string",
-	Long: `The command "link" tries to find the first nomenclatural reference to
-a scientific name-string. It uses name-string itself as well as supplied
-information about first publication of a name-string. Ideally the returned
-reference from BHL should be the same as this first publication. However it is
-not always the case because the publication might be missing in BHL, or the
-meta-information about references could not be matched correctly.
+// nomenCmd represents the nomen command
+var nomenCmd = &cobra.Command{
+	Use:   "nomen",
+	Short: "returns a possible link to a given nomenclatural event.",
+	Long: `Nomenclatural event is a first validly published appearance of
+a scientific name. In a simple form nomenclatural event can be described by
+a name-string and the corresponding publication.
 
-The command uses BHL date from the nomenclatura, not taxonomical point of view,
-therefore it does not try to resolve a name-string to its currently accepted
-name of to find synonyms. Use "refs" command for such purposes.`,
+This command takes a nomenclatural event input and, if found, returns back
+a putative link in BHL to the event.
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		f := formatFlag(cmd)
 		j := jobsFlag(cmd)
@@ -80,6 +77,19 @@ name of to find synonyms. Use "refs" command for such purposes.`,
 	},
 }
 
+func init() {
+	rootCmd.AddCommand(nomenCmd)
+
+	nomenCmd.Flags().StringP("format", "f", "compact",
+		"JSON output format can be 'compact' or 'pretty.")
+
+	nomenCmd.Flags().IntP("jobs", "j", 0,
+		"Number of parallel jobs to get references.")
+
+	nomenCmd.Flags().IntP("year", "y", 0,
+		"A year when a name was published.")
+}
+
 func link(lnkr bhlinker.BHLinker, data, year string) {
 	path := string(data)
 	if sys.FileExists(path) {
@@ -93,19 +103,6 @@ func link(lnkr bhlinker.BHLinker, data, year string) {
 	} else {
 		linkFromString(lnkr, data, year)
 	}
-}
-
-func init() {
-	rootCmd.AddCommand(linkCmd)
-
-	linkCmd.Flags().StringP("format", "f", "compact",
-		"JSON output format can be 'compact' or 'pretty.")
-
-	linkCmd.Flags().IntP("jobs", "j", 0,
-		"Number of parallel jobs to get references.")
-
-	linkCmd.Flags().IntP("year", "y", 0,
-		"A year when a name was published.")
 }
 
 func linksFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
