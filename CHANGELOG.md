@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add [#13] refactor reference code to use interfaces.
+- Add [#12] link nomenclatural events to BHL
 - Add [#11] use nomenclatural annotations in output and collection of reference
             data.
 
