@@ -17,6 +17,26 @@ well as currently accepted by community. The `bhlnames` uses [Catalogue Of Life
 (CoL)][col] synonymy information to find publications not only about a given
 name but also about its synonyms.
 
+## Provided functionalities
+
+1. Find references in BHL where a scientific name-string appears.
+
+    Searching for a name-string without synonyms.
+
+2. Find references in BHL where a taxon, represented by a name-string appears.
+
+    Determining the corresponding taxon an entered name-string. This taxon
+    has a currently accepted name and a variety of synonym name-strings.
+    Entered name-string might match either a synonym, or the currently accepted
+    name. Searching for references where any of the found name-strings
+    appear.
+
+3  Find a reference to the nomenclatural event for a name-string.
+
+   In this case the input is a nomenclatural event represented by a name and
+   its official nomenclatural publication. We use provided information trying
+   to find a BHL reference that corresponds to that publication.
+
 ## Prerequisites
 
 To be able to use this program you need
