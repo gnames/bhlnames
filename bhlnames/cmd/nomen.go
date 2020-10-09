@@ -45,7 +45,7 @@ import (
 // nomenCmd represents the nomen command
 var nomenCmd = &cobra.Command{
 	Use:   "nomen",
-	Short: "returns a possible link to a given nomenclatural event.",
+	Short: "returns a possible BHL link to a given nomenclatural event.",
 	Long: `Nomenclatural event is a first validly published appearance of
 a scientific name. In a simple form nomenclatural event can be described by
 a name-string and the corresponding publication.
@@ -73,7 +73,7 @@ a putative link in BHL to the event.
 		}
 		data := getInput(cmd, args)
 		lnkr := bhlinker.NewBHLinker(bhln, bhln.JobsNum)
-		link(lnkr, data, y)
+		nomen(lnkr, data, y)
 	},
 }
 
@@ -90,7 +90,7 @@ func init() {
 		"A year when a name was published.")
 }
 
-func link(lnkr bhlinker.BHLinker, data, year string) {
+func nomen(lnkr bhlinker.BHLinker, data, year string) {
 	path := string(data)
 	if sys.FileExists(path) {
 		f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
@@ -98,21 +98,21 @@ func link(lnkr bhlinker.BHLinker, data, year string) {
 			log.Fatal(err)
 			os.Exit(1)
 		}
-		linksFromFile(lnkr, f)
+		nomensFromFile(lnkr, f)
 		f.Close()
 	} else {
-		linkFromString(lnkr, data, year)
+		nomenFromString(lnkr, data, year)
 	}
 }
 
-func linksFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
+func nomensFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 	chIn := make(chan linkent.Input)
 	chOut := make(chan linkent.Output)
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	go lnkr.GetLinks(chIn, chOut)
-	go processLinkResults(format.CompactJSON, chOut, &wg)
+	go processNomenResults(format.CompactJSON, chOut, &wg)
 
 	r := csv.NewReader(f)
 
@@ -160,7 +160,7 @@ func linksFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 	log.Println("Finish finding references")
 }
 
-func processLinkResults(f format.Format, out <-chan linkent.Output,
+func processNomenResults(f format.Format, out <-chan linkent.Output,
 	wg *sync.WaitGroup) {
 	defer wg.Done()
 	enc := encode.GNjson{}
@@ -172,7 +172,7 @@ func processLinkResults(f format.Format, out <-chan linkent.Output,
 	}
 }
 
-func linkFromString(lnkr bhlinker.BHLinker, name string, year string) {
+func nomenFromString(lnkr bhlinker.BHLinker, name string, year string) {
 	enc := encode.GNjson{}
 	inp := linkent.Input{
 		Name:      linkent.Name{NameString: name},
