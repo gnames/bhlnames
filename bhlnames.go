@@ -4,7 +4,6 @@ import (
 	"log"
 	"sync"
 
-	"github.com/gnames/bhlnames/bhl"
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/data"
 	"github.com/gnames/bhlnames/domain/entity"
@@ -26,8 +25,7 @@ func NewBHLnames(cnf config.Config, lbr data.Librarian) BHLnames {
 // Init creates all the needed paths
 func (bhln BHLnames) initDirs() {
 	var err error
-	m := bhl.NewMetaData(bhln.Config)
-	dirs := []string{m.DownloadDir, m.KeyValDir, m.PartDir}
+	dirs := []string{bhln.DownloadDir, bhln.KeyValDir, bhln.PartDir}
 	for _, dir := range dirs {
 		err = sys.MakeDir(dir)
 		if err != nil {
