@@ -20,7 +20,7 @@ type NameRefs struct {
 	// References is a list of all unique BHL references to the name occurence.
 	References []*Reference `json:"references,omitempty"`
 	// Parameters are settings of the query
-	Params config.RefParams
+	Params config.Search
 }
 
 // Reference

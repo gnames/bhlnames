@@ -9,12 +9,12 @@ FLAG_MODULE = GO111MODULE=on
 NO_C = CGO_ENABLED=0
 
 FLAGS_SHARED = $(FLAG_MODULE) CGO_ENABLED=0 GOARCH=amd64
-FLAGS_LD=-ldflags "-X github.com/gnames/bhlnames.Build=${DATE} \
+FLAGS_LD = -ldflags "-X github.com/gnames/bhlnames.Build=${DATE} \
                   -X github.com/gnames/bhlnames.Version=${VERSION}"
-GOCMD=go
-GOINSTALL=$(GOCMD) install $(FLAGS_LD)
-GOBUILD=$(GOCMD) build $(FLAGS_LD)
-GOCLEAN=$(GOCMD) clean
+GOCMD = go
+GOINSTALL = $(GOCMD) install $(FLAGS_LD)
+GOBUILD = $(GOCMD) build $(FLAGS_LD)
+GOCLEAN = $(GOCMD) clean
 GOGET = $(GOCMD) get
 
 all: install
@@ -23,9 +23,7 @@ test: deps install
 	$(FLAG_MODULE) go test ./...
 
 deps:
-	$(FLAG_MODULE) $(GOGET) github.com/spf13/cobra/cobra@f2b07da; \
-	$(FLAG_MODULE) $(GOGET) github.com/onsi/ginkgo/ginkgo@505cc35; \
-	$(FLAG_MODULE) $(GOGET) github.com/onsi/gomega@ce690c5; \
+	$(GOCMD) mod download;
 
 build:
 	cd bhlnames; \
@@ -48,3 +46,6 @@ release:
 install:
 	cd bhlnames; \
 	$(FLAGS_SHARED) $(GOINSTALL);
+
+dc: build
+	docker-compose build; \

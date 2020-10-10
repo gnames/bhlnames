@@ -60,8 +60,11 @@ DbPass:
 # Postgresql database
 DbName: bhlnames
 
-# Number of parallel jobs to fetch references
+# JobsNum is a number of parallel jobs to fetch references
 JobsNum: 4
+
+# PortREST port for running REST API service
+PortREST: 8888
 `
 
 var (
@@ -80,6 +83,7 @@ type fConfig struct {
 	DbPass       string
 	DbName       string
 	JobsNum      int
+	PortREST     int
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -150,6 +154,7 @@ func initConfig() {
 	viper.BindEnv("DbPass", "BHL_NAMES_DB_PASS")
 	viper.BindEnv("DbName", "BHL_NAMES_DB_NAME")
 	viper.BindEnv("JobsNum", "BHL_NAMES_JOBS_NUM")
+	viper.BindEnv("PortREST", "BHL_NAMES_PORT_REST")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	configPath := filepath.Join(home, fmt.Sprintf("%s.yaml", configFile))
@@ -196,6 +201,9 @@ func getOpts() []config.Option {
 	}
 	if cfg.JobsNum != 0 {
 		opts = append(opts, config.OptJobsNum(cfg.JobsNum))
+	}
+	if cfg.PortREST != 0 {
+		opts = append(opts, config.OptPortREST(cfg.PortREST))
 	}
 	return opts
 }

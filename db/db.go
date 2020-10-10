@@ -24,6 +24,7 @@ func NewDbGorm(cnf config.DB) *gorm.DB {
 }
 
 func NewDb(cnf config.DB) *sql.DB {
+	log.Printf("Connecting to Postgres DB at %s", cnf.Host)
 	db, err := sql.Open("postgres", opts(cnf))
 	if err != nil {
 		log.Fatal(err)

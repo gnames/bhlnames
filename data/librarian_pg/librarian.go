@@ -93,7 +93,7 @@ func (l LibrarianPG) emptyNameRefs(name_string string) *entity.NameRefs {
 		CurrentCanonical: "",
 		ImagesUrl:        "",
 		References:       make([]*entity.Reference, 0),
-		Params:           l.Config.RefParams,
+		Params:           l.Config.Search,
 	}
 	return res
 }

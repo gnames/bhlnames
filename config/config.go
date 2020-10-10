@@ -10,19 +10,32 @@ import (
 )
 
 type Config struct {
+	Output
+	Search
 	DB
 	BHL
-	FilesBHL
-	JobsNum int
-	RefParams
+	FileSystem
+	Performance
+	REST
 }
 
-type RefParams struct {
+type Performance struct {
+	JobsNum int
+}
+
+type REST struct {
+	Port int
+}
+
+type Search struct {
+	NoSynonyms bool `json:"noSynonyms"`
+}
+
+type Output struct {
 	Format       format.Format `json:"-"`
 	FormatString string        `json:"format"`
 	SortDesc     bool          `json:"sortDescending"`
 	Short        bool          `json:"shortOutput"`
-	NoSynonyms   bool          `json:"noSynonyms"`
 }
 
 type DB struct {
@@ -32,7 +45,8 @@ type DB struct {
 	Name string
 }
 
-type FilesBHL struct {
+type FileSystem struct {
+	InputDir     string
 	DownloadFile string
 	DownloadDir  string
 	KeyValDir    string
@@ -41,7 +55,6 @@ type FilesBHL struct {
 
 type BHL struct {
 	DumpURL      string
-	InputDir     string
 	BHLindexHost string
 	Rebuild      bool
 }
@@ -70,7 +83,7 @@ func OptInputDir(s string) Option {
 			}
 			s = filepath.Join(home, s[2:])
 		}
-		cnf.BHL.InputDir = s
+		cnf.FileSystem.InputDir = s
 	}
 }
 
@@ -140,14 +153,22 @@ func OptNoSynonyms(n bool) Option {
 	}
 }
 
+func OptPortREST(i int) Option {
+	return func(cnf *Config) {
+		if i > 0 {
+			cnf.REST.Port = i
+		}
+	}
+}
+
 func NewConfig(opts ...Option) Config {
-	cfg := Config{}
+	cfg := Config{REST: REST{Port: 8888}}
 	for _, opt := range opts {
 		opt(&cfg)
 	}
-	cfg.FilesBHL.DownloadFile = filepath.Join(cfg.InputDir, "data.zip")
-	cfg.FilesBHL.DownloadDir = filepath.Join(cfg.InputDir, "Data")
-	cfg.FilesBHL.KeyValDir = filepath.Join(cfg.InputDir, "keyval")
-	cfg.FilesBHL.PartDir = filepath.Join(cfg.InputDir, "part")
+	cfg.FileSystem.DownloadFile = filepath.Join(cfg.InputDir, "data.zip")
+	cfg.FileSystem.DownloadDir = filepath.Join(cfg.InputDir, "Data")
+	cfg.FileSystem.KeyValDir = filepath.Join(cfg.InputDir, "keyval")
+	cfg.FileSystem.PartDir = filepath.Join(cfg.InputDir, "part")
 	return cfg
 }
