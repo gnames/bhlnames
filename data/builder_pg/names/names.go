@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
+	humanize "github.com/dustin/go-humanize"
 	"github.com/gnames/bhlindex/protob"
-	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/db"
 	"github.com/gnames/bhlnames/rpc"
 	"github.com/gnames/uuid5"
@@ -27,13 +27,11 @@ type Names struct {
 	BatchSize int
 }
 
-func NewNames(host string, cnf config.DB, inputDir string) Names {
+func NewNames(host string, inputDir string) Names {
 
 	n := Names{
 		InputDir:  inputDir,
 		HostRPC:   host,
-		DB:        db.NewDb(cnf),
-		GormDB:    db.NewDbGorm(cnf),
 		BatchSize: 100_000,
 	}
 	return n
@@ -145,7 +143,7 @@ func (n Names) uploadNames(ch <-chan []*protob.NameString, wg *sync.WaitGroup) {
 			log.Fatal(err)
 		}
 		fmt.Printf("\r%s", strings.Repeat(" ", 35))
-		fmt.Printf("\rUploaded %d names to db", total)
+		fmt.Printf("\rUploaded %s names to db", humanize.Comma(int64(total)))
 		err = transaction.Commit()
 		if err != nil {
 			log.Fatal(err)

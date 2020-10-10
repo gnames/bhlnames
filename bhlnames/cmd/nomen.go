@@ -31,11 +31,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/gdower/bhlinker"
 	linkent "github.com/gdower/bhlinker/domain/entity"
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
-	"github.com/gnames/bhlnames/data/librarian_pg"
 	"github.com/gnames/gnames/lib/encode"
 	"github.com/gnames/gnames/lib/format"
 	"github.com/gnames/gnames/lib/sys"
@@ -64,9 +64,8 @@ a putative link in BHL to the event.
 			opts = append(opts, config.OptJobsNum(j))
 		}
 		cnf := config.NewConfig(opts...)
-		l := librarian_pg.NewLibrarianPG(cnf)
-		bhln := bhlnames.NewBHLnames(cnf, l)
-		defer l.Close()
+		bhln := bhlnames.NewBHLnames(cnf)
+		defer bhln.Librarian.Close()
 		if len(args) == 0 {
 			processStdin(cmd, bhln)
 			os.Exit(0)
@@ -138,7 +137,7 @@ func nomensFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 
 		count++
 		if count%1000 == 0 {
-			log.Printf("Processing %d-th line\n", count)
+			log.Printf("Processing %s-th line\n", humanize.Comma(int64(count)))
 		}
 		input := linkent.Input{
 			ID: row[header["Id"]],

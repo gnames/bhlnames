@@ -8,11 +8,12 @@ import (
 	"time"
 
 	linkent "github.com/gdower/bhlinker/domain/entity"
+	"github.com/gnames/bhlnames/domain/usecase"
 	"github.com/gnames/gnames/lib/encode"
 	"github.com/gorilla/mux"
 )
 
-func Run(api APIProvider) {
+func Run(api usecase.APIProvider) {
 	log.Printf("Starting the HTTP API server on port %d.", api.Port())
 	r := mux.NewRouter()
 
@@ -32,7 +33,7 @@ func Run(api APIProvider) {
 	log.Fatal(server.ListenAndServe())
 }
 
-func nameRefsHTTP(api APIProvider) func(http.ResponseWriter, *http.Request) {
+func nameRefsHTTP(api usecase.APIProvider) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		enc := encode.GNjson{}
 		var err error
@@ -59,7 +60,7 @@ func nameRefsHTTP(api APIProvider) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-func taxonRefsHTTP(api APIProvider) func(http.ResponseWriter, *http.Request) {
+func taxonRefsHTTP(api usecase.APIProvider) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		enc := encode.GNjson{}
 		var err error
@@ -86,7 +87,7 @@ func taxonRefsHTTP(api APIProvider) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-func nomenRefsHTTP(api APIProvider) func(http.ResponseWriter, *http.Request) {
+func nomenRefsHTTP(api usecase.APIProvider) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		enc := encode.GNjson{}
 		var err error

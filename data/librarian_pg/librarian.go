@@ -37,7 +37,7 @@ func NewLibrarianPG(cfg config.Config) LibrarianPG {
 	res := LibrarianPG{
 		Config: cfg,
 		KV:     db.InitKeyVal(cfg.PartDir),
-		DB:     db.NewDb(cfg.DB),
+		DB:     db.NewDB(cfg.DB),
 		GormDB: db.NewDbGorm(cfg.DB),
 	}
 	return res

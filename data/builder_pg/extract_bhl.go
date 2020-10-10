@@ -1,4 +1,4 @@
-package bhl
+package builder_pg
 
 import (
 	"archive/zip"
@@ -13,33 +13,18 @@ import (
 )
 
 var files = map[string]struct{}{
-	"Data/doi.txt":   struct{}{},
-	"Data/item.txt":  struct{}{},
-	"Data/page.txt":  struct{}{},
-	"Data/part.txt":  struct{}{},
-	"Data/title.txt": struct{}{},
+	"Data/doi.txt":   {},
+	"Data/item.txt":  {},
+	"Data/page.txt":  {},
+	"Data/part.txt":  {},
+	"Data/title.txt": {},
 }
 
-func (md MetaData) unzip() error {
-	if !sys.FileExists(md.DownloadFile) {
+func (b BuilderPG) extractFilesBHL() error {
+	if !sys.FileExists(b.Config.DownloadFile) {
 		return errors.New("cannot find BHL data dump file")
 	}
-	err := sys.MakeDir(md.DownloadDir)
-	if err != nil {
-		return err
-	}
-
-	err = sys.MakeDir(md.KeyValDir)
-	if err != nil {
-		return err
-	}
-
-	err = sys.MakeDir(md.PartDir)
-	if err != nil {
-		return err
-	}
-
-	r, err := zip.OpenReader(md.DownloadFile)
+	r, err := zip.OpenReader(b.Config.DownloadFile)
 	if err != nil {
 		return err
 	}
@@ -49,8 +34,8 @@ func (md MetaData) unzip() error {
 		if _, ok := files[f.Name]; !ok {
 			continue
 		}
-		fpath := filepath.Join(md.InputDir, f.Name)
-		if !md.Rebuild && sys.FileExists(fpath) {
+		fpath := filepath.Join(b.Config.InputDir, f.Name)
+		if !b.Config.Rebuild && sys.FileExists(fpath) {
 			log.Printf("File %s already exists, skipping unzip", fpath)
 			continue
 		}

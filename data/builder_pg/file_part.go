@@ -1,4 +1,4 @@
-package bhl
+package builder_pg
 
 import (
 	"bufio"
@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	badger "github.com/dgraph-io/badger/v2"
+	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames/db"
 	"github.com/lib/pq"
 )
@@ -49,21 +50,21 @@ type partPages struct {
 var dateRe = regexp.MustCompile(`\b([\d]{4})\b\s*(-\s*([\d]{1,4})\b(-([\d]{1,2}))?)?`)
 var pagesRe = regexp.MustCompile(`\b([\d]+)\b\s*((,|-|--|–)\s*\b([\d]+)\b)?`)
 
-func (md MetaData) uploadPart(doiMap map[int]string) error {
+func (b BuilderPG) uploadPart(doiMap map[int]string) error {
 	log.Println("Preparing part.txt data for db.")
 	//keeps unique IDs of the parts
 	pMap := make(map[int]struct{})
 	var res []*db.Part
-	path := filepath.Join(md.DownloadDir, "part.txt")
+	path := filepath.Join(b.Config.DownloadDir, "part.txt")
 	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}
-	err = db.ResetKeyVal(md.PartDir)
+	err = db.ResetKeyVal(b.Config.PartDir)
 	if err != nil {
 		return err
 	}
-	kv := db.InitKeyVal(md.PartDir)
+	kv := db.InitKeyVal(b.Config.PartDir)
 	defer f.Close()
 	defer kv.Close()
 	scanner := bufio.NewScanner(f)
@@ -127,17 +128,17 @@ func (md MetaData) uploadPart(doiMap map[int]string) error {
 
 		res = append(res, &part)
 	}
-	return md.uploadParts(kv, res)
+	return b.uploadParts(kv, res)
 }
 
-func (md MetaData) uploadParts(kv *badger.DB, items []*db.Part) error {
-	log.Printf("Uploading %d records to parts table.", len(items))
+func (b BuilderPG) uploadParts(kv *badger.DB, items []*db.Part) error {
+	log.Printf("Uploading %s records to parts table.", humanize.Comma(int64(len(items))))
 	columns := []string{"id", "page_id", "item_id", "length", "doi",
 		"contributor_name", "sequence_order", "segment_type", "title",
 		"container_title", "publication_details", "volume", "series",
 		"issue", "date", "year", "year_end", "month", "day", "page_num_start",
 		"page_num_end", "language"}
-	transaction, err := md.DB.Begin()
+	transaction, err := b.DB.Begin()
 	if err != nil {
 		return err
 	}

@@ -5,19 +5,19 @@ import (
 	"sync"
 
 	"github.com/gnames/bhlnames/config"
-	"github.com/gnames/bhlnames/data"
 	"github.com/gnames/bhlnames/domain/entity"
+	"github.com/gnames/bhlnames/domain/usecase"
 	"github.com/gnames/gnames/lib/sys"
 )
 
 type BHLnames struct {
 	config.Config
-	data.Librarian
-	data.Builder
+	usecase.Librarian
+	usecase.Builder
 }
 
-func NewBHLnames(cnf config.Config, lbr data.Librarian) BHLnames {
-	bhln := BHLnames{Config: cnf, Librarian: lbr}
+func NewBHLnames(cfg config.Config) BHLnames {
+	bhln := BHLnames{Config: cfg}
 	bhln.initDirs()
 	return bhln
 }
@@ -32,6 +32,13 @@ func (bhln BHLnames) initDirs() {
 			log.Fatalf("Cannot initiate dir '%s': %s.", dir, err)
 		}
 	}
+}
+
+func (bhln BHLnames) Initialize() error {
+	if bhln.Config.Rebuild {
+		bhln.ResetData()
+	}
+	return bhln.ImportData()
 }
 
 func (bhln BHLnames) Refs(name string, opts ...config.Option) (*entity.NameRefs, error) {

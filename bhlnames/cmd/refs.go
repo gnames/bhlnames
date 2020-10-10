@@ -28,6 +28,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/data/librarian_pg"
@@ -56,10 +57,10 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 		if j > 0 {
 			opts = append(opts, config.OptJobsNum(j))
 		}
-		cnf := config.NewConfig(opts...)
-		l := librarian_pg.NewLibrarianPG(cnf)
-		bhln := bhlnames.NewBHLnames(cnf, l)
-		defer l.Close()
+		cfg := config.NewConfig(opts...)
+		bhln := bhlnames.NewBHLnames(cfg)
+		bhln.Librarian = librarian_pg.NewLibrarianPG(cfg)
+		defer bhln.Librarian.Close()
 		if len(args) == 0 {
 			processStdin(cmd, bhln)
 			os.Exit(0)
@@ -208,7 +209,7 @@ func refsFile(bhln bhlnames.BHLnames, f io.Reader) {
 	for sc.Scan() {
 		count++
 		if count%1000 == 0 {
-			log.Printf("Processing %d-th line\n", count)
+			log.Printf("Processing %s-th line\n", humanize.Comma(int64(count)))
 		}
 		name := sc.Text()
 		in <- name

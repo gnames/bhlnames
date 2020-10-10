@@ -131,7 +131,6 @@ github.com/gnames/bhlindex v0.9.1-0.20200309183110-6f1d80629e2b h1:i5+Kdh1GXGOHC
 github.com/gnames/bhlindex v0.9.1-0.20200309183110-6f1d80629e2b/go.mod h1:tP7TS6ONYkuguvgYEPdqlgw+Zf7MNbafkeEQsZ3ke78=
 github.com/gnames/bhlnames v0.0.6-0.20200928185213-4a98f8e1c3c5/go.mod h1:wTPh+6e6Q+H2KLh5qCv/rCb89mu6WjkXKB/2nm+g8s0=
 github.com/gnames/bhlnames v0.0.6-0.20201007184536-1ee4949f63b5/go.mod h1:oeXUOWuAEEg+cxEYL2y3etcyfJL981wpFvPRvr5YbtY=
-github.com/gnames/bhlnames v0.0.6-0.20201009102541-d323f578a60d/go.mod h1:F5YulPwT+OghksPhH8VHmn92+lkTwUdZSkeChAdG0eY=
 github.com/gnames/bhlnames v0.0.6-0.20201009190022-b9f0b86d0aa3/go.mod h1:F5YulPwT+OghksPhH8VHmn92+lkTwUdZSkeChAdG0eY=
 github.com/gnames/gnames v0.0.2/go.mod h1:/XZMalYUB72QoTHZzV2Ws6nZpv41jTZ3DB6imNTLzKQ=
 github.com/gnames/gnames v0.0.4-0.20201006091536-89b0e887ee8f/go.mod h1:XutBU849UgXIhdUMmnVDGxA97yrPcOFx4j5rKQlOnJM=

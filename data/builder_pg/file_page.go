@@ -1,4 +1,4 @@
-package bhl
+package builder_pg
 
 import (
 	"bufio"
@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	badger "github.com/dgraph-io/badger/v2"
+	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames/db"
 	"github.com/lib/pq"
 )
@@ -24,17 +25,17 @@ const (
 
 const BatchSize = 100_000
 
-func (md MetaData) uploadPage() error {
+func (b BuilderPG) uploadPage() error {
 	log.Println("Uploading page.txt data for db.")
-	err := db.ResetKeyVal(md.KeyValDir)
+	err := db.ResetKeyVal(b.Config.KeyValDir)
 	if err != nil {
 		return err
 	}
-	kv := db.InitKeyVal(md.KeyValDir)
+	kv := db.InitKeyVal(b.Config.KeyValDir)
 	total := 0
 	pMap := make(map[int]struct{})
 	res := make([]*db.Page, 0, BatchSize)
-	path := filepath.Join(md.DownloadDir, "page.txt")
+	path := filepath.Join(b.Config.DownloadDir, "page.txt")
 	f, err := os.Open(path)
 	if err != nil {
 		return err
@@ -88,7 +89,7 @@ func (md MetaData) uploadPage() error {
 			total += len(res)
 			pages := make([]*db.Page, len(res))
 			copy(pages, res)
-			err := md.uploadPages(kv, pages, total)
+			err := b.uploadPages(kv, pages, total)
 			if err != nil {
 				return err
 			}
@@ -97,14 +98,14 @@ func (md MetaData) uploadPage() error {
 		}
 	}
 	total += len(res)
-	err = md.uploadPages(kv, res, total)
+	err = b.uploadPages(kv, res, total)
 	fmt.Println()
 	return err
 }
 
-func (md MetaData) uploadPages(kv *badger.DB, pages []*db.Page, total int) error {
+func (b BuilderPG) uploadPages(kv *badger.DB, pages []*db.Page, total int) error {
 	columns := []string{"id", "item_id", "file_num", "page_num"}
-	transaction, err := md.DB.Begin()
+	transaction, err := b.DB.Begin()
 	if err != nil {
 		return err
 	}
@@ -152,6 +153,6 @@ func (md MetaData) uploadPages(kv *badger.DB, pages []*db.Page, total int) error
 		return err
 	}
 	fmt.Printf("\r%s", strings.Repeat(" ", 35))
-	fmt.Printf("\rUploaded %d pages to db", total)
+	fmt.Printf("\rUploaded %s pages to db", humanize.Comma(int64(total)))
 	return transaction.Commit()
 }

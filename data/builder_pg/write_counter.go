@@ -1,4 +1,4 @@
-package bhl
+package builder_pg
 
 import (
 	"github.com/gosuri/uiprogress"
@@ -13,6 +13,7 @@ type WriteCounter struct {
 	bar   *uiprogress.Bar
 }
 
+// NewWriteCounter is a constructor for WriteCounter type.
 func NewWriteCounter(total int) *WriteCounter {
 	bar := uiprogress.AddBar(total)
 	bar.PrependCompleted()
@@ -20,6 +21,7 @@ func NewWriteCounter(total int) *WriteCounter {
 	return counter
 }
 
+// Write writes more bytes to WriteCounter and sets the progress for progress bar.
 func (wc *WriteCounter) Write(p []byte) (int, error) {
 	n := len(p)
 	wc.n += n

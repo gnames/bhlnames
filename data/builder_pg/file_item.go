@@ -1,4 +1,4 @@
-package bhl
+package builder_pg
 
 import (
 	"bufio"
@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames/db"
 	"github.com/lib/pq"
 )
@@ -24,11 +25,11 @@ const (
 
 var yrRe = regexp.MustCompile(`\b[c]?([\d]{4})\b\s*([,/-]\s*([\d]{4})\b)?`)
 
-func (md MetaData) uploadItem(titles map[int]*Title) error {
+func (b BuilderPG) uploadItem(titles map[int]*Title) error {
 	log.Println("Preparing item.txt data for db.")
 	iMap := make(map[int]struct{})
 	var res []*db.Item
-	path := filepath.Join(md.DownloadDir, "item.txt")
+	path := filepath.Join(b.Config.DownloadDir, "item.txt")
 	f, err := os.Open(path)
 	if err != nil {
 		return err
@@ -76,15 +77,15 @@ func (md MetaData) uploadItem(titles map[int]*Title) error {
 		return err
 	}
 
-	return md.uploadItems(res)
+	return b.uploadItems(res)
 }
 
-func (md MetaData) uploadItems(items []*db.Item) error {
-	log.Printf("Uploading %d records to items table.", len(items))
+func (b BuilderPG) uploadItems(items []*db.Item) error {
+	log.Printf("Uploading %s records to items table.", humanize.Comma(int64(len(items))))
 	columns := []string{"id", "bar_code", "vol", "year_start", "year_end",
 		"title_id", "title_doi", "title_name", "title_year_start", "title_year_end",
 		"title_lang"}
-	transaction, err := md.DB.Begin()
+	transaction, err := b.DB.Begin()
 	if err != nil {
 		return err
 	}

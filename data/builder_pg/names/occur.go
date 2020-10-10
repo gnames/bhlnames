@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	badger "github.com/dgraph-io/badger/v2"
+	humanize "github.com/dustin/go-humanize"
 	"github.com/gnames/bhlindex/protob"
 	"github.com/gnames/bhlnames/db"
 	"github.com/gnames/bhlnames/rpc"
@@ -130,7 +131,7 @@ func (n Names) saveOccurences(ch <-chan *db.PageNameString,
 			}
 			occurs = make([]*db.PageNameString, 0, batch)
 			fmt.Printf("\r%s", strings.Repeat(" ", 35))
-			fmt.Printf("\rUploaded %d occurences to db", total)
+			fmt.Printf("\rUploaded %s occurences to db", humanize.Comma(int64(total)))
 		}
 	}
 	total += count
@@ -139,7 +140,7 @@ func (n Names) saveOccurences(ch <-chan *db.PageNameString,
 		log.Fatal(err)
 	}
 	fmt.Printf("\r%s", strings.Repeat(" ", 35))
-	fmt.Printf("\rUploaded %d occurences to db", total)
+	fmt.Printf("\rUploaded %s occurences to db", humanize.Comma(int64(total)))
 	fmt.Println()
 }
 

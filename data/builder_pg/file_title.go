@@ -1,4 +1,4 @@
-package bhl
+package builder_pg
 
 import (
 	"bufio"
@@ -27,10 +27,10 @@ const (
 	langF      = 9
 )
 
-func (md MetaData) prepareTitle(doiMap map[int]string) (map[int]*Title, error) {
+func (b BuilderPG) prepareTitle(doiMap map[int]string) (map[int]*Title, error) {
 	log.Println("Processing title.txt")
 	res := make(map[int]*Title)
-	path := filepath.Join(md.DownloadDir, "title.txt")
+	path := filepath.Join(b.Config.DownloadDir, "title.txt")
 	f, err := os.Open(path)
 	if err != nil {
 		return res, err
