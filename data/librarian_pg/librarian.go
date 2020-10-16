@@ -3,6 +3,7 @@ package librarian_pg
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/url"
 
 	"github.com/dgraph-io/badger/v2"
@@ -34,6 +35,7 @@ type LibrarianPG struct {
 }
 
 func NewLibrarianPG(cfg config.Config) LibrarianPG {
+	log.Printf("Connecting to PostgreSQL database %s at %s", cfg.DB.Name, cfg.DB.Host)
 	res := LibrarianPG{
 		Config: cfg,
 		KV:     db.InitKeyVal(cfg.PartDir),

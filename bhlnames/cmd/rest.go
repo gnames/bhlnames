@@ -26,6 +26,7 @@ import (
 
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
+	"github.com/gnames/bhlnames/data/librarian_pg"
 	"github.com/gnames/bhlnames/rest"
 	"github.com/spf13/cobra"
 )
@@ -41,6 +42,7 @@ var restCmd = &cobra.Command{
 		}
 		cfg := config.NewConfig(opts...)
 		bhln := bhlnames.NewBHLnames(cfg)
+		bhln.Librarian = librarian_pg.NewLibrarianPG(cfg)
 		defer bhln.Librarian.Close()
 		api := rest.NewAPI(bhln)
 		rest.Run(api)
