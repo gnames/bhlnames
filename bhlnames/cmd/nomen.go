@@ -36,6 +36,7 @@ import (
 	linkent "github.com/gdower/bhlinker/domain/entity"
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
+	"github.com/gnames/bhlnames/data/librarian_pg"
 	"github.com/gnames/gnames/lib/encode"
 	"github.com/gnames/gnames/lib/format"
 	"github.com/gnames/gnames/lib/sys"
@@ -63,8 +64,9 @@ a putative link in BHL to the event.
 		if j > 0 {
 			opts = append(opts, config.OptJobsNum(j))
 		}
-		cnf := config.NewConfig(opts...)
-		bhln := bhlnames.NewBHLnames(cnf)
+		cfg := config.NewConfig(opts...)
+		bhln := bhlnames.NewBHLnames(cfg)
+		bhln.Librarian = librarian_pg.NewLibrarianPG(cfg)
 		defer bhln.Librarian.Close()
 		if len(args) == 0 {
 			processStdin(cmd, bhln)
@@ -119,10 +121,16 @@ func nomensFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 	header := make(map[string]int)
 	hdr, err := r.Read()
 	if err != nil {
-		log.Fatalf("Cannot read tab-separated file: %s", err)
+		log.Fatalf("Cannot read CSV file: %s", err)
 	}
 	for i, v := range hdr {
 		header[v] = i
+	}
+	csvVal := func(row []string, key string) string {
+		if val, ok := header[key]; ok {
+			return row[val]
+		}
+		return ""
 	}
 	count := 0
 	log.Println("Finding references")
@@ -132,7 +140,7 @@ func nomensFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 			break
 		}
 		if err != nil {
-			log.Fatalf("Cannot read tab-separated row: %s", err)
+			log.Fatalf("Cannot read CSV row: %s", err)
 		}
 
 		count++
@@ -140,16 +148,16 @@ func nomensFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 			log.Printf("Processing %s-th line\n", humanize.Comma(int64(count)))
 		}
 		input := linkent.Input{
-			ID: row[header["Id"]],
+			ID: csvVal(row, "Id"),
 			Name: linkent.Name{
-				NameString: row[header["NameString"]],
-				Canonical:  row[header["NameCanonical"]],
-				Authorship: row[header["NameAuthorship"]],
-				Year:       row[header["NameYear"]],
+				NameString: csvVal(row, "NameString"),
+				Canonical:  csvVal(row, "NameCanonical"),
+				Authorship: csvVal(row, "NameAuthorship"),
+				Year:       csvVal(row, "NameYear"),
 			},
 			Reference: linkent.Reference{
-				RefString: row[header["RefString"]],
-				Year:      row[header["RefYear"]],
+				RefString: csvVal(row, "RefString"),
+				Year:      csvVal(row, "RefYear"),
 			},
 		}
 		chIn <- input

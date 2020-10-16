@@ -123,6 +123,8 @@ github.com/gdower/bhlinker v0.0.0-20201007183831-497dba651f04/go.mod h1:fzk+0w+v
 github.com/gdower/bhlinker v0.0.0-20201009101943-b4473cd1256a/go.mod h1:EOPh3f5iW9rMuSIjPgl9lOL3oD6fA7FjUzHKUuFYD+I=
 github.com/gdower/bhlinker v0.0.0-20201010155905-0e3cbd36fbd0 h1:uuJ7ojLFmeulIvUmHAvAlXVJhPtOFFDy4di4Siau3sI=
 github.com/gdower/bhlinker v0.0.0-20201010155905-0e3cbd36fbd0/go.mod h1:zvytPmsdxW8oHvkEjUllTIiw0mAJjzmD0EXTc+Rossc=
+github.com/gdower/bhlinker v0.0.0-20201016134156-2141b22ff2d9 h1:AWoKcYSHDlFV95qWFXVK2PNALWXgxAlLhPN0yuBwixk=
+github.com/gdower/bhlinker v0.0.0-20201016134156-2141b22ff2d9/go.mod h1:p6u+x64ls84+awexu77F7yQyGrocv7rEVLozWEqMVxI=
 github.com/georgysavva/scany v0.2.5/go.mod h1:bcxPhzeQFQqAUmjlZVwTGlu6AnWFSOiHpalfBe0xQ6U=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/gliderlabs/ssh v0.1.1/go.mod h1:U7qILu1NlMHj9FlMhZLlkCdDnU1DBEAqr0aevW3Awn0=
@@ -132,6 +134,7 @@ github.com/gnames/bhlindex v0.9.1-0.20200309183110-6f1d80629e2b/go.mod h1:tP7TS6
 github.com/gnames/bhlnames v0.0.6-0.20200928185213-4a98f8e1c3c5/go.mod h1:wTPh+6e6Q+H2KLh5qCv/rCb89mu6WjkXKB/2nm+g8s0=
 github.com/gnames/bhlnames v0.0.6-0.20201007184536-1ee4949f63b5/go.mod h1:oeXUOWuAEEg+cxEYL2y3etcyfJL981wpFvPRvr5YbtY=
 github.com/gnames/bhlnames v0.0.6-0.20201009190022-b9f0b86d0aa3/go.mod h1:F5YulPwT+OghksPhH8VHmn92+lkTwUdZSkeChAdG0eY=
+github.com/gnames/bhlnames v0.0.6-0.20201010160400-2a48a41b37c9/go.mod h1:ckYaYXaJ7C8o/y9GKX2tMkefIqtaMAEZZTXK44OK5zA=
 github.com/gnames/gnames v0.0.2/go.mod h1:/XZMalYUB72QoTHZzV2Ws6nZpv41jTZ3DB6imNTLzKQ=
 github.com/gnames/gnames v0.0.4-0.20201006091536-89b0e887ee8f/go.mod h1:XutBU849UgXIhdUMmnVDGxA97yrPcOFx4j5rKQlOnJM=
 github.com/gnames/gnames v0.0.4-0.20201008102405-f7a355f710cf h1:Bh6FHlCgPVnMBTCcRABH78epLSCqMLMZGzRgrhFc5ow=
