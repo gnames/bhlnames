@@ -36,6 +36,7 @@ import (
 	linkent "github.com/gdower/bhlinker/domain/entity"
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
+	"github.com/gnames/bhlnames/data/librarian_pg"
 	"github.com/gnames/gnames/lib/encode"
 	"github.com/gnames/gnames/lib/format"
 	"github.com/gnames/gnames/lib/sys"
@@ -63,8 +64,9 @@ a putative link in BHL to the event.
 		if j > 0 {
 			opts = append(opts, config.OptJobsNum(j))
 		}
-		cnf := config.NewConfig(opts...)
-		bhln := bhlnames.NewBHLnames(cnf)
+		cfg := config.NewConfig(opts...)
+		bhln := bhlnames.NewBHLnames(cfg)
+		bhln.Librarian = librarian_pg.NewLibrarianPG(cfg)
 		defer bhln.Librarian.Close()
 		if len(args) == 0 {
 			processStdin(cmd, bhln)
@@ -119,7 +121,7 @@ func nomensFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 	header := make(map[string]int)
 	hdr, err := r.Read()
 	if err != nil {
-		log.Fatalf("Cannot read tab-separated file: %s", err)
+		log.Fatalf("Cannot read CSV file: %s", err)
 	}
 	for i, v := range hdr {
 		header[v] = i
@@ -132,7 +134,7 @@ func nomensFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 			break
 		}
 		if err != nil {
-			log.Fatalf("Cannot read tab-separated row: %s", err)
+			log.Fatalf("Cannot read CSV row: %s", err)
 		}
 
 		count++
