@@ -125,6 +125,8 @@ github.com/gdower/bhlinker v0.0.0-20201010155905-0e3cbd36fbd0 h1:uuJ7ojLFmeulIvU
 github.com/gdower/bhlinker v0.0.0-20201010155905-0e3cbd36fbd0/go.mod h1:zvytPmsdxW8oHvkEjUllTIiw0mAJjzmD0EXTc+Rossc=
 github.com/gdower/bhlinker v0.0.0-20201016134156-2141b22ff2d9 h1:AWoKcYSHDlFV95qWFXVK2PNALWXgxAlLhPN0yuBwixk=
 github.com/gdower/bhlinker v0.0.0-20201016134156-2141b22ff2d9/go.mod h1:p6u+x64ls84+awexu77F7yQyGrocv7rEVLozWEqMVxI=
+github.com/gdower/bhlinker v0.0.1 h1:NxOvx2U8PTqunRoC5rQg5affQrWM0yz59NJQ6ri6tH0=
+github.com/gdower/bhlinker v0.0.1/go.mod h1:p6u+x64ls84+awexu77F7yQyGrocv7rEVLozWEqMVxI=
 github.com/georgysavva/scany v0.2.5/go.mod h1:bcxPhzeQFQqAUmjlZVwTGlu6AnWFSOiHpalfBe0xQ6U=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/gliderlabs/ssh v0.1.1/go.mod h1:U7qILu1NlMHj9FlMhZLlkCdDnU1DBEAqr0aevW3Awn0=

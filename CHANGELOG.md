@@ -2,10 +2,16 @@
 
 ## Unreleased
 
+## [v0.0.6]
+
+- Add [#20] run bhlnames against all CoL files.
+- Add [#16] functional REST API.
+- Add [#14] refactor initialization code to use interfaces.
 - Add [#13] refactor reference code to use interfaces.
-- Add [#12] link nomenclatural events to BHL
+- Add [#12] link nomenclatural events to BHL.
 - Add [#11] use nomenclatural annotations in output and collection of reference
             data.
+- Fix [#19] memory leak in postgres database.
 
 ## [v0.0.5]
 
@@ -42,12 +48,16 @@
 
 This document follows [changelog guidelines]
 
+[v0.0.6]: https://github.com/gnames/bhlnames/compare/v0.0.5...v0.0.6
 [v0.0.5]: https://github.com/gnames/bhlnames/compare/v0.0.4...v0.0.5
 [v0.0.4]: https://github.com/gnames/bhlnames/compare/v0.0.3...v0.0.4
 [v0.0.3]: https://github.com/gnames/bhlnames/compare/v0.0.2...v0.0.3
 [v0.0.2]: https://github.com/gnames/bhlnames/compare/v0.0.1...v0.0.2
 [v0.0.1]: https://github.com/gnames/bhlnames/compare/v0.0.0...v0.0.1
 
+[#20]: https://github.com/gnames/bhlnames/issues/20
+[#19]: https://github.com/gnames/bhlnames/issues/19
+[#18]: https://github.com/gnames/bhlnames/issues/18
 [#17]: https://github.com/gnames/bhlnames/issues/17
 [#16]: https://github.com/gnames/bhlnames/issues/16
 [#15]: https://github.com/gnames/bhlnames/issues/15
