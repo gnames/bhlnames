@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"code.cloudfoundry.org/bytefmt"
+	"github.com/gnames/bhlnames/db"
 	"github.com/gnames/gnames/lib/sys"
 	"github.com/gosuri/uiprogress"
 )
@@ -64,6 +65,7 @@ func (b BuilderPG) downloadDumpBHL() error {
 }
 
 func (b BuilderPG) uploadDataBHL() error {
+	db.TruncateBHL(b.DB)
 	titleDOImap, partDOImap, err := b.prepareDOI()
 	if err != nil {
 		return err

@@ -38,24 +38,24 @@ func (b BuilderPG) ResetData() {
 }
 
 func (b BuilderPG) ImportData() error {
-	// err := b.downloadDumpBHL()
-	// if err != nil {
-	// 	return err
-	// }
-	// err = b.extractFilesBHL()
-	// if err != nil {
-	// 	return err
-	// }
-	// err = b.uploadDataBHL()
-	// if err != nil {
-	// 	return err
-	// }
+	err := b.downloadDumpBHL()
+	if err != nil {
+		return err
+	}
+	err = b.extractFilesBHL()
+	if err != nil {
+		return err
+	}
+	err = b.uploadDataBHL()
+	if err != nil {
+		return err
+	}
 
 	log.Println("Populating database with names occurences data")
 	n := names.NewNames(b.Config.BHLindexHost, b.Config.InputDir)
 	n.DB = b.DB
 	n.GormDB = b.GormDB
-	err := n.ImportNames()
+	err = n.ImportNames()
 	if err != nil {
 		return err
 	}

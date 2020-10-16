@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/gnames/bhlnames/config"
 	"github.com/jinzhu/gorm"
@@ -31,11 +32,14 @@ func NewDB(cnf config.DB) *sql.DB {
 	return db
 }
 
-func TruncateBHL(d *gorm.DB) {
+func TruncateBHL(d *sql.DB) {
 	tables := []string{"items", "pages", "parts"}
 	for _, v := range tables {
 		q := fmt.Sprintf("TRUNCATE TABLE %s", v)
-		d.Exec(q)
+		_, err := d.Exec(q)
+		if err != nil {
+			log.Fatalf("Cannot truncate table '%s': %s", v, err)
+		}
 	}
 }
 
@@ -69,4 +73,10 @@ func RunQuery(d *sql.DB, q string) *sql.Rows {
 		log.Fatal(err)
 	}
 	return rows
+}
+
+// QuoteString makes a string value compatible with SQL synthax by wrapping it
+// in quotes and escaping internal quotes.
+func QuoteString(s string) string {
+	return "'" + strings.Replace(s, "'", "''", -1) + "'"
 }

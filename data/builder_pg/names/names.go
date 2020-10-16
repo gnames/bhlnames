@@ -121,6 +121,9 @@ func (n Names) uploadNames(ch <-chan []*protob.NameString, wg *sync.WaitGroup) {
 				} else {
 					currentCanonical = v.MatchedCanonical
 				}
+			} else {
+				v.Current = v.Matched
+				currentCanonical = v.MatchedCanonical
 			}
 
 			dataSourceID := sql.NullInt64{}

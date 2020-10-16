@@ -63,11 +63,14 @@ func (l LibrarianPG) occurrences(name string, field string) []*row {
 			JOIN page_name_strings pns ON ns.id = pns.name_string_id
 			JOIN pages pg ON pg.id = pns.page_id
 			JOIN items itm ON itm.id = pg.item_id
-	WHERE ns.%s = '%s'
+	WHERE ns.%s = %s
 	ORDER BY title_year_start`
-	q := fmt.Sprintf(qs, field, name)
+	q := fmt.Sprintf(qs, field, db.QuoteString(name))
 
-	rows := db.RunQuery(l.DB, q)
+	rows, err := l.DB.Query(q)
+	if err != nil {
+		log.Printf("Cannot find occurrences: %s.", err)
+	}
 	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&itemID, &titleID, &pageID, &annot, &titleYearStart,
@@ -107,15 +110,14 @@ func (l LibrarianPG) currentCanonical(canonical string) (string, error) {
 	var currentCan sql.NullString
 	q := `SELECT current_canonical
           FROM name_strings
-        WHERE matched_canonical = '%s'
+        WHERE matched_canonical = $1
         LIMIT 1`
-	q = fmt.Sprintf(q, canonical)
-	rows := db.RunQuery(l.DB, q)
-	for rows.Next() {
-		err := rows.Scan(&currentCan)
-		if err != nil {
-			return "", err
-		}
+	row := l.DB.QueryRow(q, canonical)
+	err := row.Scan(&currentCan)
+	if err == sql.ErrNoRows {
+		return "", nil
+	} else if err != nil {
+		return "", err
 	}
 	return currentCan.String, nil
 }

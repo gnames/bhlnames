@@ -22,25 +22,6 @@ func NewBHLnames(cfg config.Config) BHLnames {
 	return bhln
 }
 
-// Init creates all the needed paths
-func (bhln BHLnames) initDirs() {
-	var err error
-	dirs := []string{bhln.DownloadDir, bhln.KeyValDir, bhln.PartDir}
-	for _, dir := range dirs {
-		err = sys.MakeDir(dir)
-		if err != nil {
-			log.Fatalf("Cannot initiate dir '%s': %s.", dir, err)
-		}
-	}
-}
-
-func (bhln BHLnames) Initialize() error {
-	if bhln.Config.Rebuild {
-		bhln.ResetData()
-	}
-	return bhln.ImportData()
-}
-
 func (bhln BHLnames) Refs(name string, opts ...config.Option) (*entity.NameRefs, error) {
 	return bhln.Librarian.ReferencesBHL(name, opts...)
 }
@@ -67,4 +48,23 @@ func (bhln BHLnames) RefsWorker(chIn <-chan string, chOut chan<- *entity.NameRef
 		}
 		chOut <- nameRefs
 	}
+}
+
+// Init creates all the needed paths
+func (bhln BHLnames) initDirs() {
+	var err error
+	dirs := []string{bhln.DownloadDir, bhln.KeyValDir, bhln.PartDir}
+	for _, dir := range dirs {
+		err = sys.MakeDir(dir)
+		if err != nil {
+			log.Fatalf("Cannot initiate dir '%s': %s.", dir, err)
+		}
+	}
+}
+
+func (bhln BHLnames) Initialize() error {
+	if bhln.Config.Rebuild {
+		bhln.ResetData()
+	}
+	return bhln.ImportData()
 }

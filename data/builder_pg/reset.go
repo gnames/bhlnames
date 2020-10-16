@@ -24,15 +24,14 @@ COMMENT ON SCHEMA public IS 'standard public schema'`
 }
 
 func (b BuilderPG) migrate() {
-	d := b.GormDB
-	d.AutoMigrate(
+	b.GormDB.AutoMigrate(
 		&db.Item{},
 		&db.Page{},
 		&db.Part{},
 		&db.NameString{},
 		&db.PageNameString{},
 	)
-	db.TruncateBHL(d)
+	db.TruncateBHL(b.DB)
 }
 
 func (b BuilderPG) resetDirs() error {
