@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/dgraph-io/badger/v2"
-	"github.com/gnames/gnames/lib/sys"
+	"github.com/gnames/gnlib/sys"
 )
 
 // InitBadger finds and initializes connection to a badger key-value store.

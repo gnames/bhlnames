@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/gnames/bhlnames/db"
-	"github.com/gnames/gnames/lib/sys"
+	"github.com/gnames/gnlib/sys"
 )
 
 func (b BuilderPG) resetDB() {

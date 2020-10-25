@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gnames/gnames/lib/format"
+	"github.com/gnames/gnlib/format"
 	homedir "github.com/mitchellh/go-homedir"
 )
 

@@ -7,7 +7,7 @@ import (
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/domain/entity"
 	"github.com/gnames/bhlnames/domain/usecase"
-	"github.com/gnames/gnames/lib/sys"
+	"github.com/gnames/gnlib/sys"
 )
 
 type BHLnames struct {

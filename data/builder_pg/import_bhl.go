@@ -10,7 +10,7 @@ import (
 
 	"code.cloudfoundry.org/bytefmt"
 	"github.com/gnames/bhlnames/db"
-	"github.com/gnames/gnames/lib/sys"
+	"github.com/gnames/gnlib/sys"
 	"github.com/gosuri/uiprogress"
 )
 

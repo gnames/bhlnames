@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/cloudfoundry/bytefmt"
-	"github.com/gnames/gnames/lib/sys"
+	"github.com/gnames/gnlib/sys"
 )
 
 var files = map[string]struct{}{

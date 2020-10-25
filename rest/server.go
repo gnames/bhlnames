@@ -9,7 +9,7 @@ import (
 
 	linkent "github.com/gdower/bhlinker/domain/entity"
 	"github.com/gnames/bhlnames/domain/usecase"
-	"github.com/gnames/gnames/lib/encode"
+	"github.com/gnames/gnlib/encode"
 	"github.com/gorilla/mux"
 )
 

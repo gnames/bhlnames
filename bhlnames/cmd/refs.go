@@ -33,8 +33,8 @@ import (
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/data/librarian_pg"
 	"github.com/gnames/bhlnames/domain/entity"
-	"github.com/gnames/gnames/lib/encode"
-	"github.com/gnames/gnames/lib/format"
+	"github.com/gnames/gnlib/encode"
+	"github.com/gnames/gnlib/format"
 	"github.com/spf13/cobra"
 )
 

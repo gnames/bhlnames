@@ -7,7 +7,7 @@ import (
 
 	linkent "github.com/gdower/bhlinker/domain/entity"
 	"github.com/gnames/bhlnames/domain/entity"
-	"github.com/gnames/gnames/lib/encode"
+	"github.com/gnames/gnlib/encode"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

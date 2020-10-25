@@ -32,7 +32,7 @@ import (
 
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
-	"github.com/gnames/gnames/lib/sys"
+	"github.com/gnames/gnlib/sys"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )

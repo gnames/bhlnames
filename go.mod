@@ -9,7 +9,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/gdower/bhlinker v0.0.1
 	github.com/gnames/bhlindex v0.9.1-0.20200309183110-6f1d80629e2b
-	github.com/gnames/gnames v0.0.4-0.20201010133018-e6d86c092dbe
+	github.com/gnames/gnlib v0.0.2
 	github.com/gnames/uuid5 v0.1.1
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.7.0
@@ -17,8 +17,8 @@ require (
 	github.com/jinzhu/gorm v1.9.16
 	github.com/lib/pq v1.4.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/onsi/ginkgo v1.12.2
-	github.com/onsi/gomega v1.10.1
+	github.com/onsi/ginkgo v1.14.2
+	github.com/onsi/gomega v1.10.3
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.0
 	gitlab.com/gogna/gnparser v0.14.1
