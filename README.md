@@ -276,6 +276,23 @@ application.
 The score data has an 'overall' field. If the overall score is 2, there this is
 the highest chance for the correct result.
 
+## Development
+
+### Running tests
+
+1. Install `docker` and `docker-compose`
+2. Copy `.env.example` to `.env`, change database to public IP address
+3. Make sure that postgresql listens on the public IP address, if not, change
+   the `postgresql.conf` accordingly.
+4. Make sure that `pg_hba.conf` allows connection with password to public IP:
+
+    host    all             all             10.0.0.0/8              md5
+    host    all             all             172.16.0.0/12           md5
+    host    all             all             192.168.0.0/16          md5
+5. Run `make dc` from the root of the project
+6. Run `docker-compose up` in another terminal to set REST service
+7. Run `go test ./...`
+
 ## Authors
 
 * [Dmitry Mozzherin]

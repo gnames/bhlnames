@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudfoundry/bytefmt"
-	"github.com/gnames/gnlib/sys"
+	"code.cloudfoundry.org/bytefmt"
+	"github.com/gnames/gnsys"
 )
 
 var files = map[string]struct{}{
@@ -21,7 +21,8 @@ var files = map[string]struct{}{
 }
 
 func (b BuilderPG) extractFilesBHL() error {
-	if !sys.FileExists(b.Config.DownloadFile) {
+	exists, _ := gnsys.FileExists(b.Config.DownloadFile)
+	if !exists {
 		return errors.New("cannot find BHL data dump file")
 	}
 	r, err := zip.OpenReader(b.Config.DownloadFile)
@@ -35,7 +36,8 @@ func (b BuilderPG) extractFilesBHL() error {
 			continue
 		}
 		fpath := filepath.Join(b.Config.InputDir, f.Name)
-		if !b.Config.Rebuild && sys.FileExists(fpath) {
+		exists, _ := gnsys.FileExists(fpath)
+		if !b.Rebuild && exists {
 			log.Printf("File %s already exists, skipping unzip", fpath)
 			continue
 		}

@@ -33,8 +33,7 @@ import (
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/data/librarian_pg"
 	"github.com/gnames/bhlnames/domain/entity"
-	"github.com/gnames/gnlib/encode"
-	"github.com/gnames/gnlib/format"
+	"github.com/gnames/gnfmt"
 	"github.com/spf13/cobra"
 )
 
@@ -60,7 +59,7 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 		cfg := config.NewConfig(opts...)
 		bhln := bhlnames.NewBHLnames(cfg)
 		bhln.Librarian = librarian_pg.NewLibrarianPG(cfg)
-		defer bhln.Librarian.Close()
+		defer bhln.Close()
 		if len(args) == 0 {
 			processStdin(cmd, bhln)
 			os.Exit(0)
@@ -219,9 +218,9 @@ func refsFile(bhln bhlnames.BHLnames, f io.Reader) {
 	log.Println("Finish finding references")
 }
 
-func processResults(f format.Format, chOut <-chan *entity.NameRefs,
+func processResults(f gnfmt.Format, chOut <-chan *entity.NameRefs,
 	wg *sync.WaitGroup) {
-	enc := encode.GNjson{}
+	enc := gnfmt.GNjson{}
 	defer wg.Done()
 	for nameRef := range chOut {
 		enc.Output(nameRef, f)
@@ -229,7 +228,7 @@ func processResults(f format.Format, chOut <-chan *entity.NameRefs,
 }
 
 func refsString(bhln bhlnames.BHLnames, name string) {
-	enc := encode.GNjson{}
+	enc := gnfmt.GNjson{}
 	res, err := bhln.Refs(name)
 	if err != nil {
 		log.Fatal(err)

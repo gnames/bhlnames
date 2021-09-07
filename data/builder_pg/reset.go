@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/gnames/bhlnames/db"
-	"github.com/gnames/gnlib/sys"
+	"github.com/gnames/gnsys"
 )
 
 func (b BuilderPG) resetDB() {
@@ -16,7 +16,7 @@ CREATE SCHEMA public;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO %s;
 COMMENT ON SCHEMA public IS 'standard public schema'`
-	q = fmt.Sprintf(q, b.Config.DB.User)
+	q = fmt.Sprintf(q, b.User)
 	_, err := b.DB.Exec(q)
 	if err != nil {
 		log.Fatalf("Database reset did not work: %s.", err)
@@ -35,8 +35,8 @@ func (b BuilderPG) migrate() {
 }
 
 func (b BuilderPG) resetDirs() error {
-	fs := b.Config.FileSystem
-	err := sys.CleanDir(fs.DownloadDir)
+	fs := b.FileSystem
+	err := gnsys.CleanDir(fs.DownloadDir)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,8 @@ func (b BuilderPG) resetDirs() error {
 	if err != nil {
 		return err
 	}
-	if sys.FileExists(fs.DownloadFile) {
+	exists, _ := gnsys.FileExists(fs.DownloadFile)
+	if exists {
 		return os.Remove(fs.DownloadFile)
 	}
 	return nil

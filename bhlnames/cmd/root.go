@@ -32,7 +32,7 @@ import (
 
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
-	"github.com/gnames/gnlib/sys"
+	"github.com/gnames/gnsys"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
@@ -210,7 +210,8 @@ func getOpts() []config.Option {
 
 // touchConfigFile checks if config file exists, and if not, it gets created.
 func touchConfigFile(configPath string, configFile string) {
-	if sys.FileExists(configPath) {
+	exists, _ := gnsys.FileExists(configPath)
+	if exists {
 		return
 	}
 
@@ -220,7 +221,7 @@ func touchConfigFile(configPath string, configFile string) {
 
 // createConfig creates config file.
 func createConfig(path string, file string) {
-	err := sys.MakeDir(filepath.Dir(path))
+	err := gnsys.MakeDir(filepath.Dir(path))
 	if err != nil {
 		log.Fatalf("Cannot create dir %s: %s.", path, err)
 	}

@@ -10,7 +10,7 @@ import (
 
 	"code.cloudfoundry.org/bytefmt"
 	"github.com/gnames/bhlnames/db"
-	"github.com/gnames/gnlib/sys"
+	"github.com/gnames/gnsys"
 	"github.com/gosuri/uiprogress"
 )
 
@@ -19,8 +19,9 @@ import (
 // load the whole file into memory. We pass an io.TeeReader into Copy() to
 // report progress on the download.
 func (b BuilderPG) downloadDumpBHL() error {
-	path := b.Config.DownloadFile
-	if !b.Config.Rebuild && sys.FileExists(path) {
+	path := b.DownloadFile
+	exists, _ := gnsys.FileExists(path)
+	if !b.Rebuild && exists {
 		log.Printf("File %s already exists, skipping download.", path)
 		return nil
 	}
@@ -30,7 +31,7 @@ func (b BuilderPG) downloadDumpBHL() error {
 	}
 	defer out.Close()
 
-	resp, err := http.Get(b.Config.DumpURL)
+	resp, err := http.Get(b.DumpURL)
 	if err != nil {
 		return err
 	}

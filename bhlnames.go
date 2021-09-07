@@ -7,7 +7,7 @@ import (
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/domain/entity"
 	"github.com/gnames/bhlnames/domain/usecase"
-	"github.com/gnames/gnlib/sys"
+	"github.com/gnames/gnsys"
 )
 
 type BHLnames struct {
@@ -23,7 +23,7 @@ func NewBHLnames(cfg config.Config) BHLnames {
 }
 
 func (bhln BHLnames) Refs(name string, opts ...config.Option) (*entity.NameRefs, error) {
-	return bhln.Librarian.ReferencesBHL(name, opts...)
+	return bhln.ReferencesBHL(name, opts...)
 }
 
 func (bhln BHLnames) RefsStream(chIn <-chan string,
@@ -55,7 +55,7 @@ func (bhln BHLnames) initDirs() {
 	var err error
 	dirs := []string{bhln.DownloadDir, bhln.KeyValDir, bhln.PartDir}
 	for _, dir := range dirs {
-		err = sys.MakeDir(dir)
+		err = gnsys.MakeDir(dir)
 		if err != nil {
 			log.Fatalf("Cannot initiate dir '%s': %s.", dir, err)
 		}
@@ -63,7 +63,7 @@ func (bhln BHLnames) initDirs() {
 }
 
 func (bhln BHLnames) Initialize() error {
-	if bhln.Config.Rebuild {
+	if bhln.Rebuild {
 		bhln.ResetData()
 	}
 	return bhln.ImportData()

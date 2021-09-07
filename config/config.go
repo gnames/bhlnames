@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gnames/gnlib/format"
+	"github.com/gnames/gnfmt"
 	homedir "github.com/mitchellh/go-homedir"
 )
 
@@ -32,10 +32,10 @@ type Search struct {
 }
 
 type Output struct {
-	Format       format.Format `json:"-"`
-	FormatString string        `json:"format"`
-	SortDesc     bool          `json:"sortDescending"`
-	Short        bool          `json:"shortOutput"`
+	Format       gnfmt.Format `json:"-"`
+	FormatString string       `json:"format"`
+	SortDesc     bool         `json:"sortDescending"`
+	Short        bool         `json:"shortOutput"`
 }
 
 type DB struct {
@@ -64,7 +64,7 @@ type Option func(*Config)
 
 func OptDumpURL(d string) Option {
 	return func(cnf *Config) {
-		cnf.BHL.DumpURL = d
+		cnf.DumpURL = d
 	}
 }
 
@@ -83,40 +83,40 @@ func OptInputDir(s string) Option {
 			}
 			s = filepath.Join(home, s[2:])
 		}
-		cnf.FileSystem.InputDir = s
+		cnf.InputDir = s
 	}
 }
 
 func OptDbHost(h string) Option {
 	return func(cnf *Config) {
-		cnf.DB.Host = h
+		cnf.Host = h
 	}
 }
 
 func OptDbUser(u string) Option {
 	return func(cnf *Config) {
-		cnf.DB.User = u
+		cnf.User = u
 	}
 }
 
 func OptDbPass(p string) Option {
 	return func(cnf *Config) {
-		cnf.DB.Pass = p
+		cnf.Pass = p
 	}
 }
 
 func OptDbName(n string) Option {
 	return func(cnf *Config) {
-		cnf.DB.Name = n
+		cnf.Name = n
 	}
 }
 
 func OptFormat(s string) Option {
 	return func(cnf *Config) {
-		f, err := format.NewFormat(s)
+		f, err := gnfmt.NewFormat(s)
 		if err != nil {
 			log.Println(err)
-			f = format.CSV
+			f = gnfmt.CSV
 		}
 		cnf.Format = f
 		cnf.FormatString = f.String()
@@ -125,7 +125,7 @@ func OptFormat(s string) Option {
 
 func OptRebuild(r bool) Option {
 	return func(cnf *Config) {
-		cnf.BHL.Rebuild = r
+		cnf.Rebuild = r
 	}
 }
 
@@ -156,7 +156,7 @@ func OptNoSynonyms(n bool) Option {
 func OptPortREST(i int) Option {
 	return func(cnf *Config) {
 		if i > 0 {
-			cnf.REST.Port = i
+			cnf.Port = i
 		}
 	}
 }
@@ -166,9 +166,9 @@ func NewConfig(opts ...Option) Config {
 	for _, opt := range opts {
 		opt(&cfg)
 	}
-	cfg.FileSystem.DownloadFile = filepath.Join(cfg.InputDir, "data.zip")
-	cfg.FileSystem.DownloadDir = filepath.Join(cfg.InputDir, "Data")
-	cfg.FileSystem.KeyValDir = filepath.Join(cfg.InputDir, "keyval")
-	cfg.FileSystem.PartDir = filepath.Join(cfg.InputDir, "part")
+	cfg.DownloadFile = filepath.Join(cfg.InputDir, "data.zip")
+	cfg.DownloadDir = filepath.Join(cfg.InputDir, "Data")
+	cfg.KeyValDir = filepath.Join(cfg.InputDir, "keyval")
+	cfg.PartDir = filepath.Join(cfg.InputDir, "part")
 	return cfg
 }

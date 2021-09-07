@@ -37,9 +37,8 @@ import (
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/data/librarian_pg"
-	"github.com/gnames/gnlib/encode"
-	"github.com/gnames/gnlib/format"
-	"github.com/gnames/gnlib/sys"
+	"github.com/gnames/gnfmt"
+	"github.com/gnames/gnsys"
 	"github.com/spf13/cobra"
 )
 
@@ -93,7 +92,8 @@ func init() {
 
 func nomen(lnkr bhlinker.BHLinker, data, year string) {
 	path := string(data)
-	if sys.FileExists(path) {
+	exists, _ := gnsys.FileExists(path)
+	if exists {
 		f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
@@ -113,7 +113,7 @@ func nomensFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 	wg.Add(1)
 
 	go lnkr.GetLinks(chIn, chOut)
-	go processNomenResults(format.CompactJSON, chOut, &wg)
+	go processNomenResults(gnfmt.CompactJSON, chOut, &wg)
 
 	r := csv.NewReader(f)
 
@@ -167,10 +167,10 @@ func nomensFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 	log.Println("Finish finding references")
 }
 
-func processNomenResults(f format.Format, out <-chan linkent.Output,
+func processNomenResults(f gnfmt.Format, out <-chan linkent.Output,
 	wg *sync.WaitGroup) {
 	defer wg.Done()
-	enc := encode.GNjson{}
+	enc := gnfmt.GNjson{}
 	for r := range out {
 		if r.Error != nil {
 			log.Println(r.Error)
@@ -180,7 +180,7 @@ func processNomenResults(f format.Format, out <-chan linkent.Output,
 }
 
 func nomenFromString(lnkr bhlinker.BHLinker, name string, year string) {
-	enc := encode.GNjson{}
+	enc := gnfmt.GNjson{}
 	inp := linkent.Input{
 		Name:      linkent.Name{NameString: name},
 		Reference: linkent.Reference{Year: year},

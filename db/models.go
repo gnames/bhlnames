@@ -6,7 +6,7 @@ import (
 
 type Item struct {
 	ID             uint   `gorm:"primary_key;auto_increment:false"`
-	BarCode        string `gorm:"type:varchar(60);unique_index;not null"`
+	BarCode        string `gorm:"type:varchar(100);unique_index;not null"`
 	Vol            string `gorm:"type:varchar(100)"`
 	YearStart      sql.NullInt32
 	YearEnd        sql.NullInt32

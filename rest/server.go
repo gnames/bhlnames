@@ -9,7 +9,7 @@ import (
 
 	linkent "github.com/gdower/bhlinker/domain/entity"
 	"github.com/gnames/bhlnames/domain/usecase"
-	"github.com/gnames/gnlib/encode"
+	"github.com/gnames/gnfmt"
 	"github.com/gorilla/mux"
 )
 
@@ -35,7 +35,7 @@ func Run(api usecase.APIProvider) {
 
 func nameRefsHTTP(api usecase.APIProvider) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		enc := encode.GNjson{}
+		enc := gnfmt.GNjson{}
 		var err error
 		var body []byte
 		var nameStrings []string
@@ -62,7 +62,7 @@ func nameRefsHTTP(api usecase.APIProvider) func(http.ResponseWriter, *http.Reque
 
 func taxonRefsHTTP(api usecase.APIProvider) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		enc := encode.GNjson{}
+		enc := gnfmt.GNjson{}
 		var err error
 		var body []byte
 		var nameStrings []string
@@ -89,7 +89,9 @@ func taxonRefsHTTP(api usecase.APIProvider) func(http.ResponseWriter, *http.Requ
 
 func nomenRefsHTTP(api usecase.APIProvider) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		enc := encode.GNjson{}
+		enc := gnfmt.GNjson{
+			Pretty: false,
+		}
 		var err error
 		var body []byte
 		var inputs []linkent.Input
