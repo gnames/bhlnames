@@ -2,47 +2,65 @@ package bhlnames
 
 import (
 	"log"
+	"sort"
 	"sync"
 
 	"github.com/gnames/bhlnames/config"
-	"github.com/gnames/bhlnames/domain/entity"
-	"github.com/gnames/bhlnames/domain/usecase"
-	"github.com/gnames/gnsys"
+	"github.com/gnames/bhlnames/ent/builder"
+	"github.com/gnames/bhlnames/ent/input"
+	"github.com/gnames/bhlnames/ent/namerefs"
+	"github.com/gnames/bhlnames/ent/reffinder"
+	"github.com/gnames/bhlnames/ent/score"
+	"github.com/gnames/gnfmt"
 )
 
-type BHLnames struct {
-	config.Config
-	usecase.Librarian
-	usecase.Builder
+type bhlnames struct {
+	cfg config.Config
 }
 
-func NewBHLnames(cfg config.Config) BHLnames {
-	bhln := BHLnames{Config: cfg}
-	bhln.initDirs()
-	return bhln
+func New(cfg config.Config) BHLnames {
+	bn := &bhlnames{cfg: cfg}
+	return bn
 }
 
-func (bhln BHLnames) Refs(name string, opts ...config.Option) (*entity.NameRefs, error) {
-	return bhln.ReferencesBHL(name, opts...)
+func (bn *bhlnames) Initialize(b builder.Builder) error {
+	if bn.cfg.WithRebuild {
+		b.ResetData()
+	}
+	return b.ImportData()
 }
 
-func (bhln BHLnames) RefsStream(chIn <-chan string,
-	chOut chan<- *entity.NameRefs, opts ...config.Option) {
+func (bn *bhlnames) NameRefs(
+	rf reffinder.RefFinder,
+	data input.Input,
+) (*namerefs.NameRefs, error) {
+	return rf.ReferencesBHL(data)
+}
+
+func (bn *bhlnames) NameRefsStream(
+	rf reffinder.RefFinder,
+	chIn <-chan input.Input,
+	chOut chan<- *namerefs.NameRefs,
+) {
 	var wg sync.WaitGroup
-	wg.Add(bhln.JobsNum)
+	wg.Add(bn.cfg.JobsNum)
 
-	for i := 0; i < bhln.JobsNum; i++ {
-		go bhln.RefsWorker(chIn, chOut, &wg, opts...)
+	for i := 0; i < bn.cfg.JobsNum; i++ {
+		go bn.nameRefsWorker(rf, chIn, chOut, &wg)
 	}
 	wg.Wait()
 	close(chOut)
 }
 
-func (bhln BHLnames) RefsWorker(chIn <-chan string, chOut chan<- *entity.NameRefs,
-	wg *sync.WaitGroup, opts ...config.Option) {
+func (bn *bhlnames) nameRefsWorker(
+	rf reffinder.RefFinder,
+	chIn <-chan input.Input,
+	chOut chan<- *namerefs.NameRefs,
+	wg *sync.WaitGroup,
+) {
 	defer wg.Done()
-	for name := range chIn {
-		nameRefs, err := bhln.ReferencesBHL(name, opts...)
+	for data := range chIn {
+		nameRefs, err := rf.ReferencesBHL(data)
 		if err != nil {
 			log.Println(err)
 		}
@@ -50,21 +68,68 @@ func (bhln BHLnames) RefsWorker(chIn <-chan string, chOut chan<- *entity.NameRef
 	}
 }
 
-// Init creates all the needed paths
-func (bhln BHLnames) initDirs() {
-	var err error
-	dirs := []string{bhln.DownloadDir, bhln.KeyValDir, bhln.PartDir}
-	for _, dir := range dirs {
-		err = gnsys.MakeDir(dir)
+func (bn *bhlnames) NomenRefs(
+	rf reffinder.RefFinder,
+	data input.Input,
+) (*namerefs.NameRefs, error) {
+	nr, err := rf.ReferencesBHL(data)
+	if err != nil {
+		return nil, err
+	}
+
+	sortByScore(nr)
+	return nr, nil
+}
+
+func (bn *bhlnames) NomenRefsStream(
+	rf reffinder.RefFinder,
+	chIn <-chan input.Input,
+	chOut chan<- *namerefs.NameRefs,
+) {
+	var wg sync.WaitGroup
+	wg.Add(bn.cfg.JobsNum)
+
+	for i := 0; i < bn.cfg.JobsNum; i++ {
+		go bn.nomenRefsWorker(rf, chIn, chOut, &wg)
+	}
+	wg.Wait()
+	close(chOut)
+}
+
+func (bn *bhlnames) nomenRefsWorker(
+	rf reffinder.RefFinder,
+	chIn <-chan input.Input,
+	chOut chan<- *namerefs.NameRefs,
+	wg *sync.WaitGroup,
+) {
+	defer wg.Done()
+	for data := range chIn {
+		nr, err := rf.ReferencesBHL(data)
 		if err != nil {
-			log.Fatalf("Cannot initiate dir '%s': %s.", dir, err)
+			log.Println(err)
 		}
+		sortByScore(nr)
+		chOut <- nr
 	}
 }
 
-func (bhln BHLnames) Initialize() error {
-	if bhln.Rebuild {
-		bhln.ResetData()
+func sortByScore(nr *namerefs.NameRefs) {
+	// Year has precedence over others
+	prec := map[score.ScoreType]int{score.Annot: 0, score.Year: 1}
+	s := score.New(prec)
+	s.Calculate(nr)
+	sort.Slice(nr.References, func(i, j int) bool {
+		refs := nr.References
+		if refs[i].Score.Sort == refs[j].Score.Sort {
+			return refs[i].YearAggr < refs[j].YearAggr
+		}
+		return refs[i].Score.Sort > refs[j].Score.Sort
+	})
+	if len(nr.References) > 0 {
+		nr.References = nr.References[:1]
 	}
-	return bhln.ImportData()
+}
+
+func (bn *bhlnames) Format() gnfmt.Format {
+	return bn.cfg.Format
 }

@@ -1,0 +1,34 @@
+---
+
+# The file shows default settings. To change any of the settings
+# uncomment them and modify the value.
+
+## BHL provides its data in a zip file located at the default URL shown below.
+# BHLDumpURL: https://www.biodiversitylibrary.org/data/data.zip
+
+## BHL name index data need to be downloaded and combined with BHL dump data.
+## The gRPC URL is a bhlindex service that allows to download such data.
+# BHLIndexHost: bhlrpc.globalnames.org:80
+
+## Path to keep downloaded data and key-value stores. By default it is located
+## in a standard Linux location.
+# InputDir: ~/.cache/bhlnames
+
+## Postgresql host for assembling data from BHL and BHL name index.
+## Change it to IP address/Host of a database server.
+# DbHost: localhost
+
+## Postgresql user. Change it to username existed in Postgres service.
+# DbUser: postgres
+
+## Postgresql password. Change it to the username password.
+# DbPass:
+
+## Postgresql database to keep all the aggregated data.
+# DbName: bhlnames
+
+## Number of parallel jobs to fetch BHL references
+# JobsNum: 4
+
+## PortREST port for running REST API service
+# PortREST: 8888

@@ -32,11 +32,12 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
-	"github.com/gdower/bhlinker"
-	linkent "github.com/gdower/bhlinker/domain/entity"
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
-	"github.com/gnames/bhlnames/data/librarian_pg"
+	"github.com/gnames/bhlnames/ent/input"
+	"github.com/gnames/bhlnames/ent/namerefs"
+	"github.com/gnames/bhlnames/ent/reffinder"
+	"github.com/gnames/bhlnames/io/reffinderio"
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnsys"
 	"github.com/spf13/cobra"
@@ -60,20 +61,20 @@ a putative link in BHL to the event.
 		opts = append(opts,
 			config.OptFormat(f),
 		)
+		opts = append(opts, config.OptWithSynonyms(false))
 		if j > 0 {
 			opts = append(opts, config.OptJobsNum(j))
 		}
-		cfg := config.NewConfig(opts...)
-		bhln := bhlnames.NewBHLnames(cfg)
-		bhln.Librarian = librarian_pg.NewLibrarianPG(cfg)
-		defer bhln.Librarian.Close()
+		cfg := config.New(opts...)
+		bhln := bhlnames.New(cfg)
+		rf := reffinderio.New(cfg)
+		defer rf.Close()
 		if len(args) == 0 {
-			processStdin(cmd, bhln)
+			processStdin(cmd, rf, bhln)
 			os.Exit(0)
 		}
 		data := getInput(cmd, args)
-		lnkr := bhlinker.NewBHLinker(bhln, bhln.JobsNum)
-		nomen(lnkr, data, y)
+		nomen(rf, bhln, data, y)
 	},
 }
 
@@ -90,7 +91,7 @@ func init() {
 		"A year when a name was published.")
 }
 
-func nomen(lnkr bhlinker.BHLinker, data, year string) {
+func nomen(rf reffinder.RefFinder, bhln bhlnames.BHLnames, data, year string) {
 	path := string(data)
 	exists, _ := gnsys.FileExists(path)
 	if exists {
@@ -99,20 +100,20 @@ func nomen(lnkr bhlinker.BHLinker, data, year string) {
 			log.Fatal(err)
 			os.Exit(1)
 		}
-		nomensFromFile(lnkr, f)
+		nomensFromFile(rf, bhln, f)
 		f.Close()
 	} else {
-		nomenFromString(lnkr, data, year)
+		nomenFromString(rf, bhln, data, year)
 	}
 }
 
-func nomensFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
-	chIn := make(chan linkent.Input)
-	chOut := make(chan linkent.Output)
+func nomensFromFile(rf reffinder.RefFinder, bhln bhlnames.BHLnames, f io.Reader) {
+	chIn := make(chan input.Input)
+	chOut := make(chan *namerefs.NameRefs)
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	go lnkr.GetLinks(chIn, chOut)
+	go bhln.NomenRefsStream(rf, chIn, chOut)
 	go processNomenResults(gnfmt.CompactJSON, chOut, &wg)
 
 	r := csv.NewReader(f)
@@ -147,17 +148,17 @@ func nomensFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 		if count%1000 == 0 {
 			log.Printf("Processing %s-th line\n", humanize.Comma(int64(count)))
 		}
-		input := linkent.Input{
+		input := input.Input{
 			ID: csvVal(row, "Id"),
-			Name: linkent.Name{
+			Name: input.Name{
 				NameString: csvVal(row, "NameString"),
+				NameYear:   csvVal(row, "NameYear"),
 				Canonical:  csvVal(row, "NameCanonical"),
 				Authorship: csvVal(row, "NameAuthorship"),
-				Year:       csvVal(row, "NameYear"),
 			},
-			Reference: linkent.Reference{
+			Reference: input.Reference{
 				RefString: csvVal(row, "RefString"),
-				Year:      csvVal(row, "RefYear"),
+				RefYear:   csvVal(row, "RefYear"),
 			},
 		}
 		chIn <- input
@@ -167,7 +168,7 @@ func nomensFromFile(lnkr bhlinker.BHLinker, f io.Reader) {
 	log.Println("Finish finding references")
 }
 
-func processNomenResults(f gnfmt.Format, out <-chan linkent.Output,
+func processNomenResults(f gnfmt.Format, out <-chan *namerefs.NameRefs,
 	wg *sync.WaitGroup) {
 	defer wg.Done()
 	enc := gnfmt.GNjson{}
@@ -179,13 +180,13 @@ func processNomenResults(f gnfmt.Format, out <-chan linkent.Output,
 	}
 }
 
-func nomenFromString(lnkr bhlinker.BHLinker, name string, year string) {
+func nomenFromString(rf reffinder.RefFinder, bhln bhlnames.BHLnames, name string, year string) {
 	enc := gnfmt.GNjson{}
-	inp := linkent.Input{
-		Name:      linkent.Name{NameString: name},
-		Reference: linkent.Reference{Year: year},
+	data := input.Input{
+		Name:      input.Name{NameString: name},
+		Reference: input.Reference{RefYear: year},
 	}
-	res, err := lnkr.GetLink(inp)
+	res, err := bhln.NomenRefs(rf, data)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)

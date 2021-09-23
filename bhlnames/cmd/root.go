@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 Dmitry Mozzherin <dmozzherin@gmail.com>
+Copyright © 2020-2021 Dmitry Mozzherin <dmozzherin@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
+	_ "embed"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -33,39 +34,11 @@ import (
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/gnsys"
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
-const configText = `---
-
-# BHL dump download URL
-DumpURL: https://www.biodiversitylibrary.org/data/data.zip
-
-# gRPC URL for bhlindex service
-BHLindexHost: bhlrpc.globalnames.org:80
-
-# Path to keep downloaded data and key-value stores
-InputDir: ~/.local/share/bhlnames
-
-# Postgresql host
-DbHost: localhost
-
-# Postgresql user
-DbUser: postgres
-
-# Postgresql password
-DbPass:
-
-# Postgresql database
-DbName: bhlnames
-
-# JobsNum is a number of parallel jobs to fetch references
-JobsNum: 4
-
-# PortREST port for running REST API service
-PortREST: 8888
-`
+//go:embed bhlnames.yaml
+var configText string
 
 var (
 	cfgFile string
@@ -75,8 +48,8 @@ var (
 // fConfig purpose is to achieve automatic import of data from the
 // configuration file, if it exists.
 type fConfig struct {
-	DumpURL      string
-	BHLindexHost string
+	BHLDumpURL   string
+	BHLIndexHost string
 	InputDir     string
 	DbHost       string
 	DbUser       string
@@ -137,27 +110,26 @@ func init() {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	configFile := "bhlnames"
-	home, err := homedir.Dir()
+	configDir, err := os.UserConfigDir()
 	if err != nil {
 		log.Fatalf("Cannot find home directory: %s.", err)
 	}
-	home = filepath.Join(home, ".config")
-	viper.AddConfigPath(home)
+	viper.AddConfigPath(configDir)
 	viper.SetConfigName(configFile)
 
-	viper.BindEnv("DumpURL", "BHL_NAMES_DUMP_URL")
+	viper.BindEnv("BHLDumpURL", "BHL_NAMES_DUMP_URL")
 	viper.BindEnv("BHLindexHost", "BHL_NAMES_INDEX_HOST")
 	viper.BindEnv("InputDir", "BHL_NAMES_INPUT_DIR")
 	viper.BindEnv("DbHost", "BHL_NAMES_DB_HOST")
 	viper.BindEnv("DbPort", "BHL_NAMES_DB_PORT")
 	viper.BindEnv("DbUser", "BHL_NAMES_DB_USER")
 	viper.BindEnv("DbPass", "BHL_NAMES_DB_PASS")
-	viper.BindEnv("DbName", "BHL_NAMES_DB_NAME")
+	viper.BindEnv("DbName", "BHL_NAMES_DATABASE")
 	viper.BindEnv("JobsNum", "BHL_NAMES_JOBS_NUM")
 	viper.BindEnv("PortREST", "BHL_NAMES_PORT_REST")
 	viper.AutomaticEnv() // read in environment variables that match
 
-	configPath := filepath.Join(home, fmt.Sprintf("%s.yaml", configFile))
+	configPath := filepath.Join(configDir, fmt.Sprintf("%s.yaml", configFile))
 	touchConfigFile(configPath, configFile)
 
 	// If a config file is found, read it in.
@@ -178,11 +150,11 @@ func getOpts() []config.Option {
 		log.Fatal(err)
 	}
 
-	if cfg.DumpURL != "" {
-		opts = append(opts, config.OptDumpURL(cfg.DumpURL))
+	if cfg.BHLDumpURL != "" {
+		opts = append(opts, config.OptBHLDumpURL(cfg.BHLDumpURL))
 	}
-	if cfg.BHLindexHost != "" {
-		opts = append(opts, config.OptBHLindexHost(cfg.BHLindexHost))
+	if cfg.BHLIndexHost != "" {
+		opts = append(opts, config.OptBHLIndexHost(cfg.BHLIndexHost))
 	}
 	if cfg.InputDir != "" {
 		opts = append(opts, config.OptInputDir(cfg.InputDir))

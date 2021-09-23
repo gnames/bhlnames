@@ -2,170 +2,164 @@ package config
 
 import (
 	"log"
+	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/gnames/gnfmt"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/gnames/gnsys"
 )
 
 type Config struct {
-	Output
-	Search
-	DB
-	BHL
-	FileSystem
-	Performance
-	REST
-}
-
-type Performance struct {
-	JobsNum int
-}
-
-type REST struct {
-	Port int
-}
-
-type Search struct {
-	NoSynonyms bool `json:"noSynonyms"`
-}
-
-type Output struct {
-	Format       gnfmt.Format `json:"-"`
-	FormatString string       `json:"format"`
-	SortDesc     bool         `json:"sortDescending"`
-	Short        bool         `json:"shortOutput"`
-}
-
-type DB struct {
-	Host string
-	User string
-	Pass string
-	Name string
-}
-
-type FileSystem struct {
-	InputDir     string
-	DownloadFile string
-	DownloadDir  string
-	KeyValDir    string
-	PartDir      string
-}
-
-type BHL struct {
-	DumpURL      string
-	BHLindexHost string
-	Rebuild      bool
+	BHLDumpURL          string
+	BHLIndexHost        string
+	InputDir            string
+	DbHost              string
+	DbUser              string
+	DbPass              string
+	DbName              string
+	JobsNum             int
+	PortREST            int
+	Format              gnfmt.Format
+	WithSynonyms        bool
+	WithRebuild         bool
+	SortDesc            bool
+	WithShortenedOutput bool
+	DownloadFile        string
+	DownloadDir         string
+	KeyValDir           string
+	PartDir             string
 }
 
 // Option type for changing GNfinder settings.
 type Option func(*Config)
 
-func OptDumpURL(d string) Option {
+func OptBHLDumpURL(s string) Option {
 	return func(cnf *Config) {
-		cnf.DumpURL = d
+		cnf.BHLDumpURL = s
 	}
 }
 
-func OptBHLindexHost(bh string) Option {
+func OptBHLIndexHost(s string) Option {
 	return func(cnf *Config) {
-		cnf.BHLindexHost = bh
+		cnf.BHLIndexHost = s
 	}
 }
 
 func OptInputDir(s string) Option {
 	return func(cnf *Config) {
-		if strings.HasPrefix(s, "~/") || strings.HasPrefix(s, "~\\") {
-			home, err := homedir.Dir()
-			if err != nil {
-				log.Fatal(err)
-			}
-			s = filepath.Join(home, s[2:])
+		var err error
+		s, err = gnsys.ConvertTilda(s)
+		if err != nil {
+			log.Fatal(err)
 		}
 		cnf.InputDir = s
 	}
 }
 
-func OptDbHost(h string) Option {
+func OptDbHost(s string) Option {
 	return func(cnf *Config) {
-		cnf.Host = h
+		cnf.DbHost = s
 	}
 }
 
-func OptDbUser(u string) Option {
+func OptDbUser(s string) Option {
 	return func(cnf *Config) {
-		cnf.User = u
+		cnf.DbUser = s
 	}
 }
 
-func OptDbPass(p string) Option {
+func OptDbPass(s string) Option {
 	return func(cnf *Config) {
-		cnf.Pass = p
+		cnf.DbPass = s
 	}
 }
 
-func OptDbName(n string) Option {
+func OptDbName(s string) Option {
 	return func(cnf *Config) {
-		cnf.Name = n
+		cnf.DbName = s
 	}
 }
 
-func OptFormat(s string) Option {
+func OptFormat(f gnfmt.Format) Option {
 	return func(cnf *Config) {
-		f, err := gnfmt.NewFormat(s)
-		if err != nil {
-			log.Println(err)
-			f = gnfmt.CSV
-		}
 		cnf.Format = f
-		cnf.FormatString = f.String()
 	}
 }
 
-func OptRebuild(r bool) Option {
+func OptWithRebuild(b bool) Option {
 	return func(cnf *Config) {
-		cnf.Rebuild = r
+		cnf.WithRebuild = b
 	}
 }
 
-func OptJobsNum(j int) Option {
+func OptJobsNum(i int) Option {
 	return func(cnf *Config) {
-		cnf.JobsNum = j
+		cnf.JobsNum = i
 	}
 }
 
-func OptSortDesc(d bool) Option {
+func OptSortDesc(b bool) Option {
 	return func(cnf *Config) {
-		cnf.SortDesc = d
+		cnf.SortDesc = b
 	}
 }
 
-func OptShort(s bool) Option {
+func OptShort(b bool) Option {
 	return func(cnf *Config) {
-		cnf.Short = s
+		cnf.WithShortenedOutput = b
 	}
 }
 
-func OptNoSynonyms(n bool) Option {
+func OptWithSynonyms(b bool) Option {
 	return func(cnf *Config) {
-		cnf.NoSynonyms = n
+		cnf.WithSynonyms = b
 	}
 }
 
 func OptPortREST(i int) Option {
 	return func(cnf *Config) {
 		if i > 0 {
-			cnf.Port = i
+			cnf.PortREST = i
 		}
 	}
 }
 
-func NewConfig(opts ...Option) Config {
-	cfg := Config{REST: REST{Port: 8888}}
+func OptWithShortenedOutput(b bool) Option {
+	return func(cnf *Config) {
+		cnf.WithShortenedOutput = b
+	}
+}
+
+func InputDir() string {
+	inputDir, err := os.UserCacheDir()
+	if err != nil {
+		inputDir = os.TempDir()
+	}
+	return filepath.Join(inputDir, "bhlnames")
+}
+
+func New(opts ...Option) Config {
+	cfg := Config{
+		BHLDumpURL:          "https://www.biodiversitylibrary.org/data/data.zip",
+		BHLIndexHost:        "bhlrpc.globalnames.org:80",
+		InputDir:            InputDir(),
+		DbHost:              "localhost",
+		DbUser:              "postgres",
+		DbPass:              "",
+		DbName:              "bhlnames",
+		JobsNum:             4,
+		PortREST:            8888,
+		Format:              gnfmt.CSV,
+		WithSynonyms:        true,
+		WithRebuild:         false,
+		SortDesc:            false,
+		WithShortenedOutput: false,
+	}
+
 	for _, opt := range opts {
 		opt(&cfg)
 	}
+
 	cfg.DownloadFile = filepath.Join(cfg.InputDir, "data.zip")
 	cfg.DownloadDir = filepath.Join(cfg.InputDir, "Data")
 	cfg.KeyValDir = filepath.Join(cfg.InputDir, "keyval")

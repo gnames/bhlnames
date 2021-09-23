@@ -5,10 +5,9 @@ DATE = $(shell date -u '+%Y-%m-%d_%H:%M:%S%Z')
 FLAGS_LINUX = $(FLAGS_SHARED) GOOS=linux
 FLAGS_MAC = $(FLAGS_SHARED) GOOS=darwin
 FLAGS_WIN = $(FLAGS_SHARED) GOOS=windows
-FLAG_MODULE = GO111MODULE=on
 NO_C = CGO_ENABLED=0
 
-FLAGS_SHARED = $(FLAG_MODULE) CGO_ENABLED=0 GOARCH=amd64
+FLAGS_SHARED = CGO_ENABLED=0 GOARCH=amd64
 FLAGS_LD = -ldflags "-X github.com/gnames/bhlnames.Build=${DATE} \
                   -X github.com/gnames/bhlnames.Version=${VERSION}"
 GOCMD = go
@@ -20,7 +19,7 @@ GOGET = $(GOCMD) get
 all: install
 
 test: deps install
-	$(FLAG_MODULE) go test ./...
+	go test -shuffle=on -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 deps:
 	$(GOCMD) mod download;
