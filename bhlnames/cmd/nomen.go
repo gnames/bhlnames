@@ -39,6 +39,7 @@ import (
 	"github.com/gnames/bhlnames/ent/reffinder"
 	"github.com/gnames/bhlnames/io/reffinderio"
 	"github.com/gnames/gnfmt"
+	"github.com/gnames/gnparser"
 	"github.com/gnames/gnsys"
 	"github.com/spf13/cobra"
 )
@@ -182,10 +183,13 @@ func processNomenResults(f gnfmt.Format, out <-chan *namerefs.NameRefs,
 
 func nomenFromString(rf reffinder.RefFinder, bhln bhlnames.BHLnames, name string, year string) {
 	enc := gnfmt.GNjson{}
-	data := input.Input{
-		Name:      input.Name{NameString: name},
-		Reference: input.Reference{RefYear: year},
+	gnpCfg := gnparser.NewConfig()
+	gnp := gnparser.New(gnpCfg)
+	opts := []input.Option{
+		input.OptNameString(name),
+		input.OptNameYear(year),
 	}
+	data := input.New(gnp, opts...)
 	res, err := bhln.NomenRefs(rf, data)
 	if err != nil {
 		log.Fatal(err)

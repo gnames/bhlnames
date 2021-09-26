@@ -12,8 +12,8 @@ import (
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/ent/refbhl"
 	"github.com/gnames/bhlnames/io/db"
+	"github.com/gnames/gnparser"
 	"github.com/jinzhu/gorm"
-	"gitlab.com/gogna/gnparser"
 )
 
 // reffinderio is an implementation of Librarian interface. It uses
@@ -97,12 +97,13 @@ func (rf reffinderio) emptyNameRefs(data input.Input) *namerefs.NameRefs {
 }
 
 func fullCanonical(name_string string) (string, error) {
-	gnp := gnparser.NewGNparser()
-	ps := gnp.ParseToObject(name_string)
+	cfg := gnparser.NewConfig()
+	gnp := gnparser.New(cfg)
+	ps := gnp.ParseName(name_string)
 	if !ps.Parsed {
 		return "", fmt.Errorf("could not parse name_string '%s'", name_string)
 	}
-	can := ps.Canonical.GetFull()
+	can := ps.Canonical.Simple
 	return can, nil
 }
 

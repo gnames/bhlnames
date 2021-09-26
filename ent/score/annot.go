@@ -2,7 +2,7 @@ package score
 
 import (
 	"github.com/gnames/bhlnames/ent/refbhl"
-	"gitlab.com/gogna/gnparser"
+	"github.com/gnames/gnparser"
 )
 
 type annotation int
@@ -107,8 +107,9 @@ func getAnnotScore(ref *refbhl.ReferenceBHL) int {
 }
 
 func cardinality(ref *refbhl.ReferenceBHL) (int32, int32) {
-	gnp := gnparser.NewGNparser()
-	n := gnp.ParseToObject(ref.Name)
-	mn := gnp.ParseToObject(ref.MatchName)
-	return n.Cardinality, mn.Cardinality
+	cfg := gnparser.NewConfig()
+	gnp := gnparser.New(cfg)
+	n := gnp.ParseName(ref.Name)
+	mn := gnp.ParseName(ref.MatchName)
+	return int32(n.Cardinality), int32(mn.Cardinality)
 }

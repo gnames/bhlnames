@@ -8,6 +8,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/gnames/bhlindex v0.10.0
 	github.com/gnames/gnfmt v0.2.0
+	github.com/gnames/gnparser v1.4.0
 	github.com/gnames/gnsys v0.2.2
 	github.com/gnames/uuid5 v0.1.1
 	github.com/gosuri/uiprogress v0.0.1
@@ -16,7 +17,6 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
-	gitlab.com/gogna/gnparser v0.14.4
 	google.golang.org/grpc v1.41.0
 )
 
@@ -26,8 +26,13 @@ require (
 	github.com/dgraph-io/ristretto v0.0.3-0.20200630154024-f66de99634de // indirect
 	github.com/dgryski/go-farm v0.0.0-20190423205320-6a90982ecee2 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/gnames/gnlib v0.2.2 // indirect
+	github.com/gnames/gnuuid v0.1.1 // indirect
+	github.com/gnames/organizer v0.1.1 // indirect
+	github.com/gnames/tribool v0.1.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
+	github.com/google/uuid v1.2.0 // indirect
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
@@ -48,7 +53,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420 // indirect
+	golang.org/x/net v0.0.0-20210903162142-ad29c8ab022f // indirect
 	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf // indirect
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71 // indirect

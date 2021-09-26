@@ -36,14 +36,3 @@ type NameRefs struct {
 	// as well.
 	WithSynonyms bool
 }
-
-// func (nr *NameRefs) DetectNomen() {
-// 	for i := range nr.References {
-// 		nr.References[i].GetNomenScore()
-// 	}
-// 	sort.Slice(nr.References, func(i, j int) bool {
-// 		r1 := nr.References[i]
-// 		r2 := nr.References[j]
-// 		return r1.Score.Overall() > r2.Score.Overall()
-// 	})
-// }

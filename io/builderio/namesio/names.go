@@ -13,10 +13,10 @@ import (
 	"github.com/gnames/bhlindex/protob"
 	"github.com/gnames/bhlnames/io/db"
 	"github.com/gnames/bhlnames/io/rpc"
+	"github.com/gnames/gnparser"
 	"github.com/gnames/uuid5"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
-	"gitlab.com/gogna/gnparser"
 )
 
 type Names struct {
@@ -85,7 +85,8 @@ func (n Names) ImportNames() error {
 
 func (n Names) uploadNames(ch <-chan []*protob.NameString, wg *sync.WaitGroup) {
 	defer wg.Done()
-	gnp := gnparser.NewGNparser()
+	cfg := gnparser.NewConfig()
+	gnp := gnparser.New(cfg)
 	total := 0
 	namesUUID := make(map[string]struct{})
 
@@ -114,7 +115,7 @@ func (n Names) uploadNames(ch <-chan []*protob.NameString, wg *sync.WaitGroup) {
 			currentCanonical := ""
 			if v.Current != "" {
 				if v.Matched != v.Current {
-					parsed := gnp.ParseToObject(v.Current)
+					parsed := gnp.ParseName(v.Current)
 					if parsed.Parsed {
 						currentCanonical = parsed.Canonical.Full
 					}
