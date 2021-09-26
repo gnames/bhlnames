@@ -36,6 +36,7 @@ import (
 	"github.com/gnames/bhlnames/ent/reffinder"
 	"github.com/gnames/bhlnames/io/reffinderio"
 	"github.com/gnames/gnfmt"
+	"github.com/gnames/gnparser"
 	"github.com/spf13/cobra"
 )
 
@@ -210,8 +211,11 @@ func fileExists(path string) bool {
 }
 
 func nameFile(rf reffinder.RefFinder, bhln bhlnames.BHLnames, f io.Reader) {
+	cfg := gnparser.NewConfig()
+	gnp := gnparser.New(cfg)
 	in := make(chan input.Input)
 	out := make(chan *namerefs.NameRefs)
+
 	var wg sync.WaitGroup
 	wg.Add(1)
 
@@ -226,8 +230,8 @@ func nameFile(rf reffinder.RefFinder, bhln bhlnames.BHLnames, f io.Reader) {
 			log.Printf("Processing %s-th line\n", humanize.Comma(int64(count)))
 		}
 
-		name := input.Name{NameString: sc.Text()}
-		in <- input.Input{Name: name}
+		opts := []input.Option{input.OptNameString(sc.Text())}
+		in <- input.New(gnp, opts...)
 	}
 	close(in)
 	wg.Wait()
@@ -244,7 +248,9 @@ func processResults(f gnfmt.Format, chOut <-chan *namerefs.NameRefs,
 }
 
 func nameString(rf reffinder.RefFinder, bhln bhlnames.BHLnames, name string) {
-	data := input.Input{Name: input.Name{NameString: name}}
+	gnp := gnparser.New(gnparser.NewConfig())
+	opts := []input.Option{input.OptNameString(name)}
+	data := input.New(gnp, opts...)
 	enc := gnfmt.GNjson{}
 	res, err := bhln.NameRefs(rf, data)
 	if err != nil {
