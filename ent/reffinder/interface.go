@@ -5,6 +5,8 @@ import (
 	"github.com/gnames/bhlnames/ent/namerefs"
 )
 
+//go:generate counterfeiter -o reffindertest/fake_reffinder.go . RefFinder
+
 // RefFinder interface is a lower-level one, that tells how to find
 // BHL references for name_strings.
 type RefFinder interface {

@@ -24,6 +24,10 @@ test: deps install
 deps:
 	$(GOCMD) mod download;
 
+tools: deps
+	@echo Installing tools from tools.go
+	@cat bhlnames/tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
+
 build:
 	cd bhlnames; \
 	$(GOCLEAN); \
