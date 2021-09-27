@@ -26,15 +26,15 @@ func TestValue(t *testing.T) {
 	}
 
 	for _, v := range tests {
-		s := score{
+		s := &score{
 			precedence: prec,
 			annot:      v.annot,
 			year:       v.yr,
 		}
-		s.CombineScores()
+		s.combineScores()
 		val := s.String()
-		assert.Equal(t, v.total, s.Total())
+		assert.Equal(t, v.total, s.total)
 		assert.Equal(t, v.val, val)
-		assert.Equal(t, v.valInt, s.SortVal())
+		assert.Equal(t, v.valInt, int(s.value))
 	}
 }

@@ -51,11 +51,11 @@ func TestNomenRefs(t *testing.T) {
 
 		{"Achenium", "Achenium lusitanicum Skalitzky, 1884", 43792, 30, 15, 15},
 		{"Sagenia", "Sagenia longicruris Christ, 1906", 26220, 30, 15, 15},
-		{"Hamotus", "Hamotus (Hamotus) gracilicornis Reitter, 1882", 209890, 15, 0, 15},
+		{"Hamotus", "Hamotus (Hamotus) gracilicornis Reitter, 1882", 103947, 30, 15, 15},
 		{"Pseudo", "Pseudotrochalus niger Brenske, 1903", 42374, 30, 15, 15},
-		{"Ortho", "Orthocarpus attenuatus A. Gray, 1857", 100867, 26, 15, 11},
-		{"Cyathea", "Cyathea aureonitens Christ, 1904", 123193, 15, 15, 0},
-		{"Licaria", "Licaria simulans C. K. Allen, 1964", 15466, 4, 0, 4},
+		{"Ortho", "Orthocarpus attenuatus A. Gray, 1857", 91693, 30, 15, 15},
+		{"Cyathea", "Cyathea aureonitens Christ, 1904", 104955, 19, 15, 4},
+		{"Licaria", "Licaria simulans C. K. Allen, 1964", 15466, 19, 15, 4},
 		{"Anthoceros", "Anthoceros muscoides Colenso, 1884", 105242, 26, 15, 11},
 	}
 

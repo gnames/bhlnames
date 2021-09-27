@@ -1,7 +1,6 @@
 package bhlnames
 
 import (
-	"fmt"
 	"log"
 	"sort"
 	"sync"
@@ -117,10 +116,8 @@ func (bn *bhlnames) nomenRefsWorker(
 func sortByScore(nr *namerefs.NameRefs) {
 	// Year has precedence over others
 	prec := map[score.ScoreType]int{score.Annot: 0, score.Year: 1}
-	score.Calculate(nr, prec)
-	for _, v := range nr.References {
-		fmt.Println(v.Score.Sort)
-	}
+	s := score.New(prec)
+	s.Calculate(nr)
 	sort.Slice(nr.References, func(i, j int) bool {
 		refs := nr.References
 		if refs[i].Score.Sort == refs[j].Score.Sort {
