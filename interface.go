@@ -10,13 +10,16 @@ import (
 
 type BHLnames interface {
 	Initialize(b builder.Builder) error
+
 	NameRefs(rf reffinder.RefFinder, data input.Input) (*namerefs.NameRefs, error)
 	NameRefsStream(rf reffinder.RefFinder, chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)
+
 	NomenRefs(rf reffinder.RefFinder, data input.Input) (*namerefs.NameRefs, error)
 	NomenRefsStream(
 		rf reffinder.RefFinder,
 		chIn <-chan input.Input,
 		chOut chan<- *namerefs.NameRefs,
 	)
+
 	Format() gnfmt.Format
 }

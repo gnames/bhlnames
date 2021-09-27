@@ -31,7 +31,7 @@ type ReferenceBHL struct {
 }
 
 type Score struct {
-	Sort  uint32 `json:"-"`
+	Sort  uint32 `json:"sortval"`
 	Total int    `json:"overal"`
 	Annot int    `json:"annot"`
 	Year  int    `json:"year"`

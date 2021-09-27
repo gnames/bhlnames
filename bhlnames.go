@@ -1,6 +1,7 @@
 package bhlnames
 
 import (
+	"fmt"
 	"log"
 	"sort"
 	"sync"
@@ -70,9 +71,9 @@ func (bn *bhlnames) nameRefsWorker(
 
 func (bn *bhlnames) NomenRefs(
 	rf reffinder.RefFinder,
-	data input.Input,
+	inp input.Input,
 ) (*namerefs.NameRefs, error) {
-	nr, err := rf.ReferencesBHL(data)
+	nr, err := rf.ReferencesBHL(inp)
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +117,10 @@ func (bn *bhlnames) nomenRefsWorker(
 func sortByScore(nr *namerefs.NameRefs) {
 	// Year has precedence over others
 	prec := map[score.ScoreType]int{score.Annot: 0, score.Year: 1}
-	s := score.New(prec)
-	s.Calculate(nr)
+	score.Calculate(nr, prec)
+	for _, v := range nr.References {
+		fmt.Println(v.Score.Sort)
+	}
 	sort.Slice(nr.References, func(i, j int) bool {
 		refs := nr.References
 		if refs[i].Score.Sort == refs[j].Score.Sort {
@@ -125,9 +128,9 @@ func sortByScore(nr *namerefs.NameRefs) {
 		}
 		return refs[i].Score.Sort > refs[j].Score.Sort
 	})
-	if len(nr.References) > 0 {
-		nr.References = nr.References[:1]
-	}
+	// if len(nr.References) > 0 {
+	// 	nr.References = nr.References[:1]
+	// }
 }
 
 func (bn *bhlnames) Format() gnfmt.Format {

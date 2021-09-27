@@ -9,6 +9,23 @@ import (
 	"github.com/gnames/bhlnames/ent/refbhl"
 )
 
+func Calculate(nr *namerefs.NameRefs, prec map[ScoreType]int) {
+	refs := nr.References
+	yr := getYear(nr.Input)
+	for i := range refs {
+		s := New(prec)
+		s.SetYear(matchYear(yr, refs[i]))
+		s.SetAnnot(matchAnnot(refs[i]))
+		s.CombineScores()
+		refs[i].Score = refbhl.Score{
+			Sort:  s.SortVal(),
+			Total: s.Total(),
+			Annot: s.Annot(),
+			Year:  s.Year(),
+		}
+	}
+}
+
 type score struct {
 	total      int
 	year       int
@@ -36,22 +53,7 @@ func (s *score) String() string {
 	return string(res)
 }
 
-func (s *score) Calculate(nr *namerefs.NameRefs) {
-	refs := nr.References
-	yr := getYear(nr.Input)
-	for i := range refs {
-		s.year = matchYear(yr, refs[i])
-		s.annot = matchAnnot(refs[i])
-		refs[i].Score = refbhl.Score{
-			Sort:  s.CombineScores(),
-			Total: s.total,
-			Annot: s.annot,
-			Year:  s.year,
-		}
-	}
-}
-
-func (s *score) CombineScores() uint32 {
+func (s *score) CombineScores() {
 	s.total = s.year + s.annot
 	annotShift := 4 * s.precedence[Annot]
 	yearShift := 4 * s.precedence[Year]
@@ -59,7 +61,22 @@ func (s *score) CombineScores() uint32 {
 	s.value = (s.value | uint32(s.annot)<<annotShift)
 	s.value = (s.value | uint32(s.year)<<yearShift)
 	s.value = (s.value | uint32(s.total)<<totalShift)
-	return s.value
+}
+
+func (s *score) SetTotal(i int) {
+	s.total = i
+}
+
+func (s *score) SetAnnot(i int) {
+	s.annot = i
+}
+
+func (s *score) SetYear(i int) {
+	s.year = i
+}
+
+func (s *score) SetSortVal(i uint32) {
+	s.value = i
 }
 
 func (s *score) Total() int {
@@ -74,8 +91,8 @@ func (s *score) Year() int {
 	return s.year
 }
 
-func (s *score) SortVal() int {
-	return int(s.value)
+func (s *score) SortVal() uint32 {
+	return s.value
 }
 
 func getYear(inp input.Input) string {
