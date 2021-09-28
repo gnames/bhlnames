@@ -66,22 +66,33 @@ func (b builderio) downloadDumpBHL() error {
 }
 
 func (b builderio) uploadDataBHL() error {
+	var err error
+	var titlesMap map[int]*title
+	var partDOImap map[int]string
+
 	db.TruncateBHL(b.DB)
 	titleDOImap, partDOImap, err := b.prepareDOI()
-	if err != nil {
-		return err
+
+	if err == nil {
+		titlesMap, err = b.prepareTitle(titleDOImap)
 	}
-	titlesMap, err := b.prepareTitle(titleDOImap)
-	if err != nil {
-		return err
+
+	if err == nil {
+		err = b.uploadItem(titlesMap)
 	}
-	err = b.uploadItem(titlesMap)
-	if err != nil {
-		return err
+
+	if err == nil {
+		err = b.uploadPart(partDOImap)
 	}
-	err = b.uploadPart(partDOImap)
-	if err != nil {
-		return err
+
+	if err == nil {
+		err = b.uploadPage()
 	}
-	return b.uploadPage()
+
+	if err == nil {
+		tf := NewTitleFinder(b.Config, titlesMap)
+		return tf.Setup()
+	}
+
+	return err
 }

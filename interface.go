@@ -1,25 +1,26 @@
 package bhlnames
 
 import (
+	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/builder"
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/ent/reffinder"
-	"github.com/gnames/gnfmt"
+	"github.com/gnames/gnparser"
 )
 
 type BHLnames interface {
-	Initialize(b builder.Builder) error
+	gnparser.GNparser
+	builder.Builder
+	reffinder.RefFinder
 
-	NameRefs(rf reffinder.RefFinder, data input.Input) (*namerefs.NameRefs, error)
-	NameRefsStream(rf reffinder.RefFinder, chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)
+	Initialize() error
 
-	NomenRefs(rf reffinder.RefFinder, data input.Input) (*namerefs.NameRefs, error)
-	NomenRefsStream(
-		rf reffinder.RefFinder,
-		chIn <-chan input.Input,
-		chOut chan<- *namerefs.NameRefs,
-	)
+	NameRefs(data input.Input) (*namerefs.NameRefs, error)
+	NameRefsStream(chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)
 
-	Format() gnfmt.Format
+	NomenRefs(data input.Input) (*namerefs.NameRefs, error)
+	NomenRefsStream(chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)
+
+	Config() config.Config
 }

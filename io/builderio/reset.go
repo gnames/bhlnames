@@ -50,6 +50,10 @@ func (b builderio) resetDirs() error {
 	if err != nil {
 		return err
 	}
+	err = db.ResetKeyVal(b.AhoCorKeyValDir)
+	if err != nil {
+		return err
+	}
 	exists, _ := gnsys.FileExists(b.DownloadFile)
 	if exists {
 		return os.Remove(b.DownloadFile)

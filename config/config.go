@@ -20,6 +20,7 @@ type Config struct {
 	JobsNum             int
 	PortREST            int
 	Format              gnfmt.Format
+	Delimiter           rune
 	WithSynonyms        bool
 	WithRebuild         bool
 	SortDesc            bool
@@ -28,6 +29,8 @@ type Config struct {
 	DownloadDir         string
 	KeyValDir           string
 	PartDir             string
+	AhoCorasickDir      string
+	AhoCorKeyValDir     string
 }
 
 // Option type for changing GNfinder settings.
@@ -42,6 +45,12 @@ func OptBHLDumpURL(s string) Option {
 func OptBHLIndexHost(s string) Option {
 	return func(cnf *Config) {
 		cnf.BHLIndexHost = s
+	}
+}
+
+func OptDelimiter(r rune) Option {
+	return func(cnf *Config) {
+		cnf.Delimiter = r
 	}
 }
 
@@ -143,6 +152,7 @@ func New(opts ...Option) Config {
 		BHLDumpURL:          "https://www.biodiversitylibrary.org/data/data.zip",
 		BHLIndexHost:        "bhlrpc.globalnames.org:80",
 		InputDir:            InputDir(),
+		Delimiter:           ',',
 		DbHost:              "localhost",
 		DbUser:              "postgres",
 		DbPass:              "",
@@ -164,5 +174,7 @@ func New(opts ...Option) Config {
 	cfg.DownloadDir = filepath.Join(cfg.InputDir, "Data")
 	cfg.KeyValDir = filepath.Join(cfg.InputDir, "keyval")
 	cfg.PartDir = filepath.Join(cfg.InputDir, "part")
+	cfg.AhoCorasickDir = filepath.Join(cfg.InputDir, "ac")
+	cfg.AhoCorKeyValDir = filepath.Join(cfg.InputDir, "ackv")
 	return cfg
 }

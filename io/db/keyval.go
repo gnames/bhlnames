@@ -30,8 +30,6 @@ func GetValue(kv *badger.DB, key string) int {
 	}()
 	val, err := txn.Get([]byte(key))
 	if err == badger.ErrKeyNotFound {
-		// log.Printf("%s not found", key)
-		// log.Fatal(err)
 		return 0
 	} else if err != nil {
 		log.Fatal(err)
@@ -43,6 +41,32 @@ func GetValue(kv *badger.DB, key string) int {
 	}
 	id, _ := strconv.Atoi(string(res))
 	return id
+}
+
+func GetValues(kv *badger.DB, keys []string) (map[string][]byte, error) {
+	res := make(map[string][]byte)
+	txn := kv.NewTransaction(false)
+	defer func() {
+		err := txn.Commit()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+	for i := range keys {
+		val, err := txn.Get([]byte(keys[i]))
+		if err == badger.ErrKeyNotFound {
+			res[keys[i]] = nil
+		} else if err != nil {
+			return res, err
+		}
+		var bs []byte
+		bs, err = val.ValueCopy(bs)
+		if err != nil {
+			return res, err
+		}
+		res[keys[i]] = bs
+	}
+	return res, nil
 }
 
 func ResetKeyVal(dir string) error {

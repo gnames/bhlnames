@@ -34,7 +34,7 @@ func TestNameRefs(t *testing.T) {
 		opt := input.OptNameString(v.name)
 		rf.ReferencesBHLReturns(stubs[v.name], nil)
 		inp := input.New(gnp, opt)
-		res, err := bn.NameRefs(rf, inp)
+		res, err := bn.NameRefs(inp)
 		assert.Nil(t, err)
 		assert.Equal(t, rf.ReferencesBHLCallCount(), 1)
 		assert.Equal(t, res.CurrentCanonical, v.current)
@@ -69,7 +69,7 @@ func TestNomenRefs(t *testing.T) {
 		opt := input.OptNameString(v.name)
 		rf.ReferencesBHLReturns(stubs[v.name], nil)
 		inp := input.New(gnp, opt)
-		res, err := bn.NomenRefs(rf, inp)
+		res, err := bn.NomenRefs(inp)
 		assert.Nil(t, err)
 		assert.True(t, len(res.References) > 0)
 		ref := res.References[0]

@@ -18,6 +18,7 @@ func TestDefaultConfig(t *testing.T) {
 		DbUser:       "postgres",
 		DbPass:       "",
 		DbName:       "bhlnames",
+		Delimiter:    ',',
 		JobsNum:      4,
 		PortREST:     8888,
 		Format:       gnfmt.CSV,
@@ -27,6 +28,8 @@ func TestDefaultConfig(t *testing.T) {
 	test.DownloadDir = filepath.Join(test.InputDir, "Data")
 	test.KeyValDir = filepath.Join(test.InputDir, "keyval")
 	test.PartDir = filepath.Join(test.InputDir, "part")
+	test.AhoCorasickDir = filepath.Join(test.InputDir, "ac")
+	test.AhoCorKeyValDir = filepath.Join(test.InputDir, "ackv")
 
 	cfg := config.New()
 	assert.Equal(t, cfg, test)
@@ -40,6 +43,7 @@ func TestModifiedConfig(t *testing.T) {
 		DbHost:              "10.0.0.10",
 		DbUser:              "john",
 		DbPass:              "doe",
+		Delimiter:           '\t',
 		DbName:              "bhl",
 		JobsNum:             100,
 		PortREST:            80,
@@ -53,6 +57,8 @@ func TestModifiedConfig(t *testing.T) {
 	test.DownloadDir = filepath.Join(test.InputDir, "Data")
 	test.KeyValDir = filepath.Join(test.InputDir, "keyval")
 	test.PartDir = filepath.Join(test.InputDir, "part")
+	test.AhoCorasickDir = filepath.Join(test.InputDir, "ac")
+	test.AhoCorKeyValDir = filepath.Join(test.InputDir, "ackv")
 	cfg := modConfig()
 	assert.Equal(t, cfg, test)
 }
@@ -65,6 +71,7 @@ func modConfig() config.Config {
 		config.OptDbHost("10.0.0.10"),
 		config.OptDbUser("john"),
 		config.OptDbPass("doe"),
+		config.OptDelimiter('\t'),
 		config.OptDbName("bhl"),
 		config.OptJobsNum(100),
 		config.OptPortREST(80),

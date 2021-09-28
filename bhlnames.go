@@ -11,34 +11,56 @@ import (
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/ent/reffinder"
 	"github.com/gnames/bhlnames/ent/score"
-	"github.com/gnames/gnfmt"
+	"github.com/gnames/gnparser"
 )
+
+type Option func(*bhlnames)
+
+func OptBuilder(b builder.Builder) Option {
+	return func(bn *bhlnames) {
+		bn.Builder = b
+	}
+}
+
+func OptRefFinder(rf reffinder.RefFinder) Option {
+	return func(bn *bhlnames) {
+		bn.RefFinder = rf
+	}
+}
+
+func OptParser(gnp gnparser.GNparser) Option {
+	return func(bn *bhlnames) {
+		bn.GNparser = gnp
+	}
+}
 
 type bhlnames struct {
 	cfg config.Config
+	gnparser.GNparser
+	builder.Builder
+	reffinder.RefFinder
 }
 
-func New(cfg config.Config) BHLnames {
+func New(cfg config.Config, opts ...Option) BHLnames {
 	bn := &bhlnames{cfg: cfg}
+	for i := range opts {
+		opts[i](bn)
+	}
 	return bn
 }
 
-func (bn *bhlnames) Initialize(b builder.Builder) error {
+func (bn *bhlnames) Initialize() error {
 	if bn.cfg.WithRebuild {
-		b.ResetData()
+		bn.ResetData()
 	}
-	return b.ImportData()
+	return bn.ImportData()
 }
 
-func (bn *bhlnames) NameRefs(
-	rf reffinder.RefFinder,
-	data input.Input,
-) (*namerefs.NameRefs, error) {
-	return rf.ReferencesBHL(data)
+func (bn *bhlnames) NameRefs(data input.Input) (*namerefs.NameRefs, error) {
+	return bn.ReferencesBHL(data)
 }
 
 func (bn *bhlnames) NameRefsStream(
-	rf reffinder.RefFinder,
 	chIn <-chan input.Input,
 	chOut chan<- *namerefs.NameRefs,
 ) {
@@ -46,21 +68,20 @@ func (bn *bhlnames) NameRefsStream(
 	wg.Add(bn.cfg.JobsNum)
 
 	for i := 0; i < bn.cfg.JobsNum; i++ {
-		go bn.nameRefsWorker(rf, chIn, chOut, &wg)
+		go bn.nameRefsWorker(chIn, chOut, &wg)
 	}
 	wg.Wait()
 	close(chOut)
 }
 
 func (bn *bhlnames) nameRefsWorker(
-	rf reffinder.RefFinder,
 	chIn <-chan input.Input,
 	chOut chan<- *namerefs.NameRefs,
 	wg *sync.WaitGroup,
 ) {
 	defer wg.Done()
 	for data := range chIn {
-		nameRefs, err := rf.ReferencesBHL(data)
+		nameRefs, err := bn.ReferencesBHL(data)
 		if err != nil {
 			log.Println(err)
 		}
@@ -69,20 +90,17 @@ func (bn *bhlnames) nameRefsWorker(
 }
 
 func (bn *bhlnames) NomenRefs(
-	rf reffinder.RefFinder,
 	inp input.Input,
 ) (*namerefs.NameRefs, error) {
-	nr, err := rf.ReferencesBHL(inp)
+	nr, err := bn.ReferencesBHL(inp)
 	if err != nil {
 		return nil, err
 	}
-
-	sortByScore(nr)
-	return nr, nil
+	err = bn.sortByScore(nr)
+	return nr, err
 }
 
 func (bn *bhlnames) NomenRefsStream(
-	rf reffinder.RefFinder,
 	chIn <-chan input.Input,
 	chOut chan<- *namerefs.NameRefs,
 ) {
@@ -90,34 +108,43 @@ func (bn *bhlnames) NomenRefsStream(
 	wg.Add(bn.cfg.JobsNum)
 
 	for i := 0; i < bn.cfg.JobsNum; i++ {
-		go bn.nomenRefsWorker(rf, chIn, chOut, &wg)
+		go bn.nomenRefsWorker(chIn, chOut, &wg)
 	}
 	wg.Wait()
 	close(chOut)
 }
 
 func (bn *bhlnames) nomenRefsWorker(
-	rf reffinder.RefFinder,
 	chIn <-chan input.Input,
 	chOut chan<- *namerefs.NameRefs,
 	wg *sync.WaitGroup,
 ) {
 	defer wg.Done()
 	for data := range chIn {
-		nr, err := rf.ReferencesBHL(data)
+		nr, err := bn.ReferencesBHL(data)
 		if err != nil {
 			log.Println(err)
 		}
-		sortByScore(nr)
+		err = bn.sortByScore(nr)
+		if err != nil {
+			log.Println(err)
+		}
 		chOut <- nr
 	}
 }
 
-func sortByScore(nr *namerefs.NameRefs) {
+func (bn *bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 	// Year has precedence over others
-	prec := map[score.ScoreType]int{score.Annot: 0, score.Year: 1}
+	prec := map[score.ScoreType]int{
+		score.RefTitle: 0,
+		score.Annot:    1,
+		score.Year:     2,
+	}
 	s := score.New(prec)
-	s.Calculate(nr)
+	err := s.Calculate(nr, bn.RefFinder)
+	if err != nil {
+		return err
+	}
 	sort.Slice(nr.References, func(i, j int) bool {
 		refs := nr.References
 		if refs[i].Score.Sort == refs[j].Score.Sort {
@@ -128,8 +155,9 @@ func sortByScore(nr *namerefs.NameRefs) {
 	// if len(nr.References) > 0 {
 	// 	nr.References = nr.References[:1]
 	// }
+	return nil
 }
 
-func (bn *bhlnames) Format() gnfmt.Format {
-	return bn.cfg.Format
+func (bn *bhlnames) Config() config.Config {
+	return bn.cfg
 }

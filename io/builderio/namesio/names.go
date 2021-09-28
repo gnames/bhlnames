@@ -1,4 +1,4 @@
-package names
+package namesio
 
 import (
 	"context"
@@ -27,7 +27,7 @@ type Names struct {
 	BatchSize int
 }
 
-func NewNames(host string, inputDir string) Names {
+func New(host string, inputDir string) Names {
 
 	n := Names{
 		InputDir:  inputDir,

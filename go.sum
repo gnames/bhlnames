@@ -1,3 +1,4 @@
+4d63.com/strrev v1.1.0/go.mod h1:kEuPysb/XCi0tmXRkB0rDxURbEEyeTlvSbOK+SqVbvA=
 cloud.google.com/go v0.0.0-20170206221025-ce650573d812/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
@@ -127,9 +128,13 @@ github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4
 github.com/fsnotify/fsnotify v1.5.1 h1:mZcQUHVQUQWoPXXtuf9yuEXKudkV2sx1E06UadKWpgI=
 github.com/fsnotify/fsnotify v1.5.1/go.mod h1:T3375wBYaZdLLcVNkcVbzGHY7f1l/uK5T5Ai1i3InKU=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
+github.com/gnames/aho_corasick v0.1.0 h1:0YGW4S6UY3wvabA43snhPYZRo79IOStG9nrSTueuTl4=
+github.com/gnames/aho_corasick v0.1.0/go.mod h1:NsfkS+gRSNp1qycgXeRjMDDxkCI8too3W7Ntr3hzL7A=
 github.com/gnames/bayes v0.1.0/go.mod h1:l91W5g0KSNxps4w8gJuBdQAMhi6a2d4sF3I8fSZXyLo=
 github.com/gnames/bhlindex v0.10.0 h1:zzXMN9WuAxV8pOnXkrcxZzVZpmSDg6u5uzBXbpxEPVI=
 github.com/gnames/bhlindex v0.10.0/go.mod h1:3x+vKkemI+kH9/bNaW3KL73Q9VjtAheiyDwYskkw+eY=
+github.com/gnames/gner v0.1.4 h1:N4mV7oYpwLVQ3EyuC3exhhddb276sQQrdCMPbDP7KLw=
+github.com/gnames/gner v0.1.4/go.mod h1:ZVooOJYLzT36y8Tv1ArAWGD2et+HPEury/kHXvSGHY0=
 github.com/gnames/gnfinder v0.11.1/go.mod h1:MD+PUQ1Nk4acIE8mCqSPR5WUiXHOEhd1ZPSM2UV53rw=
 github.com/gnames/gnfmt v0.1.0/go.mod h1:WG9c3CoiVrGc1SDsxLk7zjmv2B4UIzI00m4K5Khc/d0=
 github.com/gnames/gnfmt v0.2.0 h1:CjE1HxdqyTwufua5wMCdILWnCsCfRiHe5G4TgxR8aAI=
@@ -449,6 +454,8 @@ github.com/satori/go.uuid v1.2.0/go.mod h1:dA0hQrYB0VpLJoorglMZABFdXlWrHn1NEOzdh
 github.com/sclevine/spec v1.4.0 h1:z/Q9idDcay5m5irkZ28M7PtQM4aOISzOpj4bUPkDee8=
 github.com/sclevine/spec v1.4.0/go.mod h1:LvpgJaFyvQzRvc1kaDs0bulYwzC70PbiYjC4QnFHkOM=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
+github.com/shivamMg/ppds v0.0.1 h1:idK2dpaen652zOO+OmcwmyoPNncBNqfHjF/14eS5JIk=
+github.com/shivamMg/ppds v0.0.1/go.mod h1:hb39VqUO6qfkb9zBBQPTIV1vWBtI7yQsG0wr3pN78fM=
 github.com/shurcooL/httpfs v0.0.0-20181222201310-74dc9339e414/go.mod h1:ZY1cvUeJuFPAdZ/B6v7RHavJWZn2YPVFQ1OSXhCGOkg=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/shurcooL/vfsgen v0.0.0-20181202132449-6a9ea43bcacd/go.mod h1:TrYk7fJVaAttu97ZZKrO9UbRa8izdowaMIZcxYMbVaw=

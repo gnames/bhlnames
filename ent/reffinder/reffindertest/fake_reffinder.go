@@ -33,6 +33,19 @@ type FakeRefFinder struct {
 		result1 *namerefs.NameRefs
 		result2 error
 	}
+	TitlesBHLStub        func(string) (map[int][]string, error)
+	titlesBHLMutex       sync.RWMutex
+	titlesBHLArgsForCall []struct {
+		arg1 string
+	}
+	titlesBHLReturns struct {
+		result1 map[int][]string
+		result2 error
+	}
+	titlesBHLReturnsOnCall map[int]struct {
+		result1 map[int][]string
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -154,6 +167,70 @@ func (fake *FakeRefFinder) ReferencesBHLReturnsOnCall(i int, result1 *namerefs.N
 	}{result1, result2}
 }
 
+func (fake *FakeRefFinder) TitlesBHL(arg1 string) (map[int][]string, error) {
+	fake.titlesBHLMutex.Lock()
+	ret, specificReturn := fake.titlesBHLReturnsOnCall[len(fake.titlesBHLArgsForCall)]
+	fake.titlesBHLArgsForCall = append(fake.titlesBHLArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.TitlesBHLStub
+	fakeReturns := fake.titlesBHLReturns
+	fake.recordInvocation("TitlesBHL", []interface{}{arg1})
+	fake.titlesBHLMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeRefFinder) TitlesBHLCallCount() int {
+	fake.titlesBHLMutex.RLock()
+	defer fake.titlesBHLMutex.RUnlock()
+	return len(fake.titlesBHLArgsForCall)
+}
+
+func (fake *FakeRefFinder) TitlesBHLCalls(stub func(string) (map[int][]string, error)) {
+	fake.titlesBHLMutex.Lock()
+	defer fake.titlesBHLMutex.Unlock()
+	fake.TitlesBHLStub = stub
+}
+
+func (fake *FakeRefFinder) TitlesBHLArgsForCall(i int) string {
+	fake.titlesBHLMutex.RLock()
+	defer fake.titlesBHLMutex.RUnlock()
+	argsForCall := fake.titlesBHLArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeRefFinder) TitlesBHLReturns(result1 map[int][]string, result2 error) {
+	fake.titlesBHLMutex.Lock()
+	defer fake.titlesBHLMutex.Unlock()
+	fake.TitlesBHLStub = nil
+	fake.titlesBHLReturns = struct {
+		result1 map[int][]string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeRefFinder) TitlesBHLReturnsOnCall(i int, result1 map[int][]string, result2 error) {
+	fake.titlesBHLMutex.Lock()
+	defer fake.titlesBHLMutex.Unlock()
+	fake.TitlesBHLStub = nil
+	if fake.titlesBHLReturnsOnCall == nil {
+		fake.titlesBHLReturnsOnCall = make(map[int]struct {
+			result1 map[int][]string
+			result2 error
+		})
+	}
+	fake.titlesBHLReturnsOnCall[i] = struct {
+		result1 map[int][]string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeRefFinder) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -161,6 +238,8 @@ func (fake *FakeRefFinder) Invocations() map[string][][]interface{} {
 	defer fake.closeMutex.RUnlock()
 	fake.referencesBHLMutex.RLock()
 	defer fake.referencesBHLMutex.RUnlock()
+	fake.titlesBHLMutex.RLock()
+	defer fake.titlesBHLMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

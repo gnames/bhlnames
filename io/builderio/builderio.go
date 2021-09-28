@@ -6,7 +6,7 @@ import (
 
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/builder"
-	names "github.com/gnames/bhlnames/io/builderio/namesio"
+	"github.com/gnames/bhlnames/io/builderio/namesio"
 	"github.com/gnames/bhlnames/io/db"
 	"github.com/gnames/gnsys"
 	"github.com/jinzhu/gorm"
@@ -34,6 +34,8 @@ func (b builderio) touchDirs() {
 		b.DownloadDir,
 		b.KeyValDir,
 		b.PartDir,
+		b.AhoCorasickDir,
+		b.AhoCorKeyValDir,
 	}
 	for i := range dirs {
 		exists, _, _ := gnsys.DirExists(dirs[i])
@@ -47,8 +49,10 @@ func (b builderio) touchDirs() {
 }
 
 func (b builderio) ResetData() {
+	var err error
+
 	log.Printf("Reseting filesystem at '%s'.", b.InputDir)
-	err := b.resetDirs()
+	err = b.resetDirs()
 	if err != nil {
 		log.Fatalf("Cannot reset dirs: %s.", err)
 	}
@@ -57,28 +61,28 @@ func (b builderio) ResetData() {
 
 func (b builderio) ImportData() error {
 	err := b.downloadDumpBHL()
-	if err != nil {
-		return err
-	}
-	err = b.extractFilesBHL()
-	if err != nil {
-		return err
+	n := namesio.New(b.BHLIndexHost, b.InputDir)
+	_ = n
+
+	if err == nil {
+		err = b.extractFilesBHL()
 	}
 
-	b.resetDB()
-
-	err = b.uploadDataBHL()
-	if err != nil {
-		return err
+	if err == nil {
+		b.resetDB()
+		err = b.uploadDataBHL()
 	}
 
-	log.Println("Populating database with names occurences data")
-	n := names.NewNames(b.BHLIndexHost, b.InputDir)
-	n.DB = b.DB
-	n.GormDB = b.GormDB
-	err = n.ImportNames()
-	if err != nil {
-		return err
+	if err == nil {
+		log.Println("Populating database with names occurences data")
+		n.DB = b.DB
+		n.GormDB = b.GormDB
+		err = n.ImportNames()
 	}
-	return n.ImportNamesOccur(b.KeyValDir)
+
+	if err == nil {
+		err = n.ImportNamesOccur(b.KeyValDir)
+	}
+
+	return err
 }

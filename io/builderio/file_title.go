@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-type Title struct {
+type title struct {
 	ID        int
 	Name      string
 	YearStart sql.NullInt32
@@ -27,9 +27,9 @@ const (
 	langF      = 9
 )
 
-func (b builderio) prepareTitle(doiMap map[int]string) (map[int]*Title, error) {
+func (b builderio) prepareTitle(doiMap map[int]string) (map[int]*title, error) {
 	log.Println("Processing title.txt")
-	res := make(map[int]*Title)
+	res := make(map[int]*title)
 	path := filepath.Join(b.Config.DownloadDir, "title.txt")
 	f, err := os.Open(path)
 	if err != nil {
@@ -50,7 +50,7 @@ func (b builderio) prepareTitle(doiMap map[int]string) (map[int]*Title, error) {
 			return res, err
 		}
 
-		t := &Title{
+		t := &title{
 			ID:       id,
 			Name:     fields[nameF],
 			Language: fields[langF],

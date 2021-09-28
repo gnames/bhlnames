@@ -2,6 +2,7 @@ package score
 
 import (
 	"math"
+	"strconv"
 	"time"
 
 	"github.com/gnames/bhlnames/ent/refbhl"
@@ -10,7 +11,11 @@ import (
 var maxYearScore int = 15
 
 // getYearScore
-func getYearScore(yearInput int, ref *refbhl.ReferenceBHL) int {
+func getYearScore(year string, ref *refbhl.ReferenceBHL) int {
+	yearInput, err := strconv.Atoi(year)
+	if err != nil {
+		yearInput = 0
+	}
 	yearPart, itemYearStart, itemYearEnd, titleYearStart, titleYearEnd := getRefYears(ref)
 
 	if yearPart > 0 {

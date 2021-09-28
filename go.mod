@@ -21,8 +21,11 @@ require (
 )
 
 require (
+	github.com/gnames/aho_corasick v0.1.0
+	github.com/gnames/gner v0.1.4
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.4.1
+	golang.org/x/text v0.3.6
 )
 
 require (
@@ -53,6 +56,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect
+	github.com/shivamMg/ppds v0.0.1 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
@@ -61,7 +65,6 @@ require (
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210903162142-ad29c8ab022f // indirect
 	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf // indirect
-	golang.org/x/text v0.3.6 // indirect
 	golang.org/x/tools v0.1.5 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71 // indirect

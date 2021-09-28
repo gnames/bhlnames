@@ -2,18 +2,18 @@ package score
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/ent/refbhl"
+	"github.com/gnames/bhlnames/ent/reffinder"
 )
 
 type score struct {
 	total      int
 	year       int
 	annot      int
-	ref        int
+	refTitle   int
 	value      uint32
 	precedence map[ScoreType]int
 }
@@ -22,21 +22,31 @@ func New(prec map[ScoreType]int) Score {
 	return &score{precedence: prec}
 }
 
-func (s *score) Calculate(nr *namerefs.NameRefs) {
+func (s *score) Calculate(nr *namerefs.NameRefs, rf reffinder.RefFinder) error {
 	refs := nr.References
 	yr := getYear(nr.Input)
 	for i := range refs {
 		s = &score{precedence: s.precedence}
-		s.year = matchYear(yr, refs[i])
-		s.annot = matchAnnot(refs[i])
+		s.year = getYearScore(yr, refs[i])
+		s.annot = getAnnotScore(refs[i])
+
+		if nr.Input.RefString != "" {
+			titleScore, err := getRefTitleScore(nr.Input.RefString, refs[i], rf)
+			if err != nil {
+				return err
+			}
+			s.refTitle = titleScore
+		}
 		s.combineScores()
 		refs[i].Score = refbhl.Score{
-			Sort:  s.value,
-			Total: s.total,
-			Annot: s.annot,
-			Year:  s.year,
+			Sort:     s.value,
+			Total:    s.total,
+			Annot:    s.annot,
+			Year:     s.year,
+			RefTitle: s.refTitle,
 		}
 	}
+	return nil
 }
 
 func (s *score) String() string {
@@ -54,12 +64,14 @@ func (s *score) String() string {
 }
 
 func (s *score) combineScores() {
-	s.total = s.year + s.annot
+	s.total = s.year + s.annot + s.refTitle
 	annotShift := 4 * s.precedence[Annot]
 	yearShift := 4 * s.precedence[Year]
+	refTitleShift := 4 * s.precedence[RefTitle]
 	totalShift := 24
 	s.value = (s.value | uint32(s.annot)<<annotShift)
 	s.value = (s.value | uint32(s.year)<<yearShift)
+	s.value = (s.value | uint32(s.refTitle)<<refTitleShift)
 	s.value = (s.value | uint32(s.total)<<totalShift)
 }
 
@@ -68,16 +80,4 @@ func getYear(inp input.Input) string {
 		return inp.RefYear
 	}
 	return inp.NameYear
-}
-
-func matchYear(refYr string, ref *refbhl.ReferenceBHL) (yrScore int) {
-	yr, err := strconv.Atoi(refYr)
-	if err != nil {
-		yr = 0
-	}
-	return getYearScore(yr, ref)
-}
-
-func matchAnnot(ref *refbhl.ReferenceBHL) int {
-	return getAnnotScore(ref)
 }

@@ -25,7 +25,7 @@ const (
 
 var yrRe = regexp.MustCompile(`\b[c]?([\d]{4})\b\s*([,/-]\s*([\d]{4})\b)?`)
 
-func (b builderio) uploadItem(titles map[int]*Title) error {
+func (b builderio) uploadItem(titles map[int]*title) error {
 	log.Println("Preparing item.txt data for db.")
 	iMap := make(map[int]struct{})
 	var res []*db.Item
@@ -64,7 +64,7 @@ func (b builderio) uploadItem(titles map[int]*Title) error {
 		yearStart, yearEnd := itemYears(fields[itemYearsF])
 		t := titles[titleID]
 		if t == nil {
-			t = &Title{}
+			t = &title{}
 		}
 		item := db.Item{ID: uint(id), TitleID: uint(titleID), TitleDOI: t.DOI,
 			BarCode: barCode, Vol: vol, YearStart: yearStart, YearEnd: yearEnd,

@@ -33,7 +33,6 @@ import (
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
-	"github.com/gnames/bhlnames/ent/reffinder"
 	"github.com/gnames/bhlnames/io/reffinderio"
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnparser"
@@ -60,15 +59,28 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 			opts = append(opts, config.OptJobsNum(j))
 		}
 		cfg := config.New(opts...)
-		bhln := bhlnames.New(cfg)
-		rf := reffinderio.New(cfg)
+
+		rf, err := reffinderio.New(cfg)
+		if err != nil {
+			log.Fatal(err)
+		}
 		defer rf.Close()
+
+		gnp := gnparser.New(gnparser.NewConfig())
+
+		bnOpts := []bhlnames.Option{
+			bhlnames.OptRefFinder(rf),
+			bhlnames.OptParser(gnp),
+		}
+
+		bhln := bhlnames.New(cfg, bnOpts...)
+
 		if len(args) == 0 {
-			processStdin(cmd, rf, bhln)
+			processStdin(cmd, bhln)
 			os.Exit(0)
 		}
 		data := getInput(cmd, args)
-		name(rf, bhln, data)
+		name(bhln, data)
 	},
 }
 
@@ -157,12 +169,12 @@ func noSynonymsFlag(cmd *cobra.Command) bool {
 	return n
 }
 
-func processStdin(cmd *cobra.Command, rf reffinder.RefFinder, bhln bhlnames.BHLnames) {
+func processStdin(cmd *cobra.Command, bhln bhlnames.BHLnames) {
 	if !checkStdin() {
 		_ = cmd.Help()
 		return
 	}
-	nameFile(rf, bhln, os.Stdin)
+	nameFile(bhln, os.Stdin)
 }
 
 func checkStdin() bool {
@@ -186,7 +198,7 @@ func getInput(cmd *cobra.Command, args []string) string {
 	return data
 }
 
-func name(rf reffinder.RefFinder, bhln bhlnames.BHLnames, data string) {
+func name(bhln bhlnames.BHLnames, data string) {
 	path := string(data)
 	if fileExists(path) {
 		f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
@@ -194,10 +206,10 @@ func name(rf reffinder.RefFinder, bhln bhlnames.BHLnames, data string) {
 			log.Fatal(err)
 			os.Exit(1)
 		}
-		nameFile(rf, bhln, f)
+		nameFile(bhln, f)
 		f.Close()
 	} else {
-		nameString(rf, bhln, data)
+		nameString(bhln, data)
 	}
 }
 
@@ -210,17 +222,15 @@ func fileExists(path string) bool {
 	return false
 }
 
-func nameFile(rf reffinder.RefFinder, bhln bhlnames.BHLnames, f io.Reader) {
-	cfg := gnparser.NewConfig()
-	gnp := gnparser.New(cfg)
+func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 	in := make(chan input.Input)
 	out := make(chan *namerefs.NameRefs)
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	go bhln.NameRefsStream(rf, in, out)
-	go processResults(bhln.Format(), out, &wg)
+	go bn.NameRefsStream(in, out)
+	go processResults(bn.Config().Format, out, &wg)
 	sc := bufio.NewScanner(f)
 	count := 0
 	log.Println("Finding references")
@@ -231,7 +241,7 @@ func nameFile(rf reffinder.RefFinder, bhln bhlnames.BHLnames, f io.Reader) {
 		}
 
 		opts := []input.Option{input.OptNameString(sc.Text())}
-		in <- input.New(gnp, opts...)
+		in <- input.New(bn, opts...)
 	}
 	close(in)
 	wg.Wait()
@@ -247,15 +257,14 @@ func processResults(f gnfmt.Format, chOut <-chan *namerefs.NameRefs,
 	}
 }
 
-func nameString(rf reffinder.RefFinder, bhln bhlnames.BHLnames, name string) {
-	gnp := gnparser.New(gnparser.NewConfig())
+func nameString(bn bhlnames.BHLnames, name string) {
 	opts := []input.Option{input.OptNameString(name)}
-	data := input.New(gnp, opts...)
+	data := input.New(bn, opts...)
 	enc := gnfmt.GNjson{}
-	res, err := bhln.NameRefs(rf, data)
+	res, err := bn.NameRefs(data)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-	fmt.Println(enc.Output(res, bhln.Format()))
+	fmt.Println(enc.Output(res, bn.Config().Format))
 }

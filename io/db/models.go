@@ -13,6 +13,8 @@ type Item struct {
 	TitleID        uint   `gorm:"not null"`
 	TitleDOI       string `gorm:"type:varchar(100)"`
 	TitleName      string `gorm:"type:varchar(255)"`
+	TitleAbbr1     string `gorm:"type:varchar(10)"`
+	TitleAbbr2     string `gorm:"type:varchar(10)"`
 	TitleYearStart sql.NullInt32
 	TitleYearEnd   sql.NullInt32
 	TitleLang      string `gorm:"type:varchar(20)"`

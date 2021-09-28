@@ -36,7 +36,6 @@ import (
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
-	"github.com/gnames/bhlnames/ent/reffinder"
 	"github.com/gnames/bhlnames/io/reffinderio"
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnparser"
@@ -58,24 +57,39 @@ a putative link in BHL to the event.
 	Run: func(cmd *cobra.Command, args []string) {
 		f := formatFlag(cmd)
 		j := jobsFlag(cmd)
-		y := yearFlag(cmd)
+		yr := yearFlag(cmd)
+		delim := delimiterFlag(cmd)
 		opts = append(opts,
 			config.OptFormat(f),
 		)
+		opts = append(opts, config.OptDelimiter(delim))
 		opts = append(opts, config.OptWithSynonyms(false))
 		if j > 0 {
 			opts = append(opts, config.OptJobsNum(j))
 		}
 		cfg := config.New(opts...)
-		bhln := bhlnames.New(cfg)
-		rf := reffinderio.New(cfg)
+
+		rf, err := reffinderio.New(cfg)
+		if err != nil {
+			log.Fatal(err)
+		}
 		defer rf.Close()
+
+		gnp := gnparser.New(gnparser.NewConfig())
+
+		bnOpts := []bhlnames.Option{
+			bhlnames.OptRefFinder(rf),
+			bhlnames.OptParser(gnp),
+		}
+
+		bhln := bhlnames.New(cfg, bnOpts...)
+
 		if len(args) == 0 {
-			processStdin(cmd, rf, bhln)
+			processStdin(cmd, bhln)
 			os.Exit(0)
 		}
 		data := getInput(cmd, args)
-		nomen(rf, bhln, data, y)
+		nomen(bhln, data, yr)
 	},
 }
 
@@ -90,9 +104,12 @@ func init() {
 
 	nomenCmd.Flags().IntP("year", "y", 0,
 		"A year when a name was published.")
+
+	nomenCmd.Flags().StringP("delimiter", "d", ",",
+		"Delimiter for reading CSV files, default is comma.")
 }
 
-func nomen(rf reffinder.RefFinder, bhln bhlnames.BHLnames, data, year string) {
+func nomen(bn bhlnames.BHLnames, data, year string) {
 	path := string(data)
 	exists, _ := gnsys.FileExists(path)
 	if exists {
@@ -101,23 +118,24 @@ func nomen(rf reffinder.RefFinder, bhln bhlnames.BHLnames, data, year string) {
 			log.Fatal(err)
 			os.Exit(1)
 		}
-		nomensFromFile(rf, bhln, f)
+		nomensFromFile(bn, f)
 		f.Close()
 	} else {
-		nomenFromString(rf, bhln, data, year)
+		nomenFromString(bn, data, year)
 	}
 }
 
-func nomensFromFile(rf reffinder.RefFinder, bhln bhlnames.BHLnames, f io.Reader) {
+func nomensFromFile(bn bhlnames.BHLnames, f io.Reader) {
 	chIn := make(chan input.Input)
 	chOut := make(chan *namerefs.NameRefs)
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	go bhln.NomenRefsStream(rf, chIn, chOut)
+	go bn.NomenRefsStream(chIn, chOut)
 	go processNomenResults(gnfmt.CompactJSON, chOut, &wg)
 
 	r := csv.NewReader(f)
+	r.Comma = bn.Config().Delimiter
 
 	// read header
 	header := make(map[string]int)
@@ -149,19 +167,12 @@ func nomensFromFile(rf reffinder.RefFinder, bhln bhlnames.BHLnames, f io.Reader)
 		if count%1000 == 0 {
 			log.Printf("Processing %s-th line\n", humanize.Comma(int64(count)))
 		}
-		input := input.Input{
-			ID: csvVal(row, "Id"),
-			Name: input.Name{
-				NameString: csvVal(row, "NameString"),
-				NameYear:   csvVal(row, "NameYear"),
-				Canonical:  csvVal(row, "NameCanonical"),
-				Authorship: csvVal(row, "NameAuthorship"),
-			},
-			Reference: input.Reference{
-				RefString: csvVal(row, "RefString"),
-				RefYear:   csvVal(row, "RefYear"),
-			},
+		opts := []input.Option{
+			input.OptID(csvVal(row, "Id")),
+			input.OptNameString(csvVal(row, "NameString")),
+			input.OptRefString(csvVal(row, "RefString")),
 		}
+		input := input.New(bn, opts...)
 		chIn <- input
 	}
 	close(chIn)
@@ -181,7 +192,7 @@ func processNomenResults(f gnfmt.Format, out <-chan *namerefs.NameRefs,
 	}
 }
 
-func nomenFromString(rf reffinder.RefFinder, bhln bhlnames.BHLnames, name string, year string) {
+func nomenFromString(bn bhlnames.BHLnames, name string, year string) {
 	enc := gnfmt.GNjson{}
 	gnpCfg := gnparser.NewConfig()
 	gnp := gnparser.New(gnpCfg)
@@ -190,7 +201,7 @@ func nomenFromString(rf reffinder.RefFinder, bhln bhlnames.BHLnames, name string
 		input.OptNameYear(year),
 	}
 	data := input.New(gnp, opts...)
-	res, err := bhln.NomenRefs(rf, data)
+	res, err := bn.NomenRefs(data)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -211,4 +222,29 @@ func yearFlag(cmd *cobra.Command) string {
 		return ""
 	}
 	return strconv.Itoa(y)
+}
+
+func delimiterFlag(cmd *cobra.Command) rune {
+	delim, err := cmd.Flags().GetString("delimiter")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	switch delim {
+	case "":
+		log.Println("empty delimiter option")
+		log.Println("keeping the default delimiter \",\"")
+		return ','
+	case "\\t":
+		log.Println("Setting delimiter to \"\\t\"")
+		return '\t'
+	case ",":
+		log.Println("Setting delimiter to \",\"")
+		return ','
+	default:
+		log.Println("supported delimiters are \",\" and \"\t\"")
+		log.Println("keeping the default delimiter \",\"")
+		return ','
+	}
 }

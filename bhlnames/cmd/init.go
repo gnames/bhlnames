@@ -48,9 +48,11 @@ after enother. The resul will be identical to "bhlnames init".`,
 		}
 		opts = append(opts, config.OptWithRebuild(rebuild))
 		cfg := config.New(opts...)
-		bn := bhlnames.New(cfg)
+
 		builder := builderio.New(cfg)
-		err = bn.Initialize(builder)
+		bn := bhlnames.New(cfg, bhlnames.OptBuilder(builder))
+
+		err = bn.Initialize()
 		if err != nil {
 			log.Fatal(err)
 		}

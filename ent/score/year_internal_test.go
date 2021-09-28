@@ -2,6 +2,7 @@ package score
 
 import (
 	"math"
+	"strconv"
 	"testing"
 
 	"github.com/gnames/bhlnames/ent/refbhl"
@@ -107,7 +108,7 @@ func TestYearScore(t *testing.T) {
 			TitleYearEnd:   d.refYears[4],
 		}
 
-		result := getYearScore(d.year, &testRef)
+		result := getYearScore(strconv.Itoa(d.year), &testRef)
 
 		if result != d.score {
 			t.Errorf("Wrong score for YearScore(%d, %#v) %d %d\n\n", d.year, testRef, result, d.score)
