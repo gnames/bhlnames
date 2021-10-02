@@ -26,6 +26,8 @@ type ReferenceBHL struct {
 	AnnotNomen string `json:"annotNomen,omitempty"`
 	// PageID is the BHL database ID for the page where the name was found.
 	PageID int `json:"pageId"`
+	// PageNum is the page number from the publisher.
+	PageNum int `json:"pageNum"`
 	// ItemID is the BHL database ID for Item (volume usually).
 	ItemID int `json:"itemId"`
 	// TitleID is the BHL database ID for the Title (book or journal).
@@ -75,10 +77,10 @@ type ReferenceBHL struct {
 type Score struct {
 	// Sort is a value used to sort scores from best to worst. It is created as a
 	// combination of all individual scores.
-	Sort uint32 `json:"sortval"`
+	Sort uint32 `json:"-"`
 
 	// Total is a simple sum of all available individual score.
-	Total int `json:"overal"`
+	Total int `json:"total"`
 
 	// Annot is a score important for nomenclatural events and provides match
 	// for nomenclatural annotations.

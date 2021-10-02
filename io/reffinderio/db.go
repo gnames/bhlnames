@@ -18,6 +18,7 @@ type row struct {
 	itemID           int
 	titleID          int
 	pageID           int
+	pageNum          int
 	titleDOI         string
 	titleYearStart   int
 	titleYearEnd     int
@@ -48,17 +49,17 @@ func (l reffinderio) taxonOccurrences(nameRefs *namerefs.NameRefs) []*row {
 func (l reffinderio) occurrences(name string, field string) []*row {
 	var res []*row
 	var itemID, titleID, pageID int
-	var yearStart, yearEnd, titleYearStart, titleYearEnd,
+	var yearStart, yearEnd, titleYearStart, titleYearEnd, pageNum,
 		kingdomPercent, pathsTotal, editDistance sql.NullInt32
 	var nameID string
 	var titleName, context, majorKingdom, nameString, matchedCanonical,
 		matchType, vol, titleDOI, annot sql.NullString
 	qs := `SELECT
-	itm.id, itm.title_id, pns.page_id, pns.annotation_type, itm.title_year_start,
-	itm.title_year_end, itm.year_start, itm.year_end, itm.title_name, itm.vol,
-	itm.title_doi, itm.context, itm.major_kingdom, itm.kingdom_percent,
-	itm.paths_total, ns.id, ns.name, ns.matched_canonical, ns.match_type,
-	ns.edit_distance
+  itm.id, itm.title_id, pns.page_id, pg.page_num, pns.annotation_type,
+  itm.title_year_start, itm.title_year_end, itm.year_start, itm.year_end,
+  itm.title_name, itm.vol, itm.title_doi, itm.context, itm.major_kingdom,
+  itm.kingdom_percent, itm.paths_total, ns.id, ns.name, ns.matched_canonical,
+  ns.match_type, ns.edit_distance
 	FROM name_strings ns
 			JOIN page_name_strings pns ON ns.id = pns.name_string_id
 			JOIN pages pg ON pg.id = pns.page_id
@@ -73,10 +74,10 @@ func (l reffinderio) occurrences(name string, field string) []*row {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err := rows.Scan(&itemID, &titleID, &pageID, &annot, &titleYearStart,
-			&titleYearEnd, &yearStart, &yearEnd, &titleName, &vol, &titleDOI,
-			&context, &majorKingdom, &kingdomPercent, &pathsTotal, &nameID,
-			&nameString, &matchedCanonical, &matchType, &editDistance)
+		err := rows.Scan(&itemID, &titleID, &pageID, &pageNum, &annot,
+			&titleYearStart, &titleYearEnd, &yearStart, &yearEnd, &titleName, &vol,
+			&titleDOI, &context, &majorKingdom, &kingdomPercent, &pathsTotal,
+			&nameID, &nameString, &matchedCanonical, &matchType, &editDistance)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -84,6 +85,7 @@ func (l reffinderio) occurrences(name string, field string) []*row {
 			itemID:           itemID,
 			titleID:          titleID,
 			pageID:           pageID,
+			pageNum:          int(pageNum.Int32),
 			titleDOI:         titleDOI.String,
 			titleYearStart:   int(titleYearStart.Int32),
 			titleYearEnd:     int(titleYearEnd.Int32),

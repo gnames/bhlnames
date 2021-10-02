@@ -6,6 +6,7 @@ And
 As
 At
 Au
+Aus
 Be
 By
 Ce
@@ -74,6 +75,7 @@ as
 at
 au
 auf
+aus
 aux
 av
 az

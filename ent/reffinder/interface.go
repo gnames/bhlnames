@@ -10,10 +10,6 @@ import (
 // RefFinder interface is a lower-level one, that tells how to find
 // BHL references for name_strings.
 type RefFinder interface {
-	// MatchTitlesBHL takes a reference-string and returns back IDs of matched
-	// BHL titles.
-	TitlesBHL(refString string) (map[int][]string, error)
-
 	// ReferencesBHL takes a name-string and returns back back BHL references
 	// where this name-string was detected.  If a name-string occurrence has a
 	// nomenclatural annotaion (like 'sp. nov.') attached to it somewhere in the

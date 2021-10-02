@@ -37,6 +37,7 @@ import (
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/io/reffinderio"
+	"github.com/gnames/bhlnames/io/titlemio"
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnparser"
 	"github.com/gnames/gnsys"
@@ -69,17 +70,18 @@ a putative link in BHL to the event.
 		}
 		cfg := config.New(opts...)
 
-		rf, err := reffinderio.New(cfg)
-		if err != nil {
-			log.Fatal(err)
-		}
+		rf := reffinderio.New(cfg)
 		defer rf.Close()
+
+		tm := titlemio.New(cfg)
+		defer tm.Close()
 
 		gnp := gnparser.New(gnparser.NewConfig())
 
 		bnOpts := []bhlnames.Option{
 			bhlnames.OptRefFinder(rf),
 			bhlnames.OptParser(gnp),
+			bhlnames.OptTitleMatcher(tm),
 		}
 
 		bhln := bhlnames.New(cfg, bnOpts...)

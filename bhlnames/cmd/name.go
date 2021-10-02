@@ -21,7 +21,7 @@
 package cmd
 
 import (
-	"bufio"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
@@ -50,9 +50,11 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 		d := descFlag(cmd)
 		s := shortFlag(cmd)
 		n := noSynonymsFlag(cmd)
+		delim := delimiterFlag(cmd)
 		opts = append(opts,
 			config.OptFormat(f), config.OptSortDesc(d),
 			config.OptShort(s), config.OptWithSynonyms(!n),
+			config.OptDelimiter(delim),
 		)
 		j := jobsFlag(cmd)
 		if j > 0 {
@@ -60,11 +62,7 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 		}
 		cfg := config.New(opts...)
 
-		rf, err := reffinderio.New(cfg)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer rf.Close()
+		rf := reffinderio.New(cfg)
 
 		gnp := gnparser.New(gnparser.NewConfig())
 
@@ -73,14 +71,15 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 			bhlnames.OptParser(gnp),
 		}
 
-		bhln := bhlnames.New(cfg, bnOpts...)
+		bn := bhlnames.New(cfg, bnOpts...)
+		defer bn.Close()
 
 		if len(args) == 0 {
-			processStdin(cmd, bhln)
+			processStdin(cmd, bn)
 			os.Exit(0)
 		}
 		data := getInput(cmd, args)
-		name(bhln, data)
+		name(bn, data)
 	},
 }
 
@@ -101,7 +100,7 @@ func init() {
 	nameCmd.Flags().IntP("jobs", "j", 0,
 		"Number of parallel jobs to get references.")
 
-	nameCmd.Flags().BoolP("sort_desc", "d", false,
+	nameCmd.Flags().BoolP("sort_desc", "D", false,
 		"Sort references by year in descending order.")
 
 	nameCmd.Flags().BoolP("short_output", "s", false,
@@ -109,6 +108,9 @@ func init() {
 
 	nameCmd.Flags().BoolP("no_synonyms", "n", false,
 		"Do not expand name to synonyms.")
+
+	nameCmd.Flags().StringP("delimiter", "d", ",",
+		"Delimiter for reading CSV files, default is comma.")
 }
 
 func formatFlag(cmd *cobra.Command) gnfmt.Format {
@@ -169,12 +171,12 @@ func noSynonymsFlag(cmd *cobra.Command) bool {
 	return n
 }
 
-func processStdin(cmd *cobra.Command, bhln bhlnames.BHLnames) {
+func processStdin(cmd *cobra.Command, bn bhlnames.BHLnames) {
 	if !checkStdin() {
 		_ = cmd.Help()
 		return
 	}
-	nameFile(bhln, os.Stdin)
+	nameFile(bn, os.Stdin)
 }
 
 func checkStdin() bool {
@@ -198,7 +200,7 @@ func getInput(cmd *cobra.Command, args []string) string {
 	return data
 }
 
-func name(bhln bhlnames.BHLnames, data string) {
+func name(bn bhlnames.BHLnames, data string) {
 	path := string(data)
 	if fileExists(path) {
 		f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
@@ -206,10 +208,10 @@ func name(bhln bhlnames.BHLnames, data string) {
 			log.Fatal(err)
 			os.Exit(1)
 		}
-		nameFile(bhln, f)
+		nameFile(bn, f)
 		f.Close()
 	} else {
-		nameString(bhln, data)
+		nameString(bn, data)
 	}
 }
 
@@ -231,17 +233,48 @@ func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 
 	go bn.NameRefsStream(in, out)
 	go processResults(bn.Config().Format, out, &wg)
-	sc := bufio.NewScanner(f)
+
+	r := csv.NewReader(f)
+	r.Comma = bn.Config().Delimiter
+
+	// read header
+	header := make(map[string]int)
+	hdr, err := r.Read()
+	if err != nil {
+		log.Fatalf("Cannot read CSV file: %s", err)
+	}
+	for i, v := range hdr {
+		header[v] = i
+	}
+	csvVal := func(row []string, key string) string {
+		if val, ok := header[key]; ok {
+			return row[val]
+		}
+		return ""
+	}
+
 	count := 0
 	log.Println("Finding references")
-	for sc.Scan() {
+	for {
+		row, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("Cannot read CSV row: %s", err)
+		}
+
 		count++
 		if count%1000 == 0 {
 			log.Printf("Processing %s-th line\n", humanize.Comma(int64(count)))
 		}
-
-		opts := []input.Option{input.OptNameString(sc.Text())}
-		in <- input.New(bn, opts...)
+		opts := []input.Option{
+			input.OptID(csvVal(row, "Id")),
+			input.OptNameString(csvVal(row, "NameString")),
+			input.OptRefString(csvVal(row, "RefString")),
+		}
+		input := input.New(bn, opts...)
+		in <- input
 	}
 	close(in)
 	wg.Wait()
@@ -252,8 +285,18 @@ func processResults(f gnfmt.Format, chOut <-chan *namerefs.NameRefs,
 	wg *sync.WaitGroup) {
 	enc := gnfmt.GNjson{}
 	defer wg.Done()
+	var dump []*namerefs.NameRefs
 	for nameRef := range chOut {
-		enc.Output(nameRef, f)
+		dump = append(dump, nameRef)
+		fmt.Println(enc.Output(nameRef, f))
+	}
+	encDump, err := new(gnfmt.GNgob).Encode(dump)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = os.WriteFile("testdata/stubs_namerefs.gob", encDump, 0644)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 

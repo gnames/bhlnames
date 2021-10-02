@@ -6,6 +6,7 @@ import (
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/ent/reffinder"
+	"github.com/gnames/bhlnames/ent/title_matcher"
 	"github.com/gnames/gnparser"
 )
 
@@ -13,6 +14,7 @@ type BHLnames interface {
 	gnparser.GNparser
 	builder.Builder
 	reffinder.RefFinder
+	title_matcher.TitleMatcher
 
 	Initialize() error
 
@@ -23,4 +25,5 @@ type BHLnames interface {
 	NomenRefsStream(chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)
 
 	Config() config.Config
+	Close() error
 }

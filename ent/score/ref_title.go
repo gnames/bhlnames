@@ -2,18 +2,12 @@ package score
 
 import (
 	"github.com/gnames/bhlnames/ent/refbhl"
-	"github.com/gnames/bhlnames/ent/reffinder"
 )
 
-func getRefTitleScore(refString string, ref *refbhl.ReferenceBHL, rf reffinder.RefFinder) (int, error) {
+func getRefTitleScore(titleIDs map[int][]string, ref *refbhl.ReferenceBHL) int {
 	var res int
-	titlesIDs, err := rf.TitlesBHL(refString)
-	if err != nil {
-		return 0, err
-	}
-
 	// matched abbreviations are sorted by their length
-	if abbrs, ok := titlesIDs[ref.TitleID]; ok {
+	if abbrs, ok := titleIDs[ref.TitleID]; ok {
 		switch len(abbrs[0]) {
 		case 10:
 			res = 15
@@ -31,5 +25,5 @@ func getRefTitleScore(refString string, ref *refbhl.ReferenceBHL, rf reffinder.R
 			res = 1
 		}
 	}
-	return res, nil
+	return res
 }

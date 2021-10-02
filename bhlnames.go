@@ -11,6 +11,7 @@ import (
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/ent/reffinder"
 	"github.com/gnames/bhlnames/ent/score"
+	"github.com/gnames/bhlnames/ent/title_matcher"
 	"github.com/gnames/gnparser"
 )
 
@@ -28,6 +29,12 @@ func OptRefFinder(rf reffinder.RefFinder) Option {
 	}
 }
 
+func OptTitleMatcher(tm title_matcher.TitleMatcher) Option {
+	return func(bn *bhlnames) {
+		bn.TitleMatcher = tm
+	}
+}
+
 func OptParser(gnp gnparser.GNparser) Option {
 	return func(bn *bhlnames) {
 		bn.GNparser = gnp
@@ -39,6 +46,7 @@ type bhlnames struct {
 	gnparser.GNparser
 	builder.Builder
 	reffinder.RefFinder
+	title_matcher.TitleMatcher
 }
 
 func New(cfg config.Config, opts ...Option) BHLnames {
@@ -47,6 +55,14 @@ func New(cfg config.Config, opts ...Option) BHLnames {
 		opts[i](bn)
 	}
 	return bn
+}
+
+func (bn *bhlnames) Close() error {
+	err := bn.RefFinder.Close()
+	if err == nil {
+		err = bn.TitleMatcher.Close()
+	}
+	return err
 }
 
 func (bn *bhlnames) Initialize() error {
@@ -80,8 +96,8 @@ func (bn *bhlnames) nameRefsWorker(
 	wg *sync.WaitGroup,
 ) {
 	defer wg.Done()
-	for data := range chIn {
-		nameRefs, err := bn.ReferencesBHL(data)
+	for inp := range chIn {
+		nameRefs, err := bn.ReferencesBHL(inp)
 		if err != nil {
 			log.Println(err)
 		}
@@ -141,7 +157,7 @@ func (bn *bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 		score.Year:     2,
 	}
 	s := score.New(prec)
-	err := s.Calculate(nr, bn.RefFinder)
+	err := s.Calculate(nr, bn.TitleMatcher)
 	if err != nil {
 		return err
 	}
@@ -152,9 +168,17 @@ func (bn *bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 		}
 		return refs[i].Score.Sort > refs[j].Score.Sort
 	})
-	// if len(nr.References) > 0 {
-	// 	nr.References = nr.References[:1]
-	// }
+	if len(nr.References) > 0 {
+		noScoreIndex := len(nr.References)
+		for i := range nr.References {
+			if nr.References[i].Score.Total == 0 {
+				noScoreIndex = i
+				break
+			}
+		}
+
+		nr.References = nr.References[:noScoreIndex]
+	}
 	return nil
 }
 

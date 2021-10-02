@@ -118,6 +118,7 @@ func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceBHL {
 			EditDistance:       v.item.editDistance,
 			AnnotNomen:         v.item.annotation,
 			PageID:             v.item.pageID,
+			PageNum:            v.item.pageNum,
 			PartID:             int(v.part.ID),
 			ItemID:             v.item.itemID,
 			TitleID:            v.item.titleID,

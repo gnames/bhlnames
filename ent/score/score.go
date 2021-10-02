@@ -6,7 +6,7 @@ import (
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/ent/refbhl"
-	"github.com/gnames/bhlnames/ent/reffinder"
+	"github.com/gnames/bhlnames/ent/title_matcher"
 )
 
 type score struct {
@@ -22,21 +22,25 @@ func New(prec map[ScoreType]int) Score {
 	return &score{precedence: prec}
 }
 
-func (s *score) Calculate(nr *namerefs.NameRefs, rf reffinder.RefFinder) error {
+func (s *score) Calculate(nr *namerefs.NameRefs, tm title_matcher.TitleMatcher) error {
+	var err error
 	refs := nr.References
 	yr := getYear(nr.Input)
+
+	refString := nr.Input.RefString
+	var titleIDs map[int][]string
+	if refString != "" {
+		titleIDs, err = tm.TitlesBHL(refString)
+		if err != nil {
+			return err
+		}
+	}
+
 	for i := range refs {
 		s = &score{precedence: s.precedence}
 		s.year = getYearScore(yr, refs[i])
 		s.annot = getAnnotScore(refs[i])
-
-		if nr.Input.RefString != "" {
-			titleScore, err := getRefTitleScore(nr.Input.RefString, refs[i], rf)
-			if err != nil {
-				return err
-			}
-			s.refTitle = titleScore
-		}
+		s.refTitle = getRefTitleScore(titleIDs, refs[i])
 		s.combineScores()
 		refs[i].Score = refbhl.Score{
 			Sort:     s.value,

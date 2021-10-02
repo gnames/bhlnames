@@ -1,7 +1,6 @@
 package abbr
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 	"unicode"
@@ -10,9 +9,15 @@ import (
 	"github.com/gnames/gner/ent/token"
 )
 
-func All(s string, d map[string]struct{}) []string {
+func Patterns(s string, d map[string]struct{}) []string {
 	res1 := Abbr(s)
+	if len(res1) > 10 {
+		res1 = res1[0:10]
+	}
 	res2 := AbbrMax(s, d)
+	if len(res2) > 10 {
+		res2 = res1[0:10]
+	}
 	der1 := Derivatives(res1)
 	if res1 == res2 {
 		return der1
@@ -84,12 +89,6 @@ func abbr(s string, shortWords map[string]struct{}) string {
 		if r := firstLetter(word); r != '�' {
 			res = append(res, byte(r))
 		}
-	}
-	if len(res) > 10 {
-		res = res[:10]
-	}
-	if !str.IsASCII(string(res)) {
-		fmt.Println(string(res))
 	}
 	return string(res)
 }

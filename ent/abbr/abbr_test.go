@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAll(t *testing.T) {
+func Test(t *testing.T) {
 	tests := []struct {
 		msg, title string
 		abbrs      []string
@@ -25,18 +25,22 @@ func TestAll(t *testing.T) {
 			[]string{"abobaou", "abobao", "abbau", "aboba", "abba", "abob"},
 		},
 		{
-			"2",
+			"3",
 			"Annales du Muséum national d'histoire naturelle.",
 			[]string{"admndhn", "admndh", "admnd", "amnhn", "admn", "amnh"},
+		},
+		{
+			"4",
+			"Skalitzky, C. Zwei neue europäische Staphylinenarten aus Portugal. Wiener Entomologische Zeitung, 3 (4): 97-99. (1884).",
+			[]string{"scznesapwe", "scznespwez", "scznesapw", "scznespwe", "scznesap", "scznespw", "scznesa", "scznesp"},
 		},
 	}
 
 	d := dictio.New()
 	shortWords, err := d.ShortWords()
 	assert.Nil(t, err)
-
 	for _, v := range tests {
-		n := abbr.All(v.title, shortWords)
+		n := abbr.Patterns(v.title, shortWords)
 		assert.Equal(t, n, v.abbrs, v.msg)
 	}
 }
@@ -62,6 +66,11 @@ func TestAbbr(t *testing.T) {
 			"Annales du Muséum national d'histoire naturelle.",
 			"admndhn",
 			"amnhn",
+		},
+		{"3",
+			"Skalitzky, C. Zwei neue europäische Staphylinenarten aus Portugal. Wiener Entomologische Zeitung, 3 (4): 97-99. (1884).",
+			"scznesapwez",
+			"scznespwez",
 		},
 	}
 

@@ -21,8 +21,9 @@ require (
 )
 
 require (
-	github.com/gnames/aho_corasick v0.1.0
+	github.com/gnames/aho_corasick v0.1.2
 	github.com/gnames/gner v0.1.4
+	github.com/google/uuid v1.2.0
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.4.1
 	golang.org/x/text v0.3.6
@@ -40,7 +41,6 @@ require (
 	github.com/gnames/tribool v0.1.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
-	github.com/google/uuid v1.2.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect

@@ -90,8 +90,8 @@ func (b builderio) uploadDataBHL() error {
 	}
 
 	if err == nil {
-		tf := NewTitleFinder(b.Config, titlesMap)
-		return tf.Setup()
+		ts := newTitleStore(b.Config, titlesMap)
+		return ts.setup()
 	}
 
 	return err

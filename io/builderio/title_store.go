@@ -10,26 +10,25 @@ import (
 	badger "github.com/dgraph-io/badger/v2"
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/abbr"
-	"github.com/gnames/bhlnames/ent/titlefinder"
 	"github.com/gnames/bhlnames/io/db"
 	"github.com/gnames/bhlnames/io/dictio"
 	"github.com/gnames/gnfmt"
 )
 
-type tfio struct {
+type titleStore struct {
 	cfg        config.Config
 	titles     map[int]*title
 	shortWords map[string]struct{}
 	abbrMap    map[string][]int
 }
 
-func NewTitleFinder(cfg config.Config, titles map[int]*title) titlefinder.TitleFinder {
+func newTitleStore(cfg config.Config, titles map[int]*title) *titleStore {
 	d := dictio.New()
 	shortWords, err := d.ShortWords()
 	if err != nil {
 		log.Fatal(err)
 	}
-	res := tfio{
+	res := titleStore{
 		cfg:        cfg,
 		titles:     titles,
 		shortWords: shortWords,
@@ -37,26 +36,22 @@ func NewTitleFinder(cfg config.Config, titles map[int]*title) titlefinder.TitleF
 	return &res
 }
 
-func (tf *tfio) Setup() error {
+func (ts *titleStore) setup() error {
 	abbrMap := make(map[string][]int)
-	for k, v := range tf.titles {
-		abbrs := abbr.All(v.Name, tf.shortWords)
+	for k, v := range ts.titles {
+		abbrs := abbr.Patterns(v.Name, ts.shortWords)
 		for i := range abbrs {
-			if len(abbrs[i]) > 3 {
+			if len(abbrs[i]) > 2 {
 				abbrMap[abbrs[i]] = append(abbrMap[abbrs[i]], k)
 			}
 		}
 	}
-	return tf.save(abbrMap)
+	return ts.save(abbrMap)
 }
 
-func (tf *tfio) Search(ref string) (titleIDs map[string]int, err error) {
-	return nil, nil
-}
-
-func (tf *tfio) save(abbrMap map[string][]int) error {
+func (ts *titleStore) save(abbrMap map[string][]int) error {
 	var err error
-	kv := db.InitKeyVal(tf.cfg.AhoCorKeyValDir)
+	kv := db.InitKeyVal(ts.cfg.AhoCorKeyValDir)
 	defer kv.Close()
 
 	kvTxn := kv.NewTransaction(true)
@@ -97,6 +92,6 @@ func (tf *tfio) save(abbrMap map[string][]int) error {
 		return len(abbrs[i]) > len(abbrs[j])
 	})
 	tmp := strings.Join(abbrs, "\n")
-	path := filepath.Join(tf.cfg.AhoCorasickDir, "patterns.txt")
+	path := filepath.Join(ts.cfg.AhoCorasickDir, "patterns.txt")
 	return os.WriteFile(path, []byte(tmp), 0644)
 }
