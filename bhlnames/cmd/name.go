@@ -34,6 +34,7 @@ import (
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/io/reffinderio"
+	"github.com/gnames/bhlnames/io/titlemio"
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnparser"
 	"github.com/spf13/cobra"
@@ -64,11 +65,14 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 
 		rf := reffinderio.New(cfg)
 
+		tm := titlemio.New(cfg)
+
 		gnp := gnparser.New(gnparser.NewConfig())
 
 		bnOpts := []bhlnames.Option{
 			bhlnames.OptRefFinder(rf),
 			bhlnames.OptParser(gnp),
+			bhlnames.OptTitleMatcher(tm),
 		}
 
 		bn := bhlnames.New(cfg, bnOpts...)
@@ -283,18 +287,18 @@ func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 
 func processResults(f gnfmt.Format, chOut <-chan *namerefs.NameRefs,
 	wg *sync.WaitGroup) {
-	enc := gnfmt.GNjson{}
+	enc := gnfmt.GNjson{Pretty: true}
 	defer wg.Done()
 	var dump []*namerefs.NameRefs
 	for nameRef := range chOut {
 		dump = append(dump, nameRef)
 		fmt.Println(enc.Output(nameRef, f))
 	}
-	encDump, err := new(gnfmt.GNgob).Encode(dump)
+	encDump, err := enc.Encode(dump)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = os.WriteFile("testdata/stubs_namerefs.gob", encDump, 0644)
+	err = os.WriteFile("testdata/stubs_namerefs.json", encDump, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}

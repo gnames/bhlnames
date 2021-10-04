@@ -10,12 +10,9 @@ import (
 )
 
 type score struct {
-	total      int
-	year       int
-	annot      int
-	refTitle   int
-	value      uint32
-	precedence map[ScoreType]int
+	total, year, annot, refTitle, refVolume, refPages int
+	value                                             uint32
+	precedence                                        map[ScoreType]int
 }
 
 func New(prec map[ScoreType]int) Score {
@@ -41,13 +38,17 @@ func (s *score) Calculate(nr *namerefs.NameRefs, tm title_matcher.TitleMatcher) 
 		s.year = getYearScore(yr, refs[i])
 		s.annot = getAnnotScore(refs[i])
 		s.refTitle = getRefTitleScore(titleIDs, refs[i])
+		s.refVolume = getVolumeScore(nr.Input.Volume, refs[i])
+		s.refPages = getPageScore(nr.Input.PageStart, nr.Input.PageEnd, refs[i])
 		s.combineScores()
 		refs[i].Score = refbhl.Score{
-			Sort:     s.value,
-			Total:    s.total,
-			Annot:    s.annot,
-			Year:     s.year,
-			RefTitle: s.refTitle,
+			Sort:      s.value,
+			Total:     s.total,
+			Annot:     s.annot,
+			Year:      s.year,
+			RefTitle:  s.refTitle,
+			RefVolume: s.refVolume,
+			RefPages:  s.refPages,
 		}
 	}
 	return nil
@@ -68,20 +69,24 @@ func (s *score) String() string {
 }
 
 func (s *score) combineScores() {
-	s.total = s.year + s.annot + s.refTitle
+	s.total = s.year + s.annot + s.refTitle + s.refVolume + s.refPages
 	annotShift := 4 * s.precedence[Annot]
 	yearShift := 4 * s.precedence[Year]
 	refTitleShift := 4 * s.precedence[RefTitle]
+	refVolume := 4 * s.precedence[RefVolume]
+	refPages := 4 * s.precedence[RefPages]
 	totalShift := 24
 	s.value = (s.value | uint32(s.annot)<<annotShift)
 	s.value = (s.value | uint32(s.year)<<yearShift)
 	s.value = (s.value | uint32(s.refTitle)<<refTitleShift)
+	s.value = (s.value | uint32(s.refVolume)<<refVolume)
+	s.value = (s.value | uint32(s.refPages)<<refPages)
 	s.value = (s.value | uint32(s.total)<<totalShift)
 }
 
-func getYear(inp input.Input) string {
-	if inp.RefYear != "" {
-		return inp.RefYear
+func getYear(inp input.Input) int {
+	if inp.RefYearStart != 0 {
+		return inp.RefYearStart
 	}
 	return inp.NameYear
 }

@@ -1,6 +1,7 @@
 package input
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/gnames/gnparser"
@@ -15,44 +16,45 @@ type Input struct {
 
 type Name struct {
 	NameString  string `json:"nameString,omitempty"`
-	NameYear    string `json:"year,omitempty"`
+	NameYear    int    `json:"year,omitempty"`
 	Canonical   string `json:"canonical,omitempty"`
 	NameAuthors string `json:"authors,omitempty"`
 }
 
 type Reference struct {
-	RefString  string `json:"refString,omitempty"`
-	RefYear    string `json:"year,omitempty"`
-	RefAuthors string `json:"authors,omitempty"`
-	Journal    string `json:"journal,omitempty"`
-	Volume     string `json:"volume,omitempty"`
-	PageStart  int    `json:"pageStart,omitempty"`
-	PageEnd    int    `json:"pageEnd"`
+	RefString    string `json:"refString,omitempty"`
+	RefYearStart int    `json:"yearStart,omitempty"`
+	RefYearEnd   int    `json:"yearEnd,omitempty"`
+	RefAuthors   string `json:"authors,omitempty"`
+	Journal      string `json:"journal,omitempty"`
+	Volume       int    `json:"volume,omitempty"`
+	PageStart    int    `json:"pageStart,omitempty"`
+	PageEnd      int    `json:"pageEnd,omitempty"`
 }
 
 type Option func(*Input)
 
 func OptID(s string) Option {
-	return func(i *Input) {
-		i.ID = s
+	return func(inp *Input) {
+		inp.ID = s
 	}
 }
 
 func OptNameString(s string) Option {
-	return func(i *Input) {
-		i.NameString = s
+	return func(inp *Input) {
+		inp.NameString = s
 	}
 }
 
-func OptNameYear(s string) Option {
-	return func(i *Input) {
-		i.NameYear = s
+func OptNameYear(i int) Option {
+	return func(inp *Input) {
+		inp.NameYear = i
 	}
 }
 
 func OptRefString(s string) Option {
-	return func(i *Input) {
-		i.RefString = s
+	return func(inp *Input) {
+		inp.RefString = s
 	}
 }
 
@@ -68,6 +70,9 @@ func New(gnp gnparser.GNparser, opts ...Option) Input {
 
 	if res.NameString != "" && res.Canonical == "" {
 		parseNameString(gnp, &res)
+	}
+	if res.RefString != "" {
+		parseRefString(&res)
 	}
 	return res
 }
@@ -85,8 +90,9 @@ func parseNameString(gnp gnparser.GNparser, inp *Input) {
 	if parsed.Authorship != nil {
 		inp.NameAuthors = strings.Join(parsed.Authorship.Authors, " ")
 
-		if inp.NameYear == "" {
-			inp.NameYear = parsed.Authorship.Year
+		if inp.NameYear == 0 && parsed.Authorship.Year != "" {
+			yr, _ := strconv.Atoi(parsed.Authorship.Year)
+			inp.NameYear = yr
 		}
 	}
 }

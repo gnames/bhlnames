@@ -92,4 +92,10 @@ type Score struct {
 
 	// RefTitle is the score of matching references titleName.
 	RefTitle int `json:"refTitle"`
+
+	// RefVolume is a score from matching volume from reference and BHL Volume.
+	RefVolume int
+
+	// RefPages is a score from matching pages in reference and a page in BHL.
+	RefPages int
 }

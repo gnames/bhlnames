@@ -34,6 +34,11 @@ func Test(t *testing.T) {
 			"Skalitzky, C. Zwei neue europäische Staphylinenarten aus Portugal. Wiener Entomologische Zeitung, 3 (4): 97-99. (1884).",
 			[]string{"scznesapwe", "scznespwez", "scznesapw", "scznespwe", "scznesap", "scznespw", "scznesa", "scznesp"},
 		},
+		{
+			"5",
+			"Bulletin de l'Herbier Boissier.",
+			[]string{"bdlhb", "bdlh", "bhb"},
+		},
 	}
 
 	d := dictio.New()

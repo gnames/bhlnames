@@ -1,5 +1,4 @@
-/*
-Copyright © 2020 Dmitry Mozzherin <dmozzherin@gmail.com>
+/* Copyright © 2020 Dmitry Mozzherin <dmozzherin@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +26,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strconv"
 	"sync"
 	"time"
 
@@ -111,7 +109,7 @@ func init() {
 		"Delimiter for reading CSV files, default is comma.")
 }
 
-func nomen(bn bhlnames.BHLnames, data, year string) {
+func nomen(bn bhlnames.BHLnames, data string, year int) {
 	path := string(data)
 	exists, _ := gnsys.FileExists(path)
 	if exists {
@@ -194,7 +192,7 @@ func processNomenResults(f gnfmt.Format, out <-chan *namerefs.NameRefs,
 	}
 }
 
-func nomenFromString(bn bhlnames.BHLnames, name string, year string) {
+func nomenFromString(bn bhlnames.BHLnames, name string, year int) {
 	enc := gnfmt.GNjson{}
 	gnpCfg := gnparser.NewConfig()
 	gnp := gnparser.New(gnpCfg)
@@ -212,7 +210,7 @@ func nomenFromString(bn bhlnames.BHLnames, name string, year string) {
 	fmt.Println(string(out))
 }
 
-func yearFlag(cmd *cobra.Command) string {
+func yearFlag(cmd *cobra.Command) int {
 	now := time.Now()
 	maxYear := now.Year() + 2
 	y, err := cmd.Flags().GetInt("year")
@@ -221,9 +219,9 @@ func yearFlag(cmd *cobra.Command) string {
 		os.Exit(1)
 	}
 	if y < 1750 || y > maxYear {
-		return ""
+		return 0
 	}
-	return strconv.Itoa(y)
+	return y
 }
 
 func delimiterFlag(cmd *cobra.Command) rune {

@@ -17,10 +17,10 @@ var (
 )
 
 func Stubs(t *testing.T) map[string]*namerefs.NameRefs {
-	f, err := os.ReadFile(filepath.Join(basepath, "..", "..", "..", "testdata", "stubs_namerefs.gob"))
+	f, err := os.ReadFile(filepath.Join(basepath, "..", "..", "..", "testdata", "stubs_namerefs.json"))
 	assert.Nil(t, err)
 	var nrs []*namerefs.NameRefs
-	err = gnfmt.GNgob{}.Decode(f, &nrs)
+	err = new(gnfmt.GNjson).Decode(f, &nrs)
 	assert.Nil(t, err)
 	res := make(map[string]*namerefs.NameRefs)
 	for i := range nrs {

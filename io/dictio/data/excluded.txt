@@ -148,6 +148,7 @@ its
 ji
 ju
 ke
+l
 la
 las
 le

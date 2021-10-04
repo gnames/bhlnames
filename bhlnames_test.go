@@ -64,6 +64,11 @@ func TestNomenRefs(t *testing.T) {
 			43792, 31, 15, 15, 1,
 		},
 		// {
+		// 	"Cyathea", "Cyathea aureonitens",
+		// 	"Bulletin de l'Herbier Boissier. ser.2 v.4 1904",
+		// 	43792, 31, 15, 15, 1,
+		// },
+		// {
 		// 	"Sagenia", "Sagenia longicruris Christ, 1906",
 		// 	"",
 		// 	26220, 30, 15, 15, 0,

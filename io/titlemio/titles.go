@@ -1,6 +1,8 @@
 package titlemio
 
 import (
+	"sort"
+
 	"github.com/gnames/bhlnames/ent/abbr"
 	"github.com/gnames/bhlnames/io/db"
 	"github.com/gnames/gnfmt"
@@ -38,6 +40,13 @@ func (tm *titlemio) abbrsToTitleIDs(abbrs []string) (map[int][]string, error) {
 			}
 			res[ids[i]] = append(res[ids[i]], k)
 		}
+	}
+
+	for k, v := range res {
+		sort.Slice(v, func(i, j int) bool {
+			return len(v[i]) > len(v[j])
+		})
+		res[k] = v
 	}
 	return res, nil
 }

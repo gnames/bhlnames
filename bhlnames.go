@@ -152,9 +152,11 @@ func (bn *bhlnames) nomenRefsWorker(
 func (bn *bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 	// Year has precedence over others
 	prec := map[score.ScoreType]int{
-		score.RefTitle: 0,
-		score.Annot:    1,
-		score.Year:     2,
+		score.RefVolume: 0,
+		score.RefTitle:  1,
+		score.Annot:     2,
+		score.Year:      3,
+		score.RefPages:  4,
 	}
 	s := score.New(prec)
 	err := s.Calculate(nr, bn.TitleMatcher)
