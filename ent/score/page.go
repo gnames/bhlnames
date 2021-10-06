@@ -7,22 +7,22 @@ import (
 	"github.com/gnames/bhlnames/ent/refbhl"
 )
 
-func getPageScore(pageStart, pageEnd int, ref *refbhl.ReferenceBHL) int {
+func getPageScore(pageStart, pageEnd int, ref *refbhl.ReferenceBHL) (int, string) {
 	score := 0
 
 	if pageStart == 0 && pageEnd == 0 {
-		return score
+		return pagesLabel(score)
 	}
 
 	if ref.PageNum == 0 && ref.PartPages == "" {
-		return score
+		return pagesLabel(score)
 	}
 
 	if ref.PageNum > 0 {
 		if pageEnd == 0 && ref.PageNum == pageStart {
-			score = 12
+			score = 2
 		} else if pageStart <= ref.PageNum && ref.PageNum <= pageEnd {
-			score = 12
+			score = 2
 		}
 	}
 
@@ -32,16 +32,29 @@ func getPageScore(pageStart, pageEnd int, ref *refbhl.ReferenceBHL) int {
 		partPageStart, _ = strconv.Atoi(partPages[0])
 
 		if partPageStart == 0 {
-			return score
+			return pagesLabel(score)
 		}
 
 		if len(partPages) > 1 && pageEnd > pageStart {
 			partPageEnd, _ = strconv.Atoi(partPages[1])
 
 			if pageStart >= partPageStart && pageEnd <= partPageEnd {
-				score += 3
+				score += 1
 			}
 		}
 	}
-	return score
+	return pagesLabel(score)
+}
+
+func pagesLabel(score int) (int, string) {
+	switch score {
+	case 3:
+		return score, "both"
+	case 2:
+		return score, "page_num"
+	case 1:
+		return score, "paper_pages"
+	default:
+		return score, "none"
+	}
 }

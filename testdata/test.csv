@@ -1,9 +1,9 @@
-NameString	RefString
-Achenium lusitanicum Skalitzky, 1884	Skalitzky, C. Zwei neue europäische Staphylinenarten aus Portugal. Wiener Entomologische Zeitung, 3 (4): 97-99. (1884).
-Sagenia longicruris Christ	Christ. In: Bull. Ac. Géogr. Bot. Mans 250. (1906).
-Hamotus gracilicornis Reitter, 1882	Reitter, E. Neue Pselaphiden und Scydmaeniden aus Brasilien. Deutsche Entomologische Zeitschrift, 26 (1): 129-152, pl. 5. (1882).
-Pseudotrochalus niger Brenske, 1903	Brenske E. Beiträge zur Kenntniss der Insektenfauna von Kamerun, Nr.14. Melolonthiden aus Kamerun nach der ausbeute des Herrn Professor Dr.Yngve Sjöstedt, sowie eine übersicht aller bekannten Arten Kamerun's und den angrenzenden Gebietes. Entomologisk Tidskrift 24:81-98. (1903).
-Orthocarpus attenuatus A.Gray	A. Gray. In: Pacif. Rail. Rep. 4: 121. (1857).
-Cyathea aureonitens Christ	Christ. In: Bull. Herb. Boiss. II, 4: 948. (1904).
-Licaria simulans C.K.Allen	C. K. Allen. In: Mem. N. Y. Bot. Gard. 10: No. 5, 55. (1964).
-Anthoceros muscoides Colenso	Colenso W. A further contribution toward making known the botany of New Zealand. Transactions and Proceedings of the New Zealand Institute 16: 325-363. (1884).
+Id,NameString	RefString
+1,Achenium lusitanicum Skalitzky, 1884	Skalitzky, C. Zwei neue europäische Staphylinenarten aus Portugal. Wiener Entomologische Zeitung, 3 (4): 97-99. (1884).
+2,Sagenia longicruris Christ	Christ. In: Bull. Ac. Géogr. Bot. Mans 250. (1906).
+3,Hamotus gracilicornis Reitter, 1882	Reitter, E. Neue Pselaphiden und Scydmaeniden aus Brasilien. Deutsche Entomologische Zeitschrift, 26 (1): 129-152, pl. 5. (1882).
+4,Pseudotrochalus niger Brenske, 1903	Brenske E. Beiträge zur Kenntniss der Insektenfauna von Kamerun, Nr.14. Melolonthiden aus Kamerun nach der ausbeute des Herrn Professor Dr.Yngve Sjöstedt, sowie eine übersicht aller bekannten Arten Kamerun's und den angrenzenden Gebietes. Entomologisk Tidskrift 24:81-98. (1903).
+5,Orthocarpus attenuatus A.Gray	A. Gray. In: Pacif. Rail. Rep. 4: 121. (1857).
+6,Cyathea aureonitens Christ	Christ. In: Bull. Herb. Boiss. II, 4: 948. (1904).
+7,Licaria simulans C.K.Allen	C. K. Allen. In: Mem. N. Y. Bot. Gard. 10: No. 5, 55. (1964).
+8,Anthoceros muscoides Colenso	Colenso W. A further contribution toward making known the botany of New Zealand. Transactions and Proceedings of the New Zealand Institute 16: 325-363. (1884).

@@ -41,69 +41,84 @@ func (a annotation) String() string {
 
 }
 
-// NO_ANNOT = 15???
+// NO_ANNOT = 3???
 // SP_NOV
-// f:sp v:sp = 15
+// f:sp v:sp = 3
 // f:sp v:gen = 0
-// f:sp v:ssp = 2
-// f:ssp v:sp = 9
+// f:sp v:ssp = 1
+// f:ssp v:sp = 2
 // f:ssp v:gen = 0
 // f:gen v:gen = 0
 // SUBSP_NOV
-// f:ssp v:ssp = 15
-// f:ssp v:sp = 0
+// f:ssp v:ssp = 3
+// f:ssp v:sp = 1
 // f:ssp v:gen = 0
-// f:sp v:ssp = 9
-// f:gen v:gen = 0
-// COMB_NOV
-// f:sp v:sp = 15
-// f:ssp v:ssp = 15
-// f:ssp v:sp = 6
 // f:sp v:ssp = 2
 // f:gen v:gen = 0
+// COMB_NOV
+// f:sp v:sp = 3
+// f:ssp v:ssp = 3
+// f:ssp v:sp = 2
+// f:sp v:ssp = 1
+// f:gen v:gen = 0
 
-func getAnnotScore(ref *refbhl.ReferenceBHL) int {
+func getAnnotScore(ref *refbhl.ReferenceBHL) (int, string) {
 	annot := NewAnnot(ref.AnnotNomen)
 	cardName, cardMatchName := cardinality(ref)
 	if cardName == 0 || cardMatchName == 0 {
-		return 0
+		return annotLabel(0)
 	}
 	switch annot {
 	case spNov:
 		switch {
 		case cardName == 2 && cardMatchName == 2:
-			return 15
+			return annotLabel(3)
 		case cardName == 2 && cardMatchName == 3:
-			return 2
+			return annotLabel(1)
 		case cardName == 3 && cardMatchName == 2:
-			return 9
+			return annotLabel(2)
 		default:
-			return 0
+			return annotLabel(0)
 		}
 	case subsNov:
 		switch {
 		case cardName == 3 && cardMatchName == 3:
-			return 15
+			return annotLabel(3)
 		case cardName == 3 && cardMatchName == 2:
-			return 2
+			return annotLabel(1)
 		case cardName == 2 && cardMatchName == 3:
-			return 6
+			return annotLabel(2)
 		default:
-			return 0
+			return annotLabel(0)
 		}
 	case combNov:
 		switch {
 		case cardName == 2 && cardMatchName == 2:
-			return 15
+			return annotLabel(3)
 		case cardName == 3 && cardMatchName == 3:
-			return 15
+			return annotLabel(3)
+		case cardName == 3 && cardMatchName == 2:
+			return annotLabel(2)
 		case cardName == 2 && cardMatchName == 3:
-			return 9
+			return annotLabel(1)
 		}
 	case noAnnot:
-		return 0
+		return annotLabel(0)
 	}
-	return 0
+	return annotLabel(0)
+}
+
+func annotLabel(score int) (int, string) {
+	switch score {
+	case 3:
+		return score, "exact"
+	case 2:
+		return score, "likely"
+	case 1:
+		return score, "doubtful"
+	default:
+		return score, "none"
+	}
 }
 
 func cardinality(ref *refbhl.ReferenceBHL) (int32, int32) {

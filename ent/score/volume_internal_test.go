@@ -31,6 +31,7 @@ func TestVolumeScore(t *testing.T) {
 			Volume: d.volumeBhl,
 		}
 
-		assert.Equal(t, d.score, getVolumeScore(d.volume, &testRef), d.msg)
+		score, _ := getVolumeScore(d.volume, &testRef)
+		assert.Equal(t, score, d.score, d.msg)
 	}
 }

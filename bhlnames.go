@@ -166,6 +166,9 @@ func (bn *bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 	sort.Slice(nr.References, func(i, j int) bool {
 		refs := nr.References
 		if refs[i].Score.Sort == refs[j].Score.Sort {
+			if refs[i].YearAggr == refs[j].YearAggr {
+				return refs[i].PageID < refs[j].PageID
+			}
 			return refs[i].YearAggr < refs[j].YearAggr
 		}
 		return refs[i].Score.Sort > refs[j].Score.Sort

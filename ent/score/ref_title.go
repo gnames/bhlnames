@@ -4,26 +4,42 @@ import (
 	"github.com/gnames/bhlnames/ent/refbhl"
 )
 
-func getRefTitleScore(titleIDs map[int][]string, ref *refbhl.ReferenceBHL) int {
-	var res int
+func getRefTitleScore(
+	titleIDs map[int][]string,
+	ref *refbhl.ReferenceBHL,
+) (int, string) {
+	var score int
 	// matched abbreviations are sorted by their length
 	if abbrs, ok := titleIDs[ref.TitleID]; ok {
 		switch len(abbrs[0]) {
 		case 10:
-			res = 15
+			score = 3
 		case 9:
-			res = 14
+			score = 3
 		case 8:
-			res = 12
+			score = 3
 		case 7:
-			res = 9
+			score = 2
 		case 6:
-			res = 6
+			score = 2
 		case 5:
-			res = 3
+			score = 2
 		default:
-			res = 1
+			score = 1
 		}
 	}
-	return res
+	return titleLabel(score)
+}
+
+func titleLabel(score int) (int, string) {
+	switch score {
+	case 3:
+		return score, "long"
+	case 2:
+		return score, "medium"
+	case 1:
+		return score, "short"
+	default:
+		return score, "none"
+	}
 }

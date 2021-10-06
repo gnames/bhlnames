@@ -72,7 +72,7 @@ func Derivatives(s string) []string {
 }
 
 func abbr(s string, shortWords map[string]struct{}) string {
-	strs := str.SplitAny(s, " -'")
+	strs := str.SplitAny(s, " .-'")
 	s = strings.Join(strs, " ")
 	tokens := token.Tokenize(
 		[]rune(s),

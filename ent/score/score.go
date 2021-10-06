@@ -10,9 +10,10 @@ import (
 )
 
 type score struct {
-	total, year, annot, refTitle, refVolume, refPages int
-	value                                             uint32
-	precedence                                        map[ScoreType]int
+	total, year, annot, refTitle, refVolume, refPages       int
+	yearLabel, annotLabel, titleLabel, volLabel, pagesLabel string
+	value                                                   uint32
+	precedence                                              map[ScoreType]int
 }
 
 func New(prec map[ScoreType]int) Score {
@@ -35,11 +36,11 @@ func (s *score) Calculate(nr *namerefs.NameRefs, tm title_matcher.TitleMatcher) 
 
 	for i := range refs {
 		s = &score{precedence: s.precedence}
-		s.year = getYearScore(yr, refs[i])
-		s.annot = getAnnotScore(refs[i])
-		s.refTitle = getRefTitleScore(titleIDs, refs[i])
-		s.refVolume = getVolumeScore(nr.Input.Volume, refs[i])
-		s.refPages = getPageScore(nr.Input.PageStart, nr.Input.PageEnd, refs[i])
+		s.year, s.yearLabel = getYearScore(yr, refs[i])
+		s.annot, s.annotLabel = getAnnotScore(refs[i])
+		s.refTitle, s.titleLabel = getRefTitleScore(titleIDs, refs[i])
+		s.refVolume, s.volLabel = getVolumeScore(nr.Input.Volume, refs[i])
+		s.refPages, s.pagesLabel = getPageScore(nr.Input.PageStart, nr.Input.PageEnd, refs[i])
 		s.combineScores()
 		refs[i].Score = refbhl.Score{
 			Sort:      s.value,
@@ -49,6 +50,13 @@ func (s *score) Calculate(nr *namerefs.NameRefs, tm title_matcher.TitleMatcher) 
 			RefTitle:  s.refTitle,
 			RefVolume: s.refVolume,
 			RefPages:  s.refPages,
+			Labels: map[string]string{
+				"year":  s.yearLabel,
+				"annot": s.annotLabel,
+				"title": s.titleLabel,
+				"vol":   s.volLabel,
+				"pages": s.pagesLabel,
+			},
 		}
 	}
 	return nil

@@ -39,6 +39,12 @@ func Test(t *testing.T) {
 			"Bulletin de l'Herbier Boissier.",
 			[]string{"bdlhb", "bdlh", "bhb"},
 		},
+		{
+			"6",
+			"Abhandlungen der K.K. Zool.-Botan.Gesellschaft in Wien.",
+			[]string{"adkkzbgiw", "adkkzbgi", "adkkzbg", "akkzbgw",
+				"adkkzb", "akkzbg", "akkzb", "akkz"},
+		},
 	}
 
 	d := dictio.New()

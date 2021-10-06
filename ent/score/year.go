@@ -7,14 +7,16 @@ import (
 	"github.com/gnames/bhlnames/ent/refbhl"
 )
 
-var maxYearScore int = 15
+var maxYearScore int = 3
 
 // getYearScore
-func getYearScore(yearInput int, ref *refbhl.ReferenceBHL) int {
+func getYearScore(yearInput int, ref *refbhl.ReferenceBHL) (int, string) {
+	var score int
 	yearPart, itemYearStart, itemYearEnd, titleYearStart, titleYearEnd := getRefYears(ref)
 
 	if yearPart > 0 {
-		return yearNear(yearInput, yearPart)
+		score = yearNear(yearInput, yearPart)
+		return yearLabel(score)
 	}
 	var score1, score2 int
 	item := int(itemYearStart+itemYearEnd) > 0
@@ -27,9 +29,22 @@ func getYearScore(yearInput int, ref *refbhl.ReferenceBHL) int {
 	}
 
 	if score1 > score2 {
-		return score1
+		return yearLabel(score1)
 	}
-	return score2
+	return yearLabel(score2)
+}
+
+func yearLabel(score int) (int, string) {
+	switch score {
+	case 3:
+		return score, "exact"
+	case 2:
+		return score, "near"
+	case 1:
+		return score, "far"
+	default:
+		return score, "none"
+	}
 }
 
 func invalidYear(year int) bool {
@@ -55,11 +70,11 @@ func yearBetween(year, yearMin, yearMax int) int {
 		return 0
 	}
 	if yearMin == 0 && yearMax == 0 {
-		return 1
+		return 0
 	}
 
 	if yearMax < yearMin && yearMax != 0 {
-		return 1
+		return 0
 	}
 
 	if yearMax == 0 {

@@ -1,17 +1,17 @@
 package score
 
 import (
-	"math"
 	"testing"
 
 	"github.com/gnames/bhlnames/ent/refbhl"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestYearNear(t *testing.T) {
 	// yearNear does not check for validness of the year, it is done in
 	// YearScore function.
 	years := [][]int{{2001, 2000}, {2000, 2001}, {2000, 2000}, {2000, 2002}, {2000, 2003}, {-1, -1}, {3000, 3001}}
-	scores := []int{11, 11, 15, 7, 5, 0, 0}
+	scores := []int{2, 2, 3, 1, 1, 0, 0}
 	for i, v := range years {
 		score := yearNear(v[0], v[1])
 		if score != scores[i] {
@@ -26,41 +26,37 @@ func TestYearNear(t *testing.T) {
 }
 
 func TestYearBetween(t *testing.T) {
-	type data struct {
+	tests := []struct {
+		msg    string
 		values []int
 		score  int
+	}{
+		{"1", []int{0, 0, 0}, 0},
+		{"2", []int{0, 2000, 2001}, 0},
+		{"3", []int{0, 2000, 0}, 0},
+		{"4", []int{0, 0, 2000}, 0},
+		{"5", []int{2000, 0, 0}, 0},
+		{"6", []int{2000, 2000, 2001}, 2},
+		{"7", []int{1999, 2000, 2001}, 0},
+		{"8", []int{2002, 2000, 2001}, 0},
+		{"9", []int{2001, 2001, 0}, 3},
+		{"10", []int{2001, 2002, 0}, 2},
+		{"11", []int{2001, 2003, 0}, 1},
+		{"12", []int{2003, 2002, 0}, 2},
+		{"13", []int{2003, 2003, 2003}, 3},
+		{"14", []int{2002, 1993, 2003}, 2},
+		{"15", []int{1993, 1993, 2003}, 0},
+		{"16", []int{1981, 1980, 2003}, 0},
+		{"17", []int{3000, 3000, 3000}, 0},
+		{"18", []int{0, 3000, 3000}, 0},
+		{"19", []int{3000, 0, 0}, 0},
+		{"20", []int{0, 0, 3000}, 0},
+		{"21", []int{0, 3000, 0}, 0},
 	}
 
-	dataArray := []data{
-		{[]int{0, 0, 0}, 0},
-		{[]int{0, 2000, 2001}, 0},
-		{[]int{0, 2000, 0}, 0},
-		{[]int{0, 0, 2000}, 0},
-		{[]int{2000, 0, 0}, 1},
-		{[]int{2000, 2000, 2001}, 11},
-		{[]int{1999, 2000, 2001}, 0},
-		{[]int{2002, 2000, 2001}, 0},
-		{[]int{2001, 2001, 0}, 15},
-		{[]int{2001, 2002, 0}, 11},
-		{[]int{2001, 2003, 0}, 7},
-		{[]int{2003, 2002, 0}, 11},
-		{[]int{2003, 2003, 2003}, 15},
-		{[]int{2002, 1993, 2003}, 11},
-		{[]int{1993, 1993, 2003}, 0},
-		{[]int{1981, 1980, 2003}, 0},
-		{[]int{3000, 3000, 3000}, 0},
-		{[]int{0, 3000, 3000}, 0},
-		{[]int{3000, 0, 0}, 0},
-		{[]int{0, 0, 3000}, 0},
-		{[]int{0, 3000, 0}, 0},
-	}
-
-	for _, d := range dataArray {
-		score := yearBetween(d.values[0], d.values[1], d.values[2])
-		if math.Abs(float64(score)-float64(d.score)) > 0.0001 {
-			t.Errorf("Wrong score for YearsBetween(%d, %d, %d): %d instead of %d",
-				d.values[0], d.values[1], d.values[2], score, d.score)
-		}
+	for _, v := range tests {
+		score := yearBetween(v.values[0], v.values[1], v.values[2])
+		assert.Equal(t, score, v.score, v.msg)
 	}
 }
 
@@ -84,17 +80,17 @@ func TestYearScore(t *testing.T) {
 		{"Part", []int{0, 2000, 2001, 0, 0}, 0, 0},
 		{"Part", []int{0, 2000, 2001, 0, 0}, 3000, 0},
 		{"Part", []int{3000, 3000, 2001, 0, 0}, 3000, 0},
-		{"Part", []int{2000, 2000, 2000, 0, 0}, 2000, 15},
-		{"Part", []int{2000, 0, 0, 1990, 2001}, 2000, 15},
-		{"Title", []int{2000, 0, 0, 2000, 0}, 2000, 15},
-		{"Part", []int{0, 2000, 2001, 0, 0}, 2000, 11},
-		{"Title", []int{1837, 0, 0, 1837, 1858}, 1849, 1},
+		{"Part", []int{2000, 2000, 2000, 0, 0}, 2000, 3},
+		{"Part", []int{2000, 0, 0, 1990, 2001}, 2000, 3},
+		{"Title", []int{2000, 0, 0, 2000, 0}, 2000, 3},
+		{"Part", []int{0, 2000, 2001, 0, 0}, 2000, 2},
+		{"Title", []int{1837, 0, 0, 1837, 1858}, 1849, 0},
 		{"Title", []int{1837, 0, 0, 1837, 1858}, 1838, 0},
-		{"Item", []int{1837, 1837, 1858, 0, 0}, 1849, 1},
+		{"Item", []int{1837, 1837, 1858, 0, 0}, 1849, 0},
 		{"Item", []int{1837, 1837, 1858, 0, 0}, 1838, 0},
-		{"Item", []int{1837, 1837, 1839, 1837, 1890}, 1838, 11},
-		{"Item", []int{1837, 1837, 1849, 1837, 1838}, 1838, 15},
-		{"Title", []int{0, 0, 0, 0, 0}, 1849, 1},
+		{"Item", []int{1837, 1837, 1839, 1837, 1890}, 1838, 2},
+		{"Item", []int{1837, 1837, 1849, 1837, 1838}, 1838, 3},
+		{"Title", []int{0, 0, 0, 0, 0}, 1849, 0},
 	}
 
 	for _, d := range dataArray {
@@ -107,7 +103,7 @@ func TestYearScore(t *testing.T) {
 			TitleYearEnd:   d.refYears[4],
 		}
 
-		result := getYearScore(d.year, &testRef)
+		result, _ := getYearScore(d.year, &testRef)
 
 		if result != d.score {
 			t.Errorf("Wrong score for YearScore(%d, %#v) %d %d\n\n", d.year, testRef, result, d.score)

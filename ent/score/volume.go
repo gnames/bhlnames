@@ -7,15 +7,22 @@ import (
 	"github.com/gnames/bhlnames/ent/refbhl"
 )
 
-func getVolumeScore(volume int, ref *refbhl.ReferenceBHL) int {
+func getVolumeScore(volume int, ref *refbhl.ReferenceBHL) (int, string) {
 
 	volString := strconv.Itoa(volume)
 	index := strings.Index(ref.Volume, volString)
 	if index != -1 && doesMatch(index, index+len(volString)-1, ref.Volume) {
-		return 1
+		return volLabel(1)
 	}
 
-	return 0
+	return volLabel(0)
+}
+
+func volLabel(score int) (int, string) {
+	if score == 0 {
+		return score, "none"
+	}
+	return score, "match"
 }
 
 func doesMatch(start, end int, volume string) bool {

@@ -58,6 +58,8 @@ a putative link in BHL to the event.
 		j := jobsFlag(cmd)
 		yr := yearFlag(cmd)
 		delim := delimiterFlag(cmd)
+		curate := curationFlag(cmd)
+		output := outputFlag(cmd)
 		opts = append(opts,
 			config.OptFormat(f),
 		)
@@ -89,7 +91,7 @@ a putative link in BHL to the event.
 			os.Exit(0)
 		}
 		data := getInput(cmd, args)
-		nomen(bhln, data, yr)
+		nomen(bhln, data, yr, curate, output)
 	},
 }
 
@@ -107,9 +109,16 @@ func init() {
 
 	nomenCmd.Flags().StringP("delimiter", "d", ",",
 		"Delimiter for reading CSV files, default is comma.")
+
+	nomenCmd.Flags().StringP("output", "o", "",
+		"output curation results to this file")
+
+	nomenCmd.Flags().BoolP("curation", "c", false,
+		"Curate data received from nomen finding.")
+
 }
 
-func nomen(bn bhlnames.BHLnames, data string, year int) {
+func nomen(bn bhlnames.BHLnames, data string, year int, curate bool, output string) {
 	path := string(data)
 	exists, _ := gnsys.FileExists(path)
 	if exists {
@@ -118,21 +127,21 @@ func nomen(bn bhlnames.BHLnames, data string, year int) {
 			log.Fatal(err)
 			os.Exit(1)
 		}
-		nomensFromFile(bn, f)
+		nomensFromFile(bn, f, curate, output)
 		f.Close()
 	} else {
 		nomenFromString(bn, data, year)
 	}
 }
 
-func nomensFromFile(bn bhlnames.BHLnames, f io.Reader) {
+func nomensFromFile(bn bhlnames.BHLnames, f io.Reader, curate bool, output string) {
 	chIn := make(chan input.Input)
 	chOut := make(chan *namerefs.NameRefs)
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	go bn.NomenRefsStream(chIn, chOut)
-	go processNomenResults(gnfmt.CompactJSON, chOut, &wg)
+	go processNomenResults(gnfmt.CompactJSON, chOut, curate, output, &wg)
 
 	r := csv.NewReader(f)
 	r.Comma = bn.Config().Delimiter
@@ -181,14 +190,19 @@ func nomensFromFile(bn bhlnames.BHLnames, f io.Reader) {
 }
 
 func processNomenResults(f gnfmt.Format, out <-chan *namerefs.NameRefs,
-	wg *sync.WaitGroup) {
+	curate bool, output string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	enc := gnfmt.GNjson{}
-	for r := range out {
-		if r.Error != nil {
-			log.Println(r.Error)
+
+	if curate {
+		curateData(out, output)
+	} else {
+		enc := gnfmt.GNjson{}
+		for r := range out {
+			if r.Error != nil {
+				log.Println(r.Error)
+			}
+			fmt.Println(enc.Output(r, f))
 		}
-		fmt.Println(enc.Output(r, f))
 	}
 }
 
@@ -247,4 +261,24 @@ func delimiterFlag(cmd *cobra.Command) rune {
 		log.Println("keeping the default delimiter \",\"")
 		return ','
 	}
+}
+
+func curationFlag(cmd *cobra.Command) bool {
+	cur, err := cmd.Flags().GetBool("curation")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return cur
+}
+
+func outputFlag(cmd *cobra.Command) string {
+	output, err := cmd.Flags().GetString("output")
+	if output == "" {
+		log.Fatal("output should be set")
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+	return output
 }

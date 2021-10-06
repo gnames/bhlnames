@@ -68,6 +68,7 @@ type ReferenceBHL struct {
 	// ItemYearEnd is the year when an Item ended.
 	ItemYearEnd int `json:"itemYearEnd,omitempty"`
 	// Score is the oval score of matching of the reference with a name-string or
+	IsNomenRef bool `json:"isNomenRef"`
 	// a reference-string.
 	Score Score `json:"score"`
 }
@@ -91,11 +92,14 @@ type Score struct {
 	Year int `json:"year"`
 
 	// RefTitle is the score of matching references titleName.
-	RefTitle int `json:"refTitle"`
+	RefTitle int `json:"title"`
 
 	// RefVolume is a score from matching volume from reference and BHL Volume.
-	RefVolume int
+	RefVolume int `json:"volume"`
 
 	// RefPages is a score from matching pages in reference and a page in BHL.
-	RefPages int
+	RefPages int `json:"pages"`
+
+	// Labels provide types for each match
+	Labels map[string]string `json:"labels"`
 }
