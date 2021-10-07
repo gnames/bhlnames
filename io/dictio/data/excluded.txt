@@ -122,6 +122,7 @@ etc
 ex
 fa
 for
+from
 fu
 fur
 för

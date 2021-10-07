@@ -51,9 +51,9 @@ func pagesLabel(score int) (int, string) {
 	case 3:
 		return score, "both"
 	case 2:
-		return score, "page_num"
+		return score, "pageNum"
 	case 1:
-		return score, "paper_pages"
+		return score, "paperPages"
 	default:
 		return score, "none"
 	}

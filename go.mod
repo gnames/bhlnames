@@ -23,6 +23,7 @@ require (
 require (
 	github.com/fatih/color v1.9.0
 	github.com/gnames/aho_corasick v0.1.2
+	github.com/gnames/bayes v0.3.0
 	github.com/gnames/gner v0.1.4
 	github.com/google/uuid v1.2.0
 	github.com/gosuri/uilive v0.0.4 // indirect

@@ -34,6 +34,7 @@ import (
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
+	"github.com/gnames/bhlnames/io/bayesio"
 	"github.com/gnames/bhlnames/io/reffinderio"
 	"github.com/gnames/bhlnames/io/titlemio"
 	"github.com/gnames/gnfmt"
@@ -82,6 +83,7 @@ a putative link in BHL to the event.
 			bhlnames.OptRefFinder(rf),
 			bhlnames.OptParser(gnp),
 			bhlnames.OptTitleMatcher(tm),
+			bhlnames.OptNLP(bayesio.New()),
 		}
 
 		bhln := bhlnames.New(cfg, bnOpts...)

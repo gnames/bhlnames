@@ -132,6 +132,8 @@ github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeME
 github.com/gnames/aho_corasick v0.1.2 h1:AqAGxS9LrQdIGfJZ52i4SmYhDkibll2YvBJjdKdMRrk=
 github.com/gnames/aho_corasick v0.1.2/go.mod h1:NsfkS+gRSNp1qycgXeRjMDDxkCI8too3W7Ntr3hzL7A=
 github.com/gnames/bayes v0.1.0/go.mod h1:l91W5g0KSNxps4w8gJuBdQAMhi6a2d4sF3I8fSZXyLo=
+github.com/gnames/bayes v0.3.0 h1:XRjWOR1PQzGliN3h+BedpKn+hQQW8ckpLiEwsw+JbOg=
+github.com/gnames/bayes v0.3.0/go.mod h1:jqUwLyvjlCsq3ULYFE3gxglnCvf8HGaPAkc1VyJeaUI=
 github.com/gnames/bhlindex v0.10.0 h1:zzXMN9WuAxV8pOnXkrcxZzVZpmSDg6u5uzBXbpxEPVI=
 github.com/gnames/bhlindex v0.10.0/go.mod h1:3x+vKkemI+kH9/bNaW3KL73Q9VjtAheiyDwYskkw+eY=
 github.com/gnames/gner v0.1.4 h1:N4mV7oYpwLVQ3EyuC3exhhddb276sQQrdCMPbDP7KLw=
@@ -979,6 +981,7 @@ gopkg.in/yaml.v2 v2.3.0/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=
 gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b h1:h8qDotaEPuJATrMmW04NCwg7v22aHH28wwpauUhK9Oo=
 gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 honnef.co/go/tools v0.0.0-20180728063816-88497007e858/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=

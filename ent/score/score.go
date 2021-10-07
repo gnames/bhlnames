@@ -2,7 +2,11 @@ package score
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/gnames/bayes"
+	ft "github.com/gnames/bayes/ent/feature"
+	"github.com/gnames/bayes/ent/posterior"
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/ent/refbhl"
@@ -10,17 +14,23 @@ import (
 )
 
 type score struct {
-	total, year, annot, refTitle, refVolume, refPages       int
-	yearLabel, annotLabel, titleLabel, volLabel, pagesLabel string
-	value                                                   uint32
-	precedence                                              map[ScoreType]int
+	odds                                              float64
+	total, year, annot, refTitle, refVolume, refPages int
+	yearLabel, annotLabel, titleLabel, volLabel       string
+	pagesLabel, resNumLabel                           string
+	value                                             uint32
+	precedence                                        map[ScoreType]int
 }
 
 func New(prec map[ScoreType]int) Score {
 	return &score{precedence: prec}
 }
 
-func (s *score) Calculate(nr *namerefs.NameRefs, tm title_matcher.TitleMatcher) error {
+func (s *score) Calculate(
+	nr *namerefs.NameRefs,
+	tm title_matcher.TitleMatcher,
+	nb bayes.Bayes,
+) error {
 	var err error
 	refs := nr.References
 	yr := getYear(nr.Input)
@@ -42,14 +52,21 @@ func (s *score) Calculate(nr *namerefs.NameRefs, tm title_matcher.TitleMatcher) 
 		s.refVolume, s.volLabel = getVolumeScore(nr.Input.Volume, refs[i])
 		s.refPages, s.pagesLabel = getPageScore(nr.Input.PageStart, nr.Input.PageEnd, refs[i])
 		s.combineScores()
+		s.resNumLabel = "many"
+		if nr.ReferenceNumber <= 5 {
+			s.resNumLabel = "few"
+		}
+		postOdds, _ := s.calculateOdds(nb)
+		oddsVal := postOdds.LabelOdds[ft.Label("isNomen")]
 		refs[i].Score = refbhl.Score{
-			Sort:      s.value,
-			Total:     s.total,
-			Annot:     s.annot,
-			Year:      s.year,
-			RefTitle:  s.refTitle,
-			RefVolume: s.refVolume,
-			RefPages:  s.refPages,
+			Odds:       oddsVal,
+			OddsDetail: postOdds.Likelihoods[ft.Label("isNomen")],
+			Total:      s.total,
+			Annot:      s.annot,
+			Year:       s.year,
+			RefTitle:   s.refTitle,
+			RefVolume:  s.refVolume,
+			RefPages:   s.refPages,
 			Labels: map[string]string{
 				"year":  s.yearLabel,
 				"annot": s.annotLabel,
@@ -60,6 +77,28 @@ func (s *score) Calculate(nr *namerefs.NameRefs, tm title_matcher.TitleMatcher) 
 		}
 	}
 	return nil
+}
+
+func (s *score) calculateOdds(nb bayes.Bayes) (posterior.Odds, error) {
+	lfs := []ft.Feature{
+		{Name: ft.Name("yrPage"), Value: s.getYearPage()},
+		{Name: ft.Name("annot"), Value: ft.Val(s.annotLabel)},
+		{Name: ft.Name("title"), Value: ft.Val(s.titleLabel)},
+		{Name: ft.Name("vol"), Value: ft.Val(s.volLabel)},
+		{Name: ft.Name("pages"), Value: ft.Val(s.pagesLabel)},
+		{Name: ft.Name("resNum"), Value: ft.Val(s.resNumLabel)},
+	}
+	return nb.PosteriorOdds(lfs)
+}
+
+func (s *score) getYearPage() ft.Val {
+	page := "true"
+	if s.pagesLabel == "none" {
+		page = "false"
+	}
+
+	l := s.yearLabel + "|" + page
+	return ft.Val(l)
 }
 
 func (s *score) String() string {
@@ -74,6 +113,17 @@ func (s *score) String() string {
 		}
 	}
 	return string(res)
+}
+
+func BoostBestResult(nr *namerefs.NameRefs, nb bayes.Bayes) {
+	if len(nr.References) > 0 {
+		f := ft.Feature{Name: ft.Name("bestRes"), Value: ft.Val("true")}
+		bestRes, err := nb.Likelihood(f, ft.Label("isNomen"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		nr.References[0].Score.Odds *= bestRes
+	}
 }
 
 func (s *score) combineScores() {

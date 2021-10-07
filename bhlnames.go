@@ -5,10 +5,12 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/gnames/bayes"
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/builder"
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
+	"github.com/gnames/bhlnames/ent/nlp"
 	"github.com/gnames/bhlnames/ent/reffinder"
 	"github.com/gnames/bhlnames/ent/score"
 	"github.com/gnames/bhlnames/ent/title_matcher"
@@ -41,12 +43,19 @@ func OptParser(gnp gnparser.GNparser) Option {
 	}
 }
 
+func OptNLP(n nlp.NLP) Option {
+	return func(bn *bhlnames) {
+		bn.Bayes = n.Load()
+	}
+}
+
 type bhlnames struct {
 	cfg config.Config
 	gnparser.GNparser
 	builder.Builder
 	reffinder.RefFinder
 	title_matcher.TitleMatcher
+	bayes.Bayes
 }
 
 func New(cfg config.Config, opts ...Option) BHLnames {
@@ -159,19 +168,19 @@ func (bn *bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 		score.RefPages:  4,
 	}
 	s := score.New(prec)
-	err := s.Calculate(nr, bn.TitleMatcher)
+	err := s.Calculate(nr, bn.TitleMatcher, bn.Bayes)
 	if err != nil {
 		return err
 	}
 	sort.Slice(nr.References, func(i, j int) bool {
 		refs := nr.References
-		if refs[i].Score.Sort == refs[j].Score.Sort {
+		if refs[i].Score.Odds == refs[j].Score.Odds {
 			if refs[i].YearAggr == refs[j].YearAggr {
 				return refs[i].PageID < refs[j].PageID
 			}
 			return refs[i].YearAggr < refs[j].YearAggr
 		}
-		return refs[i].Score.Sort > refs[j].Score.Sort
+		return refs[i].Score.Odds > refs[j].Score.Odds
 	})
 	if len(nr.References) > 0 {
 		noScoreIndex := len(nr.References)
@@ -184,6 +193,8 @@ func (bn *bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 
 		nr.References = nr.References[:noScoreIndex]
 	}
+
+	score.BoostBestResult(nr, bn.Bayes)
 	return nil
 }
 

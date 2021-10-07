@@ -1,5 +1,7 @@
 package refbhl
 
+import ft "github.com/gnames/bayes/ent/feature"
+
 // ReferenceBHL is a representation of a BHL entity that was matched with a
 // scientific name-string.
 type ReferenceBHL struct {
@@ -76,9 +78,10 @@ type ReferenceBHL struct {
 // Score gives a qualitative estimation of a quality of a match to a
 // name-string, a nomen, or a reference-string.
 type Score struct {
-	// Sort is a value used to sort scores from best to worst. It is created as a
-	// combination of all individual scores.
-	Sort uint32 `json:"-"`
+	//Odds is total naive bayes odds ofr the score.
+	Odds float64 `json:"odds"`
+
+	OddsDetail map[ft.Name]map[ft.Val]float64 `json:"oddsDetail"`
 
 	// Total is a simple sum of all available individual score.
 	Total int `json:"total"`

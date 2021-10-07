@@ -36,6 +36,7 @@ NEXT_NR:
 		name := nrs[cursor].Input.NameString
 		refName := nrs[cursor].Input.RefString
 
+		fmt.Println()
 		c := color.New(color.FgYellow)
 		c.Printf("%d: %s\n", cursor, name)
 		c = color.New(color.FgCyan)
@@ -48,6 +49,8 @@ NEXT_NR:
 
 			c := color.New(color.FgYellow)
 			c.Printf("%d.%d: ", cursor, i)
+			c = color.New(color.FgHiBlue)
+			c.Printf("Refs: %d ", nrs[cursor].ReferenceNumber)
 			c = color.New(color.FgWhite)
 			c.Printf("%s ", ref.TitleName)
 			c = color.New(color.FgYellow)
@@ -56,8 +59,10 @@ NEXT_NR:
 			c.Printf("p.%d ", ref.PageNum)
 			c = color.New(color.FgCyan, color.Bold)
 			c.Printf("%d ", ref.YearAggr)
+			c = color.New(color.FgMagenta)
+			c.Printf("Score: %d ", ref.Score.Total)
 			c = color.New(color.FgRed)
-			c.Printf("Score: %d\n", ref.Score.Total)
+			c.Printf("Odds: %0.2f\n", ref.Score.Odds)
 			c = color.New(color.FgBlue)
 			c.Printf("URL: %s\n", ref.URL)
 
