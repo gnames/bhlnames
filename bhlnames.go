@@ -185,7 +185,7 @@ func (bn *bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 	if len(nr.References) > 0 {
 		noScoreIndex := len(nr.References)
 		for i := range nr.References {
-			if nr.References[i].Score.Total == 0 {
+			if nr.References[i].Score.Odds < 0.01 {
 				noScoreIndex = i
 				break
 			}

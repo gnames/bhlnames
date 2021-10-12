@@ -175,7 +175,7 @@ func nomensFromFile(bn bhlnames.BHLnames, f io.Reader, curate bool, output strin
 		}
 
 		count++
-		if count%1000 == 0 {
+		if count%100 == 0 {
 			log.Printf("Processing %s-th line\n", humanize.Comma(int64(count)))
 		}
 		opts := []input.Option{
@@ -202,6 +202,9 @@ func processNomenResults(f gnfmt.Format, out <-chan *namerefs.NameRefs,
 		for r := range out {
 			if r.Error != nil {
 				log.Println(r.Error)
+			}
+			if len(r.References) == 0 {
+				continue
 			}
 			fmt.Println(enc.Output(r, f))
 		}
@@ -276,9 +279,9 @@ func curationFlag(cmd *cobra.Command) bool {
 
 func outputFlag(cmd *cobra.Command) string {
 	output, err := cmd.Flags().GetString("output")
-	if output == "" {
-		log.Fatal("output should be set")
-	}
+	// if output == "" {
+	// 	log.Fatal("output should be set")
+	// }
 	if err != nil {
 		log.Fatal(err)
 	}

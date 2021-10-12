@@ -86,23 +86,6 @@ type Score struct {
 	// Total is a simple sum of all available individual score.
 	Total int `json:"total"`
 
-	// Annot is a score important for nomenclatural events and provides match
-	// for nomenclatural annotations.
-	Annot int `json:"annot"`
-
-	// Year is a score of a quality of a year match in a reference-string or
-	// name-string.
-	Year int `json:"year"`
-
-	// RefTitle is the score of matching references titleName.
-	RefTitle int `json:"title"`
-
-	// RefVolume is a score from matching volume from reference and BHL Volume.
-	RefVolume int `json:"volume"`
-
-	// RefPages is a score from matching pages in reference and a page in BHL.
-	RefPages int `json:"pages"`
-
 	// Labels provide types for each match
 	Labels map[string]string `json:"labels"`
 }

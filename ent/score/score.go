@@ -62,11 +62,6 @@ func (s *score) Calculate(
 			Odds:       oddsVal,
 			OddsDetail: postOdds.Likelihoods[ft.Label("isNomen")],
 			Total:      s.total,
-			Annot:      s.annot,
-			Year:       s.year,
-			RefTitle:   s.refTitle,
-			RefVolume:  s.refVolume,
-			RefPages:   s.refPages,
 			Labels: map[string]string{
 				"year":  s.yearLabel,
 				"annot": s.annotLabel,
