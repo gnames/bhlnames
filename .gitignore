@@ -13,6 +13,12 @@ bhlnames/bhlnames
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Temporary files
+t.json
+t.txt
+t.csv
+t
+
 .env
 
 # Dependency directories (remove the comment below to include it)
