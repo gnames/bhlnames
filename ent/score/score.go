@@ -57,10 +57,10 @@ func (s *score) Calculate(
 			s.resNumLabel = "few"
 		}
 		postOdds, _ := s.calculateOdds(nb)
-		oddsVal := postOdds.LabelOdds[ft.Label("isNomen")]
+		oddsVal := postOdds.ClassOdds[ft.Class("isNomen")]
 		refs[i].Score = refbhl.Score{
 			Odds:       oddsVal,
-			OddsDetail: postOdds.Likelihoods[ft.Label("isNomen")],
+			OddsDetail: postOdds.Likelihoods[ft.Class("isNomen")],
 			Total:      s.total,
 			Annot:      s.annot,
 			Year:       s.year,
@@ -82,23 +82,23 @@ func (s *score) Calculate(
 func (s *score) calculateOdds(nb bayes.Bayes) (posterior.Odds, error) {
 	lfs := []ft.Feature{
 		{Name: ft.Name("yrPage"), Value: s.getYearPage()},
-		{Name: ft.Name("annot"), Value: ft.Val(s.annotLabel)},
-		{Name: ft.Name("title"), Value: ft.Val(s.titleLabel)},
-		{Name: ft.Name("vol"), Value: ft.Val(s.volLabel)},
-		{Name: ft.Name("pages"), Value: ft.Val(s.pagesLabel)},
-		{Name: ft.Name("resNum"), Value: ft.Val(s.resNumLabel)},
+		{Name: ft.Name("annot"), Value: ft.Value(s.annotLabel)},
+		{Name: ft.Name("title"), Value: ft.Value(s.titleLabel)},
+		{Name: ft.Name("vol"), Value: ft.Value(s.volLabel)},
+		{Name: ft.Name("pages"), Value: ft.Value(s.pagesLabel)},
+		{Name: ft.Name("resNum"), Value: ft.Value(s.resNumLabel)},
 	}
 	return nb.PosteriorOdds(lfs)
 }
 
-func (s *score) getYearPage() ft.Val {
+func (s *score) getYearPage() ft.Value {
 	page := "true"
 	if s.pagesLabel == "none" {
 		page = "false"
 	}
 
 	l := s.yearLabel + "|" + page
-	return ft.Val(l)
+	return ft.Value(l)
 }
 
 func (s *score) String() string {
@@ -117,8 +117,8 @@ func (s *score) String() string {
 
 func BoostBestResult(nr *namerefs.NameRefs, nb bayes.Bayes) {
 	if len(nr.References) > 0 {
-		f := ft.Feature{Name: ft.Name("bestRes"), Value: ft.Val("true")}
-		bestRes, err := nb.Likelihood(f, ft.Label("isNomen"))
+		f := ft.Feature{Name: ft.Name("bestRes"), Value: ft.Value("true")}
+		bestRes, err := nb.Likelihood(f, ft.Class("isNomen"))
 		if err != nil {
 			log.Fatal(err)
 		}

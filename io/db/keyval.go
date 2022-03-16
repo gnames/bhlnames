@@ -56,6 +56,7 @@ func GetValues(kv *badger.DB, keys []string) (map[string][]byte, error) {
 		val, err := txn.Get([]byte(keys[i]))
 		if err == badger.ErrKeyNotFound {
 			res[keys[i]] = nil
+			continue
 		} else if err != nil {
 			return res, err
 		}

@@ -6,8 +6,8 @@ import (
 
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/builder"
-	"github.com/gnames/bhlnames/io/builderio/namesio"
 	"github.com/gnames/bhlnames/io/db"
+	"github.com/gnames/bhlnames/io/namesbhlio"
 	"github.com/gnames/gnsys"
 	"github.com/jinzhu/gorm"
 )
@@ -32,7 +32,8 @@ func (b builderio) touchDirs() {
 	dirs := []string{
 		b.InputDir,
 		b.DownloadDir,
-		b.KeyValDir,
+		b.PageDir,
+		b.PageFileDir,
 		b.PartDir,
 		b.AhoCorasickDir,
 		b.AhoCorKeyValDir,
@@ -60,9 +61,8 @@ func (b builderio) ResetData() {
 }
 
 func (b builderio) ImportData() error {
+	n := namesbhlio.New(b.Config, b.DB, b.GormDB)
 	err := b.downloadDumpBHL()
-	n := namesio.New(b.BHLIndexHost, b.InputDir)
-	_ = n
 
 	if err == nil {
 		err = b.extractFilesBHL()
@@ -70,18 +70,19 @@ func (b builderio) ImportData() error {
 
 	if err == nil {
 		b.resetDB()
-		err = b.uploadDataBHL()
+		err = b.importDataBHL()
 	}
 
 	if err == nil {
-		log.Println("Populating database with names occurences data")
-		n.DB = b.DB
-		n.GormDB = b.GormDB
 		err = n.ImportNames()
 	}
 
 	if err == nil {
-		err = n.ImportNamesOccur(b.KeyValDir)
+		err = n.PageFilesToIDs()
+	}
+
+	if err == nil {
+		err = n.ImportOccurrences()
 	}
 
 	return err

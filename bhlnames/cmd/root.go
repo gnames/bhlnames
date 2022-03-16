@@ -48,15 +48,15 @@ var (
 // fConfig purpose is to achieve automatic import of data from the
 // configuration file, if it exists.
 type fConfig struct {
-	BHLDumpURL   string
-	BHLIndexHost string
-	InputDir     string
-	DbHost       string
-	DbUser       string
-	DbPass       string
-	DbName       string
-	JobsNum      int
-	PortREST     int
+	BHLDumpURL  string
+	BHLIndexURL string
+	InputDir    string
+	DbHost      string
+	DbUser      string
+	DbPass      string
+	DbName      string
+	JobsNum     int
+	PortREST    int
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -153,8 +153,8 @@ func getOpts() []config.Option {
 	if cfg.BHLDumpURL != "" {
 		opts = append(opts, config.OptBHLDumpURL(cfg.BHLDumpURL))
 	}
-	if cfg.BHLIndexHost != "" {
-		opts = append(opts, config.OptBHLIndexHost(cfg.BHLIndexHost))
+	if cfg.BHLIndexURL != "" {
+		opts = append(opts, config.OptBHLIndexURL(cfg.BHLIndexURL))
 	}
 	if cfg.InputDir != "" {
 		opts = append(opts, config.OptInputDir(cfg.InputDir))

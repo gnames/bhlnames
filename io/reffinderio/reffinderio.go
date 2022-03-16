@@ -41,7 +41,7 @@ type reffinderio struct {
 }
 
 func New(cfg config.Config) reffinder.RefFinder {
-	log.Printf("Connecting to PostgreSQL database %s at %s", cfg.DbName, cfg.DbHost)
+	log.Printf("Connecting to PostgreSQL database %s at %s", cfg.DbDatabase, cfg.DbHost)
 	res := reffinderio{
 		Config: cfg,
 		KV:     db.InitKeyVal(cfg.PartDir),

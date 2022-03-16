@@ -50,7 +50,7 @@ type partPages struct {
 var dateRe = regexp.MustCompile(`\b([\d]{4})\b\s*(-\s*([\d]{1,4})\b(-([\d]{1,2}))?)?`)
 var pagesRe = regexp.MustCompile(`\b([\d]+)\b\s*((,|-|--|–)\s*\b([\d]+)\b)?`)
 
-func (b builderio) uploadPart(doiMap map[int]string) error {
+func (b builderio) importPart(doiMap map[int]string) error {
 	log.Println("Preparing part.txt data for db.")
 	//keeps unique IDs of the parts
 	pMap := make(map[int]struct{})

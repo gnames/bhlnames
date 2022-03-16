@@ -1,5 +1,4 @@
 ---
-
 # The file shows default settings. To change any of the settings
 # uncomment them and modify the value.
 
@@ -8,11 +7,7 @@
 
 ## BHL name index data need to be downloaded and combined with BHL dump data.
 ## The gRPC URL is a bhlindex service that allows to download such data.
-# BHLIndexHost: bhlrpc.globalnames.org:80
-
-## Path to keep downloaded data and key-value stores. By default it is located
-## in a standard Linux location.
-# InputDir: ~/.cache/bhlnames
+# BHLIndexURL: https://bhlindex.globalnames.org/api/v0
 
 ## Postgresql host for assembling data from BHL and BHL name index.
 ## Change it to IP address/Host of a database server.
@@ -22,7 +17,7 @@
 # DbUser: postgres
 
 ## Postgresql password. Change it to the username password.
-# DbPass:
+# DbPass: postgres
 
 ## Postgresql database to keep all the aggregated data.
 # DbName: bhlnames
@@ -32,3 +27,7 @@
 
 ## PortREST port for running REST API service
 # PortREST: 8888
+
+## Path to keep downloaded data and key-value stores. By default it is located
+## in a standard Linux location.
+# InputDir: ~/.cache/bhlnames

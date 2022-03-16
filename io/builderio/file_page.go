@@ -25,13 +25,13 @@ const (
 
 const BatchSize = 100_000
 
-func (b builderio) uploadPage() error {
+func (b builderio) importPage(itemMap map[uint]string) error {
 	log.Println("Uploading page.txt data for db.")
-	err := db.ResetKeyVal(b.Config.KeyValDir)
+	err := db.ResetKeyVal(b.Config.PageDir)
 	if err != nil {
 		return err
 	}
-	kv := db.InitKeyVal(b.Config.KeyValDir)
+	kv := db.InitKeyVal(b.Config.PageDir)
 	total := 0
 	pMap := make(map[int]struct{})
 	res := make([]*db.Page, 0, BatchSize)
@@ -89,7 +89,7 @@ func (b builderio) uploadPage() error {
 			total += len(res)
 			pages := make([]*db.Page, len(res))
 			copy(pages, res)
-			err := b.uploadPages(kv, pages, total)
+			err := b.processPages(kv, itemMap, pages, total)
 			if err != nil {
 				return err
 			}
@@ -98,12 +98,17 @@ func (b builderio) uploadPage() error {
 		}
 	}
 	total += len(res)
-	err = b.uploadPages(kv, res, total)
+	err = b.processPages(kv, itemMap, res, total)
 	fmt.Println()
 	return err
 }
 
-func (b builderio) uploadPages(kv *badger.DB, pages []*db.Page, total int) error {
+func (b builderio) processPages(
+	kv *badger.DB,
+	itemMap map[uint]string,
+	pages []*db.Page,
+	total int,
+) error {
 	columns := []string{"id", "item_id", "file_num", "page_num"}
 	transaction, err := b.DB.Begin()
 	if err != nil {
@@ -117,7 +122,7 @@ func (b builderio) uploadPages(kv *badger.DB, pages []*db.Page, total int) error
 	kvTxn := kv.NewTransaction(true)
 
 	for _, v := range pages {
-		key := fmt.Sprintf("%d|%d", v.FileNum, v.ItemID)
+		key := fmt.Sprintf("%d|%s", v.FileNum, itemMap[v.ItemID])
 		val := strconv.Itoa(int(v.ID))
 		if err = kvTxn.Set([]byte(key), []byte(val)); err == badger.ErrTxnTooBig {
 			err = kvTxn.Commit()
@@ -153,6 +158,6 @@ func (b builderio) uploadPages(kv *badger.DB, pages []*db.Page, total int) error
 		return err
 	}
 	fmt.Printf("\r%s", strings.Repeat(" ", 35))
-	fmt.Printf("\rUploaded %s pages to db", humanize.Comma(int64(total)))
+	fmt.Printf("\rImported %s pages to db", humanize.Comma(int64(total)))
 	return transaction.Commit()
 }

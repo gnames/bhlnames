@@ -2,6 +2,7 @@ package builderio
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -65,28 +66,33 @@ func (b builderio) downloadDumpBHL() error {
 	return nil
 }
 
-func (b builderio) uploadDataBHL() error {
+func (b builderio) importDataBHL() error {
 	var err error
 	var titlesMap map[int]*title
 	var partDOImap map[int]string
+	var itemMap map[uint]string
+	var titleDOImap map[int]string
 
-	db.TruncateBHL(b.DB)
-	titleDOImap, partDOImap, err := b.prepareDOI()
+	err = db.Truncate(b.DB, []string{"items", "pages", "parts"})
+
+	if err == nil {
+		titleDOImap, partDOImap, err = b.prepareDOI()
+	}
 
 	if err == nil {
 		titlesMap, err = b.prepareTitle(titleDOImap)
 	}
 
 	if err == nil {
-		err = b.uploadItem(titlesMap)
+		itemMap, err = b.importItem(titlesMap)
 	}
 
 	if err == nil {
-		err = b.uploadPart(partDOImap)
+		err = b.importPart(partDOImap)
 	}
 
 	if err == nil {
-		err = b.uploadPage()
+		err = b.importPage(itemMap)
 	}
 
 	if err == nil {
@@ -94,5 +100,9 @@ func (b builderio) uploadDataBHL() error {
 		return ts.setup()
 	}
 
-	return err
+	if err != nil {
+		return fmt.Errorf("import BHL data: %w", err)
+	}
+
+	return nil
 }

@@ -81,7 +81,7 @@ type Score struct {
 	//Odds is total naive bayes odds ofr the score.
 	Odds float64 `json:"odds"`
 
-	OddsDetail map[ft.Name]map[ft.Val]float64 `json:"oddsDetail"`
+	OddsDetail map[ft.Feature]float64 `json:"oddsDetail"`
 
 	// Total is a simple sum of all available individual score.
 	Total int `json:"total"`

@@ -12,12 +12,12 @@ import (
 func TestDefaultConfig(t *testing.T) {
 	test := config.Config{
 		BHLDumpURL:   "https://www.biodiversitylibrary.org/data/data.zip",
-		BHLIndexHost: "bhlrpc.globalnames.org:80",
+		BHLIndexURL:  "bhlrpc.globalnames.org:80",
 		InputDir:     config.InputDir(),
 		DbHost:       "localhost",
 		DbUser:       "postgres",
 		DbPass:       "",
-		DbName:       "bhlnames",
+		DbDatabase:   "bhlnames",
 		Delimiter:    ',',
 		JobsNum:      4,
 		PortREST:     8888,
@@ -26,7 +26,7 @@ func TestDefaultConfig(t *testing.T) {
 	}
 	test.DownloadFile = filepath.Join(test.InputDir, "data.zip")
 	test.DownloadDir = filepath.Join(test.InputDir, "Data")
-	test.KeyValDir = filepath.Join(test.InputDir, "keyval")
+	test.PageDir = filepath.Join(test.InputDir, "page")
 	test.PartDir = filepath.Join(test.InputDir, "part")
 	test.AhoCorasickDir = filepath.Join(test.InputDir, "ac")
 	test.AhoCorKeyValDir = filepath.Join(test.InputDir, "ackv")
@@ -38,13 +38,13 @@ func TestDefaultConfig(t *testing.T) {
 func TestModifiedConfig(t *testing.T) {
 	test := config.Config{
 		BHLDumpURL:          "https://example.org",
-		BHLIndexHost:        "https://example.org",
+		BHLIndexURL:         "https://example.org",
 		InputDir:            "/tmp",
 		DbHost:              "10.0.0.10",
 		DbUser:              "john",
 		DbPass:              "doe",
 		Delimiter:           '\t',
-		DbName:              "bhl",
+		DbDatabase:          "bhl",
 		JobsNum:             100,
 		PortREST:            80,
 		Format:              gnfmt.CompactJSON,
@@ -55,7 +55,7 @@ func TestModifiedConfig(t *testing.T) {
 	}
 	test.DownloadFile = filepath.Join(test.InputDir, "data.zip")
 	test.DownloadDir = filepath.Join(test.InputDir, "Data")
-	test.KeyValDir = filepath.Join(test.InputDir, "keyval")
+	test.PageDir = filepath.Join(test.InputDir, "page")
 	test.PartDir = filepath.Join(test.InputDir, "part")
 	test.AhoCorasickDir = filepath.Join(test.InputDir, "ac")
 	test.AhoCorKeyValDir = filepath.Join(test.InputDir, "ackv")

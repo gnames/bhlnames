@@ -10,7 +10,7 @@ import (
 )
 
 func (b builderio) resetDB() {
-	log.Printf("Resetting '%s' database at '%s'.", b.DbName, b.DbHost)
+	log.Printf("Resetting '%s' database at '%s'.", b.DbDatabase, b.DbHost)
 	q := `
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
@@ -34,7 +34,11 @@ func (b builderio) migrate() {
 		&db.NameString{},
 		&db.PageNameString{},
 	)
-	db.TruncateBHL(b.DB)
+	err := db.Truncate(b.DB, []string{"items", "pages", "parts"})
+	if err != nil {
+		err = fmt.Errorf("migrate: %w", err)
+		log.Fatal(err)
+	}
 }
 
 func (b builderio) resetDirs() error {
@@ -42,7 +46,7 @@ func (b builderio) resetDirs() error {
 	if err != nil {
 		return err
 	}
-	err = db.ResetKeyVal(b.KeyValDir)
+	err = db.ResetKeyVal(b.PageDir)
 	if err != nil {
 		return err
 	}

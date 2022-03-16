@@ -13,7 +13,7 @@ import (
 
 func opts(cfg config.Config) string {
 	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
-		cfg.DbHost, cfg.DbUser, cfg.DbPass, cfg.DbName)
+		cfg.DbHost, cfg.DbUser, cfg.DbPass, cfg.DbDatabase)
 }
 
 func NewDbGorm(cnf config.Config) *gorm.DB {
@@ -32,36 +32,12 @@ func NewDB(cnf config.Config) *sql.DB {
 	return db
 }
 
-func TruncateBHL(d *sql.DB) {
-	tables := []string{"items", "pages", "parts"}
+func Truncate(d *sql.DB, tables []string) error {
 	for _, v := range tables {
-		q := fmt.Sprintf("TRUNCATE TABLE %s", v)
+		q := fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY", v)
 		_, err := d.Exec(q)
 		if err != nil {
-			log.Fatalf("Cannot truncate table '%s': %s", v, err)
-		}
-	}
-}
-
-func TruncateNames(d *sql.DB) error {
-	tables := []string{"name_strings", "page_name_strings"}
-	for _, v := range tables {
-		q := fmt.Sprintf("TRUNCATE TABLE %s", v)
-		_, err := d.Exec(q)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func TruncateOccur(d *sql.DB) error {
-	tables := []string{"page_name_strings"}
-	for _, v := range tables {
-		q := fmt.Sprintf("TRUNCATE TABLE %s", v)
-		_, err := d.Exec(q)
-		if err != nil {
-			return err
+			return fmt.Errorf("cannot truncate '%s': %w", v, err)
 		}
 	}
 	return nil

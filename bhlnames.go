@@ -79,6 +79,7 @@ func (bn *bhlnames) Initialize() error {
 		bn.ResetData()
 	}
 	return bn.ImportData()
+
 }
 
 func (bn *bhlnames) NameRefs(data input.Input) (*namerefs.NameRefs, error) {
