@@ -22,9 +22,9 @@ package cmd
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"sync"
 	"time"
@@ -40,6 +40,7 @@ import (
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnparser"
 	"github.com/gnames/gnsys"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -126,8 +127,8 @@ func nomen(bn bhlnames.BHLnames, data string, year int, curate bool, output stri
 	if exists {
 		f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 		if err != nil {
-			log.Fatal(err)
-			os.Exit(1)
+			err = fmt.Errorf("nomen: %#w", err)
+			log.Fatal().Err(err)
 		}
 		nomensFromFile(bn, f, curate, output)
 		f.Close()
@@ -152,7 +153,8 @@ func nomensFromFile(bn bhlnames.BHLnames, f io.Reader, curate bool, output strin
 	header := make(map[string]int)
 	hdr, err := r.Read()
 	if err != nil {
-		log.Fatalf("Cannot read CSV file: %s", err)
+		err = fmt.Errorf("nomensFromFile: %#w", err)
+		log.Fatal().Err(err).Msg("Cannot read CSV file")
 	}
 	for i, v := range hdr {
 		header[v] = i
@@ -164,19 +166,20 @@ func nomensFromFile(bn bhlnames.BHLnames, f io.Reader, curate bool, output strin
 		return ""
 	}
 	count := 0
-	log.Println("Finding references")
+	log.Info().Msg("Finding references")
 	for {
 		row, err := r.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Fatalf("Cannot read CSV row: %s", err)
+			err = fmt.Errorf("nomensFromFile: %#w", err)
+			log.Fatal().Err(err).Msg("Cannot read CSV row.")
 		}
 
 		count++
 		if count%1000 == 0 {
-			log.Printf("Processing %s-th line\n", humanize.Comma(int64(count)))
+			log.Info().Msgf("Processing %s-th line\n", humanize.Comma(int64(count)))
 		}
 		opts := []input.Option{
 			input.OptID(csvVal(row, "Id")),
@@ -188,7 +191,7 @@ func nomensFromFile(bn bhlnames.BHLnames, f io.Reader, curate bool, output strin
 	}
 	close(chIn)
 	wg.Wait()
-	log.Println("Finish finding references")
+	log.Info().Msg("Finish finding references")
 }
 
 func processNomenResults(f gnfmt.Format, out <-chan *namerefs.NameRefs,
@@ -201,7 +204,7 @@ func processNomenResults(f gnfmt.Format, out <-chan *namerefs.NameRefs,
 		enc := gnfmt.GNjson{}
 		for r := range out {
 			if r.Error != nil {
-				log.Println(r.Error)
+				log.Warn().Err(r.Error)
 			}
 			fmt.Println(enc.Output(r, f))
 		}
@@ -219,8 +222,8 @@ func nomenFromString(bn bhlnames.BHLnames, name string, year int) {
 	data := input.New(gnp, opts...)
 	res, err := bn.NomenRefs(data)
 	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
+		err = fmt.Errorf("nomenFromString: %#w", err)
+		log.Fatal().Err(err)
 	}
 	out, _ := enc.Encode(res)
 	fmt.Println(string(out))
@@ -249,18 +252,18 @@ func delimiterFlag(cmd *cobra.Command) rune {
 
 	switch delim {
 	case "":
-		log.Println("empty delimiter option")
-		log.Println("keeping the default delimiter \",\"")
+		log.Info().Msg("empty delimiter option")
+		log.Info().Msg("keeping the default delimiter \",\"")
 		return ','
 	case "\\t":
-		log.Println("Setting delimiter to \"\\t\"")
+		log.Info().Msg("Setting delimiter to \"\\t\"")
 		return '\t'
 	case ",":
-		log.Println("Setting delimiter to \",\"")
+		log.Info().Msg("Setting delimiter to \",\"")
 		return ','
 	default:
-		log.Println("supported delimiters are \",\" and \"\t\"")
-		log.Println("keeping the default delimiter \",\"")
+		log.Info().Msg("supported delimiters are \",\" and \"\t\"")
+		log.Info().Msg("keeping the default delimiter \",\"")
 		return ','
 	}
 }
@@ -268,7 +271,8 @@ func delimiterFlag(cmd *cobra.Command) rune {
 func curationFlag(cmd *cobra.Command) bool {
 	cur, err := cmd.Flags().GetBool("curation")
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("curationFlag: %#w", err)
+		log.Fatal().Err(err)
 	}
 
 	return cur
@@ -277,10 +281,11 @@ func curationFlag(cmd *cobra.Command) bool {
 func outputFlag(cmd *cobra.Command) string {
 	output, err := cmd.Flags().GetString("output")
 	if output == "" {
-		log.Fatal("output should be set")
+		log.Fatal().Err(errors.New("output should be set"))
 	}
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("outputFlag: %#w", err)
+		log.Fatal().Err(err)
 	}
 	return output
 }

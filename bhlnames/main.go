@@ -21,8 +21,20 @@ THE SOFTWARE.
 */
 package main
 
-import "github.com/gnames/bhlnames/bhlnames/cmd"
+import (
+	"os"
+
+	"github.com/gnames/bhlnames/bhlnames/cmd"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+)
 
 func main() {
+	log.Logger = log.Output(
+		zerolog.ConsoleWriter{
+			Out:        os.Stderr,
+			TimeFormat: "15:04:05",
+		},
+	)
 	cmd.Execute()
 }

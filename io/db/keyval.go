@@ -1,11 +1,12 @@
 package db
 
 import (
-	"log"
+	"fmt"
 	"strconv"
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/gnames/gnsys"
+	"github.com/rs/zerolog/log"
 )
 
 // InitBadger finds and initializes connection to a badger key-value store.
@@ -15,7 +16,8 @@ func InitKeyVal(dir string) *badger.DB {
 	options.Logger = nil
 	bdb, err := badger.Open(options)
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("db.InitKeyVal: %w", err)
+		log.Fatal().Err(err)
 	}
 	return bdb
 }
@@ -25,19 +27,22 @@ func GetValue(kv *badger.DB, key string) int {
 	defer func() {
 		err := txn.Commit()
 		if err != nil {
-			log.Fatal(err)
+			err = fmt.Errorf("db.GetValue: %w", err)
+			log.Fatal().Err(err)
 		}
 	}()
 	val, err := txn.Get([]byte(key))
 	if err == badger.ErrKeyNotFound {
 		return 0
 	} else if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("db.GetValue: %w", err)
+		log.Fatal().Err(err)
 	}
 	var res []byte
 	res, err = val.ValueCopy(res)
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("db.GetValue: %w", err)
+		log.Fatal().Err(err)
 	}
 	id, _ := strconv.Atoi(string(res))
 	return id
@@ -49,7 +54,8 @@ func GetValues(kv *badger.DB, keys []string) (map[string][]byte, error) {
 	defer func() {
 		err := txn.Commit()
 		if err != nil {
-			log.Fatal(err)
+			err = fmt.Errorf("db.GetValues: %w", err)
+			log.Fatal().Err(err)
 		}
 	}()
 	for i := range keys {

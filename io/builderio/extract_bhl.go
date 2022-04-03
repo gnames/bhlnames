@@ -4,12 +4,12 @@ import (
 	"archive/zip"
 	"errors"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 
 	"code.cloudfoundry.org/bytefmt"
 	"github.com/gnames/gnsys"
+	"github.com/rs/zerolog/log"
 )
 
 var files = map[string]struct{}{
@@ -46,7 +46,7 @@ func (b builderio) extractFilesBHL() error {
 		fpath := filepath.Join(b.InputDir, f.Name)
 		exists, _ := gnsys.FileExists(fpath)
 		if !b.WithRebuild && exists {
-			log.Printf("File %s already exists, skipping unzip", fpath)
+			log.Info().Msgf("File %s already exists, skipping unzip", fpath)
 			continue
 		}
 
@@ -60,7 +60,7 @@ func (b builderio) extractFilesBHL() error {
 			return err
 		}
 		size := f.UncompressedSize64
-		log.Printf("Extracting %s (%s)\n", f.Name, bytefmt.ByteSize(size))
+		log.Info().Msgf("Extracting %s (%s)\n", f.Name, bytefmt.ByteSize(size))
 		_, err = io.Copy(outFile, rc)
 
 		outFile.Close()

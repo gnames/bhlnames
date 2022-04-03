@@ -3,10 +3,10 @@ package reffinderio
 import (
 	"database/sql"
 	"fmt"
-	"log"
 
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/io/db"
+	"github.com/rs/zerolog/log"
 )
 
 type preReference struct {
@@ -70,7 +70,7 @@ func (l reffinderio) occurrences(name string, field string) []*row {
 
 	rows, err := l.DB.Query(q)
 	if err != nil {
-		log.Printf("Cannot find occurrences: %s.", err)
+		log.Warn().Err(err).Msg("Cannot find occurrences")
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -79,7 +79,8 @@ func (l reffinderio) occurrences(name string, field string) []*row {
 			&titleDOI, &context, &majorKingdom, &kingdomPercent, &pathsTotal,
 			&nameID, &nameString, &matchedCanonical, &matchType, &editDistance)
 		if err != nil {
-			log.Fatal(err)
+			err = fmt.Errorf("reffinderio.occurrences: %w", err)
+			log.Fatal().Err(err)
 		}
 		res = append(res, &row{
 			itemID:           itemID,

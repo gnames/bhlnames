@@ -2,7 +2,7 @@ package builderio
 
 import (
 	"database/sql"
-	"log"
+	"fmt"
 
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/builder"
@@ -10,6 +10,7 @@ import (
 	"github.com/gnames/bhlnames/io/namesbhlio"
 	"github.com/gnames/gnsys"
 	"github.com/jinzhu/gorm"
+	"github.com/rs/zerolog/log"
 )
 
 type builderio struct {
@@ -43,7 +44,8 @@ func (b builderio) touchDirs() {
 		if !exists {
 			err := gnsys.MakeDir(dirs[i])
 			if err != nil {
-				log.Fatal(err)
+				err = fmt.Errorf("builderio.touchDirs: %#w", err)
+				log.Fatal().Err(err)
 			}
 		}
 	}
@@ -52,10 +54,11 @@ func (b builderio) touchDirs() {
 func (b builderio) ResetData() {
 	var err error
 
-	log.Printf("Reseting filesystem at '%s'.", b.InputDir)
+	log.Info().Msgf("Reseting filesystem at '%s'.", b.InputDir)
 	err = b.resetDirs()
 	if err != nil {
-		log.Fatalf("Cannot reset dirs: %s.", err)
+		err = fmt.Errorf("builderio.ResetData: %#w", err)
+		log.Fatal().Err(err).Msg("Cannot reset dirs")
 	}
 	b.resetDB()
 }

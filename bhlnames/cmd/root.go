@@ -25,7 +25,6 @@ import (
 	_ "embed"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -34,6 +33,7 @@ import (
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/gnsys"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -69,8 +69,8 @@ usages found at BHL for a scientific name.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		version, err := cmd.Flags().GetBool("version")
 		if err != nil {
-			log.Println(err)
-			os.Exit(1)
+			err = fmt.Errorf("main: %#w", err)
+			log.Fatal().Err(err)
 		}
 		if version {
 			fmt.Printf("\nversion: %s\nbuild: %s\n\n", bhlnames.Version, bhlnames.Build)
@@ -112,7 +112,8 @@ func initConfig() {
 	configFile := "bhlnames"
 	configDir, err := os.UserConfigDir()
 	if err != nil {
-		log.Fatalf("Cannot find home directory: %s.", err)
+		err = fmt.Errorf("main: %#w", err)
+		log.Fatal().Err(err).Msg("Cannot find home directory.")
 	}
 	viper.AddConfigPath(configDir)
 	viper.SetConfigName(configFile)
@@ -134,7 +135,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		log.Printf("Using config file: %s.", viper.ConfigFileUsed())
+		log.Info().Msgf("Using config file: %s.", viper.ConfigFileUsed())
 	}
 
 	opts = getOpts()
@@ -147,7 +148,8 @@ func getOpts() []config.Option {
 	cfg := &fConfig{}
 	err := viper.Unmarshal(cfg)
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("main: %#w", err)
+		log.Fatal().Err(err)
 	}
 
 	if cfg.BHLDumpURL != "" {
@@ -187,19 +189,21 @@ func touchConfigFile(configPath string, configFile string) {
 		return
 	}
 
-	log.Printf("Creating config file: %s.", configPath)
-	createConfig(configPath, configFile)
+	log.Info().Msgf("Creating config file: %s.", configPath)
+	createConfig(configPath)
 }
 
 // createConfig creates config file.
-func createConfig(path string, file string) {
+func createConfig(path string) {
 	err := gnsys.MakeDir(filepath.Dir(path))
 	if err != nil {
-		log.Fatalf("Cannot create dir %s: %s.", path, err)
+		err = fmt.Errorf("main: %#w", err)
+		log.Fatal().Err(err).Msgf("Cannot create dir %s.", path)
 	}
 
 	err = ioutil.WriteFile(path, []byte(configText), 0644)
 	if err != nil {
-		log.Fatalf("Cannot write to file %s: %s.", path, err)
+		err = fmt.Errorf("main: %#w", err)
+		log.Fatal().Err(err).Msgf("Cannot write to file %s", path)
 	}
 }

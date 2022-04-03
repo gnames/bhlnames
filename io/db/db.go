@@ -3,12 +3,12 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/gnames/bhlnames/config"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/rs/zerolog/log"
 )
 
 func opts(cfg config.Config) string {
@@ -19,7 +19,8 @@ func opts(cfg config.Config) string {
 func NewDbGorm(cnf config.Config) *gorm.DB {
 	db, err := gorm.Open("postgres", opts(cnf))
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("db.NewDbGorm: %#w", err)
+		log.Fatal().Err(err)
 	}
 	return db
 }
@@ -27,7 +28,8 @@ func NewDbGorm(cnf config.Config) *gorm.DB {
 func NewDB(cnf config.Config) *sql.DB {
 	db, err := sql.Open("postgres", opts(cnf))
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("db.NewDB: %#w", err)
+		log.Fatal().Err(err)
 	}
 	return db
 }
@@ -46,7 +48,8 @@ func Truncate(d *sql.DB, tables []string) error {
 func RunQuery(d *sql.DB, q string) *sql.Rows {
 	rows, err := d.Query(q)
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("db.RunQuery: %#w", err)
+		log.Fatal().Err(err)
 	}
 	return rows
 }

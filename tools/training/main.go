@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -10,6 +9,7 @@ import (
 	ft "github.com/gnames/bayes/ent/feature"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/gnfmt"
+	"github.com/rs/zerolog/log"
 )
 
 var dataPath = filepath.Join("..", "..", "io", "bayesio", "data")
@@ -25,13 +25,13 @@ func (l label) String() string {
 func main() {
 	gold, err := os.ReadFile(goldFile)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 	var data []*namerefs.NameRefs
 	enc := gnfmt.GNjson{Pretty: true}
 	err = enc.Decode(gold, &data)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 	var lfs []ft.LabeledFeatures
 	for _, v := range data {

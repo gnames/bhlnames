@@ -2,15 +2,15 @@ package builderio
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/gnames/bhlnames/io/db"
 	"github.com/gnames/gnsys"
+	"github.com/rs/zerolog/log"
 )
 
 func (b builderio) resetDB() {
-	log.Printf("Resetting '%s' database at '%s'.", b.DbDatabase, b.DbHost)
+	log.Info().Msgf("Resetting '%s' database at '%s'.", b.DbDatabase, b.DbHost)
 	q := `
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
@@ -20,9 +20,10 @@ COMMENT ON SCHEMA public IS 'standard public schema'`
 	q = fmt.Sprintf(q, b.DbUser)
 	_, err := b.DB.Exec(q)
 	if err != nil {
-		log.Fatalf("Database reset did not work: %s.", err)
+		err = fmt.Errorf("builderio.resetDB: %w", err)
+		log.Fatal().Err(err).Msg("Database reset failed")
 	}
-	log.Print("Creating tables.")
+	log.Info().Msg("Creating tables.")
 	b.migrate()
 }
 
@@ -36,8 +37,8 @@ func (b builderio) migrate() {
 	)
 	err := db.Truncate(b.DB, []string{"items", "pages", "parts"})
 	if err != nil {
-		err = fmt.Errorf("migrate: %w", err)
-		log.Fatal(err)
+		err = fmt.Errorf("builderio.migrate: %w", err)
+		log.Fatal().Err(err)
 	}
 }
 

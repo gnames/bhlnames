@@ -1,7 +1,7 @@
 package titlemio
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,6 +11,7 @@ import (
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/title_matcher"
 	"github.com/gnames/bhlnames/io/db"
+	"github.com/rs/zerolog/log"
 )
 
 type titlemio struct {
@@ -33,7 +34,8 @@ func New(cfg config.Config) title_matcher.TitleMatcher {
 	}
 	ac, err := res.getAhoCorasick()
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("titlemio.New: %w", err)
+		log.Fatal().Err(err)
 	}
 	res.AhoCorasick = ac
 	return res
@@ -57,7 +59,7 @@ func (tm *titlemio) getAhoCorasick() (aho_corasick.AhoCorasick, error) {
 			patterns[i] = strings.TrimSpace(patterns[i])
 		}
 		acSize := ac.Setup(patterns)
-		log.Printf("Created Title search trie with %d nodes.\n", acSize)
+		log.Info().Msgf("Created Title search trie with %d nodes.\n", acSize)
 	}
 	return ac, err
 }

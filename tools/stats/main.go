@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/gnames/bhlnames/io/bayesio"
 	"github.com/gnames/bhlnames/io/titlemio"
 	"github.com/gnames/gnfmt"
+	"github.com/rs/zerolog/log"
 )
 
 var dataPath = filepath.Join("..", "..", "io", "bayesio", "data")
@@ -48,13 +48,13 @@ func main() {
 
 	gold, err := os.ReadFile(goldFile)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 	var nrs []*namerefs.NameRefs
 	enc := gnfmt.GNjson{Pretty: true}
 	err = enc.Decode(gold, &nrs)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 	sts := new(stats)
 	sts.namesNum = len(nrs)
@@ -161,10 +161,10 @@ func output(nrs []*namerefs.NameRefs) {
 	}
 	bs, err := enc.Encode(res)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 	err = os.WriteFile(resFile, bs, 0644)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 }

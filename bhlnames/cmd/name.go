@@ -24,7 +24,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"sync"
 
@@ -37,6 +36,7 @@ import (
 	"github.com/gnames/bhlnames/io/titlemio"
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnparser"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -127,7 +127,7 @@ func formatFlag(cmd *cobra.Command) gnfmt.Format {
 	if s != "csv" {
 		fmt, _ := gnfmt.NewFormat(s)
 		if fmt == gnfmt.FormatNone {
-			log.Printf(
+			log.Info().Msgf(
 				"Cannot set format from '%s', setting format to csv",
 				s,
 			)
@@ -187,7 +187,8 @@ func checkStdin() bool {
 	stdInFile := os.Stdin
 	stat, err := stdInFile.Stat()
 	if err != nil {
-		log.Panic(err)
+		err = fmt.Errorf("checkStdin: %#w", err)
+		log.Fatal().Err(err)
 	}
 	return (stat.Mode() & os.ModeCharDevice) == 0
 }
@@ -209,8 +210,8 @@ func name(bn bhlnames.BHLnames, data string) {
 	if fileExists(path) {
 		f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 		if err != nil {
-			log.Fatal(err)
-			os.Exit(1)
+			err = fmt.Errorf("name: %#w", err)
+			log.Fatal().Err(err)
 		}
 		nameFile(bn, f)
 		f.Close()
@@ -245,7 +246,8 @@ func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 	header := make(map[string]int)
 	hdr, err := r.Read()
 	if err != nil {
-		log.Fatalf("Cannot read CSV file: %s", err)
+		err = fmt.Errorf("nameFile: %#w", err)
+		log.Fatal().Err(err).Msg("Cannot read CSV file.")
 	}
 	for i, v := range hdr {
 		header[v] = i
@@ -258,19 +260,20 @@ func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 	}
 
 	count := 0
-	log.Println("Finding references")
+	log.Info().Msg("Finding references")
 	for {
 		row, err := r.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Fatalf("Cannot read CSV row: %s", err)
+			err = fmt.Errorf("nameFile: %#w", err)
+			log.Fatal().Err(err).Msg("Cannot read CSV row")
 		}
 
 		count++
 		if count%1000 == 0 {
-			log.Printf("Processing %s-th line\n", humanize.Comma(int64(count)))
+			log.Info().Msgf("Processing %s-th line\n", humanize.Comma(int64(count)))
 		}
 		opts := []input.Option{
 			input.OptID(csvVal(row, "Id")),
@@ -282,7 +285,7 @@ func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 	}
 	close(in)
 	wg.Wait()
-	log.Println("Finish finding references")
+	log.Info().Msg("Finish finding references")
 }
 
 func processResults(f gnfmt.Format, chOut <-chan *namerefs.NameRefs,
@@ -296,11 +299,13 @@ func processResults(f gnfmt.Format, chOut <-chan *namerefs.NameRefs,
 	}
 	encDump, err := enc.Encode(dump)
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("processResults: %#w", err)
+		log.Fatal().Err(err)
 	}
 	err = os.WriteFile("testdata/stubs_namerefs.json", encDump, 0644)
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("processResults: %#w", err)
+		log.Fatal().Err(err)
 	}
 }
 
@@ -310,8 +315,8 @@ func nameString(bn bhlnames.BHLnames, name string) {
 	enc := gnfmt.GNjson{}
 	res, err := bn.NameRefs(data)
 	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
+		err = fmt.Errorf("nameString: %#w", err)
+		log.Fatal().Err(err)
 	}
 	fmt.Println(enc.Output(res, bn.Config().Format))
 }

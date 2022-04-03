@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -13,6 +12,7 @@ import (
 	"github.com/gnames/bhlnames/io/db"
 	"github.com/gnames/gnsys"
 	"github.com/gosuri/uiprogress"
+	"github.com/rs/zerolog/log"
 )
 
 // downloadDumpBHL will download a dump of BHL metadata using provided URL to a
@@ -23,7 +23,7 @@ func (b builderio) downloadDumpBHL() error {
 	path := b.DownloadFile
 	exists, _ := gnsys.FileExists(path)
 	if !b.WithRebuild && exists {
-		log.Printf("File %s already exists, skipping download.", path)
+		log.Info().Msgf("File %s already exists, skipping download.", path)
 		return nil
 	}
 	out, err := os.Create(path + ".tmp")
@@ -47,7 +47,7 @@ func (b builderio) downloadDumpBHL() error {
 	} else {
 		return errors.New("cannot receive remote header of BHL data URL")
 	}
-	log.Printf(`Downloading %s of BHL data dump.`,
+	log.Info().Msgf(`Downloading %s of BHL data dump.`,
 		bytefmt.ByteSize(uint64(total)))
 
 	uiprogress.Start()
@@ -62,7 +62,7 @@ func (b builderio) downloadDumpBHL() error {
 	if err != nil {
 		return err
 	}
-	log.Println("Download finished")
+	log.Info().Msg("Download finished")
 	return nil
 }
 

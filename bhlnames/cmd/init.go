@@ -22,11 +22,12 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/io/builderio"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -41,10 +42,11 @@ publications for names.
 
 To separate these two processes use "bhlnames bhl" and "bhlnames names" one
 after enother. The resul will be identical to "bhlnames init".`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		rebuild, err := cmd.Flags().GetBool("rebuild")
 		if err != nil {
-			log.Fatal(err)
+			err = fmt.Errorf("initCmd: %#w", err)
+			log.Fatal().Err(err)
 		}
 		opts = append(opts, config.OptWithRebuild(rebuild))
 		cfg := config.New(opts...)
@@ -54,7 +56,8 @@ after enother. The resul will be identical to "bhlnames init".`,
 
 		err = bn.Initialize()
 		if err != nil {
-			log.Fatal(err)
+			err = fmt.Errorf("initCmd: %#w", err)
+			log.Fatal().Err(err)
 		}
 	},
 }

@@ -2,20 +2,20 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"sort"
 
 	"github.com/fatih/color"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/gnfmt"
+	"github.com/rs/zerolog/log"
 )
 
 func curateData(out <-chan *namerefs.NameRefs, output string) {
 	var res []*namerefs.NameRefs
 	for r := range out {
 		if r.Error != nil {
-			log.Println(r.Error)
+			log.Warn().Err(r.Error)
 		}
 		res = append(res, r)
 	}
@@ -102,11 +102,13 @@ func getOutput(nrs []*namerefs.NameRefs, output string) {
 
 	resJSON, err := enc.Encode(res)
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("cmd getOutput: %#w", err)
+		log.Fatal().Err(err)
 	}
 
 	err = os.WriteFile(output, resJSON, 0644)
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("cmd getOutput: %#w", err)
+		log.Fatal().Err(err)
 	}
 }

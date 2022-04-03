@@ -1,7 +1,7 @@
 package builderio
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -13,6 +13,7 @@ import (
 	"github.com/gnames/bhlnames/io/db"
 	"github.com/gnames/bhlnames/io/dictio"
 	"github.com/gnames/gnfmt"
+	"github.com/rs/zerolog/log"
 )
 
 type titleStore struct {
@@ -26,7 +27,8 @@ func newTitleStore(cfg config.Config, titles map[int]*title) *titleStore {
 	d := dictio.New()
 	shortWords, err := d.ShortWords()
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("builderio.newTitleStore: %#w", err)
+		log.Fatal().Err(err)
 	}
 	res := titleStore{
 		cfg:        cfg,

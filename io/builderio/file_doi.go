@@ -2,11 +2,12 @@ package builderio
 
 import (
 	"bufio"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -18,7 +19,7 @@ const (
 func (b builderio) prepareDOI() (map[int]string, map[int]string, error) {
 	titleMap := make(map[int]string)
 	partMap := make(map[int]string)
-	log.Println("Processing doi.txt")
+	log.Info().Msg("Processing doi.txt")
 	path := filepath.Join(b.Config.DownloadDir, "doi.txt")
 	f, err := os.Open(path)
 	if err != nil {

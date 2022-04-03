@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -16,6 +15,7 @@ import (
 	"github.com/gnames/bhlnames/io/db"
 	"github.com/gnames/gnfmt"
 	"github.com/jinzhu/gorm"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -37,8 +37,8 @@ func New(cfg config.Config, db *sql.DB, gormdb *gorm.DB) namebhl.NameBHL {
 }
 
 func (n namesbhlio) ImportOccurrences() error {
-	log.Println("Ingesting names' occurrences.")
-	log.Println("Truncating data from page_name_strings table.")
+	log.Info().Msg("Ingesting names' occurrences.")
+	log.Info().Msg("Truncating data from page_name_strings table.")
 	err := db.Truncate(n.db, []string{"page_name_strings"})
 	if err != nil {
 		return fmt.Errorf("ImportOccurrences: %w", err)
@@ -80,14 +80,16 @@ func (n namesbhlio) ImportOccurrences() error {
 func (n namesbhlio) getREST(url string) ([]byte, error) {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Printf("Cannot create request: %v", err)
+		err = fmt.Errorf("namesbhlio.getREST: %w", err)
+		log.Warn().Err(err).Msg("Cannot create request")
 		return nil, err
 	}
 	request.Header.Set("Content-Type", "application/json")
 
 	resp, err := n.client.Do(request)
 	if err != nil {
-		log.Print("Cannot get occurrences from BHLindex")
+		err = fmt.Errorf("namesbhlio.getREST: %w", err)
+		log.Warn().Err(err).Msg("Cannot get occurrences from BHLindex")
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -118,8 +120,8 @@ func (n namesbhlio) getOccurrences(offsetID, limit int) ([]name.DetectedName, er
 }
 
 func (n namesbhlio) ImportNames() error {
-	log.Println("Ingesting names resolved to Catalogue of Life.")
-	log.Println("Truncating data from names_strings table.")
+	log.Info().Msg("Ingesting names resolved to Catalogue of Life.")
+	log.Info().Msg("Truncating data from names_strings table.")
 	err := db.Truncate(n.db, []string{"name_strings"})
 	if err != nil {
 		return fmt.Errorf("import names: %w", err)
@@ -130,7 +132,10 @@ func (n namesbhlio) ImportNames() error {
 		return fmt.Errorf("import names: %w", err)
 	}
 
-	log.Printf("Downloading BHL's verified names. LastID: %s", humanize.Comma(int64(lastID)))
+	log.Info().Msgf(
+		"Downloading BHL's verified names. LastID: %s",
+		humanize.Comma(int64(lastID)),
+	)
 	chNames := make(chan []name.VerifiedName)
 	g := errgroup.Group{}
 
@@ -153,7 +158,7 @@ func (n namesbhlio) ImportNames() error {
 
 		resp, err := n.client.Do(request)
 		if err != nil {
-			log.Print("Cannot get verified names from BHLindex.")
+			log.Info().Msg("Cannot get verified names from BHLindex.")
 			return err
 		}
 		defer resp.Body.Close()
@@ -161,12 +166,12 @@ func (n namesbhlio) ImportNames() error {
 		var respBytes []byte
 		respBytes, err = io.ReadAll(resp.Body)
 		if err != nil {
-			log.Print("Body reading is failing for a search")
+			log.Info().Msg("Body reading is failing for a search")
 			return err
 		}
 		err = enc.Decode(respBytes, &res)
 		if err != nil {
-			log.Print("Cannot decode search result")
+			log.Info().Msg("Cannot decode search result")
 			return err
 		}
 		chNames <- res
@@ -182,14 +187,16 @@ func (n namesbhlio) namesLastID() (int, error) {
 	url := fmt.Sprintf("%snames/last_id", n.cfg.BHLIndexURL)
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Printf("Cannot create request: %v", err)
+		err = fmt.Errorf("namesbhlio.namesLastID: %w", err)
+		log.Warn().Err(err).Msg("Cannot create request")
 		return res, err
 	}
 	request.Header.Set("Content-Type", "text/plain")
 
 	resp, err := n.client.Do(request)
 	if err != nil {
-		log.Print("Cannot get names last ID")
+		err = fmt.Errorf("namesbhlio.namesLastID: %w", err)
+		log.Warn().Err(err).Msg("Cannot get names last ID")
 		return res, err
 	}
 	defer resp.Body.Close()

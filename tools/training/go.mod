@@ -1,11 +1,12 @@
 module github.com/gnames/bhlnames/tools/training
 
-go 1.17
+go 1.18
 
 require (
 	github.com/gnames/bayes v0.2.1
 	github.com/gnames/bhlnames v0.0.9
 	github.com/gnames/gnfmt v0.2.0
+	github.com/rs/zerolog v1.26.1
 )
 
 require (

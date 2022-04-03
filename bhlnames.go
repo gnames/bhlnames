@@ -1,7 +1,7 @@
 package bhlnames
 
 import (
-	"log"
+	"fmt"
 	"sort"
 	"sync"
 
@@ -15,6 +15,7 @@ import (
 	"github.com/gnames/bhlnames/ent/score"
 	"github.com/gnames/bhlnames/ent/title_matcher"
 	"github.com/gnames/gnparser"
+	"github.com/rs/zerolog/log"
 )
 
 type Option func(*bhlnames)
@@ -109,7 +110,8 @@ func (bn *bhlnames) nameRefsWorker(
 	for inp := range chIn {
 		nameRefs, err := bn.ReferencesBHL(inp)
 		if err != nil {
-			log.Println(err)
+			err = fmt.Errorf("bhlnames.nameRefsWorker: %w", err)
+			log.Warn().Err(err)
 		}
 		chOut <- nameRefs
 	}
@@ -149,11 +151,13 @@ func (bn *bhlnames) nomenRefsWorker(
 	for data := range chIn {
 		nr, err := bn.ReferencesBHL(data)
 		if err != nil {
-			log.Println(err)
+			err = fmt.Errorf("bhlnames.nomenRefsWorker: %#w", err)
+			log.Warn().Err(err)
 		}
 		err = bn.sortByScore(nr)
 		if err != nil {
-			log.Println(err)
+			err = fmt.Errorf("bhlnames.nomenRefsWorker: %#w", err)
+			log.Warn().Err(err)
 		}
 		chOut <- nr
 	}

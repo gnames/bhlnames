@@ -2,7 +2,6 @@ package namesbhlio
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -11,11 +10,12 @@ import (
 	"github.com/gnames/bhlindex/ent/page"
 	"github.com/gnames/bhlnames/io/db"
 	"github.com/gnames/gnfmt"
+	"github.com/rs/zerolog/log"
 )
 
 // PageFilesToIDs maps name of the file of a page to the BHL's page ID.
 func (n namesbhlio) PageFilesToIDs() (err error) {
-	log.Println("Finding ID for Page Files")
+	log.Info().Msg("Finding ID for Page Files")
 	kvP := db.InitKeyVal(n.cfg.PageDir)
 	defer kvP.Close()
 

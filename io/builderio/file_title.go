@@ -3,11 +3,12 @@ package builderio
 import (
 	"bufio"
 	"database/sql"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 type title struct {
@@ -28,9 +29,9 @@ const (
 )
 
 func (b builderio) prepareTitle(doiMap map[int]string) (map[int]*title, error) {
-	log.Println("Processing title.txt")
+	log.Info().Msg("Processing title.txt")
 	res := make(map[int]*title)
-	path := filepath.Join(b.Config.DownloadDir, "title.txt")
+	path := filepath.Join(b.DownloadDir, "title.txt")
 	f, err := os.Open(path)
 	if err != nil {
 		return res, err

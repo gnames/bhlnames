@@ -3,7 +3,6 @@ package reffinderio
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/url"
 
 	"github.com/dgraph-io/badger/v2"
@@ -16,6 +15,7 @@ import (
 	"github.com/gnames/bhlnames/io/db"
 	"github.com/gnames/gnparser"
 	"github.com/jinzhu/gorm"
+	"github.com/rs/zerolog/log"
 )
 
 // reffinderio is an implementation of Librarian interface. It uses
@@ -41,7 +41,7 @@ type reffinderio struct {
 }
 
 func New(cfg config.Config) reffinder.RefFinder {
-	log.Printf("Connecting to PostgreSQL database %s at %s", cfg.DbDatabase, cfg.DbHost)
+	log.Info().Msgf("Connecting to PostgreSQL database %s at %s", cfg.DbDatabase, cfg.DbHost)
 	res := reffinderio{
 		Config: cfg,
 		KV:     db.InitKeyVal(cfg.PartDir),
