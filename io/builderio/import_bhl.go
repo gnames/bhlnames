@@ -1,26 +1,22 @@
 package builderio
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 
-	"code.cloudfoundry.org/bytefmt"
 	"github.com/gnames/bhlnames/io/db"
 	"github.com/gnames/gnsys"
-	"github.com/gosuri/uiprogress"
 	"github.com/rs/zerolog/log"
+	progressbar "github.com/schollz/progressbar/v3"
 )
 
-// downloadDumpBHL will download a dump of BHL metadata using provided URL to a
+// download will download a dump of BHL metadata using provided URL to a
 // local file. It's efficient because it will write as it downloads and not
 // load the whole file into memory. We pass an io.TeeReader into Copy() to
 // report progress on the download.
-func (b builderio) downloadDumpBHL() error {
-	path := b.DownloadFile
+func (b builderio) download(path, url string) error {
 	exists, _ := gnsys.FileExists(path)
 	if !b.WithRebuild && exists {
 		log.Info().Msgf("File %s already exists, skipping download.", path)
@@ -32,31 +28,21 @@ func (b builderio) downloadDumpBHL() error {
 	}
 	defer out.Close()
 
-	resp, err := http.Get(b.BHLDumpURL)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	total := 0
-	if size, ok := resp.Header["Content-Length"]; ok && len(size) > 0 {
-		total, err = strconv.Atoi(size[0])
-		if err != nil {
-			return err
-		}
-	} else {
-		return errors.New("cannot receive remote header of BHL data URL")
-	}
-	log.Info().Msgf(`Downloading %s of BHL data dump.`,
-		bytefmt.ByteSize(uint64(total)))
-
-	uiprogress.Start()
-	counter := NewWriteCounter(total)
-	_, err = io.Copy(out, io.TeeReader(resp.Body, counter))
-	if err != nil {
-		return err
-	}
-	uiprogress.Stop()
+	bar := progressbar.DefaultBytes(
+		resp.ContentLength,
+		"downloading",
+	)
+	io.Copy(io.MultiWriter(out, bar), resp.Body)
 
 	err = os.Rename(path+".tmp", path)
 	if err != nil {

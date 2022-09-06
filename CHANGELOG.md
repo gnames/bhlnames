@@ -2,16 +2,38 @@
 
 ## Unreleased
 
+- Add [#33] use bhlindex dump files to import data.
+- Add [#30]: use zerolog for logging.
+- Add [#29]: switch to BHLIndex RESTful api.
+- Add [#27]: Bayes training.
+
+## [v0.0.9]
+
+- Add [#26]: add curation for nomen finding.
+- Add [#25]: reference, year, page, volume scores.
+- Add [#24]: use Aho-Corasick algorithm for matching titles.
+- Add [#23]: reffinder mock for testing.
+- Add [#22]: years, authors from gnparser.
+- Add [#21]: improve architecture.
+
+## [v0.0.8]
+
+- Add: update bhlinker, refactor.
+
+## [v0.0.7]
+
+- Add: move lib to bnlib.
+
 ## [v0.0.6]
 
-- Add [#20] run bhlnames against all CoL files.
-- Add [#16] functional REST API.
-- Add [#14] refactor initialization code to use interfaces.
-- Add [#13] refactor reference code to use interfaces.
-- Add [#12] link nomenclatural events to BHL.
-- Add [#11] use nomenclatural annotations in output and collection of reference
+- Add [#20]: run bhlnames against all CoL files.
+- Add [#16]: functional REST API.
+- Add [#14]: refactor initialization code to use interfaces.
+- Add [#13]: refactor reference code to use interfaces.
+- Add [#12]: link nomenclatural events to BHL.
+- Add [#11]: use nomenclatural annotations in output and collection of reference
             data.
-- Fix [#19] memory leak in postgres database.
+- Fix [#19]: memory leak in postgres database.
 
 ## [v0.0.5]
 
@@ -20,11 +42,11 @@
 
 ## [v0.0.4]
 
-- Add [#10] currently accepted canonical in output. Add option for
+- Add [#10]: currently accepted canonical in output. Add option for
             for a short output.
-- Add [#8] option to return result without synonyms.
-- Add [#7] add documentation.
-- Fix [#9] close DB connections in the end of Refs methods.
+- Add [#8]: option to return result without synonyms.
+- Add [#7]: add documentation.
+- Fix [#9]: close DB connections in the end of Refs methods.
 
 ## [v0.0.3]
 

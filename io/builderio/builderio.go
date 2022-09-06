@@ -65,28 +65,31 @@ func (b builderio) ResetData() {
 
 func (b builderio) ImportData() error {
 	n := namesbhlio.New(b.Config, b.DB, b.GormDB)
-	err := b.downloadDumpBHL()
 
+	log.Info().Msg("Downloading database dump from BHL.")
+	err := b.download(b.DownloadBHLFile, b.BHLDumpURL)
 	if err == nil {
-		err = b.extractFilesBHL()
+		err = b.extract(b.DownloadBHLFile)
 	}
-
+	if err == nil {
+		log.Info().Msg("Downloading names data from bhlindex.")
+		err = b.download(b.DownloadNamesFile, b.BHLNamesURL)
+	}
+	if err == nil {
+		err = b.extract(b.DownloadNamesFile)
+	}
 	if err == nil {
 		b.resetDB()
 		err = b.importDataBHL()
 	}
-
 	if err == nil {
 		err = n.ImportNames()
 	}
-
 	if err == nil {
 		err = n.PageFilesToIDs()
 	}
-
 	if err == nil {
 		err = n.ImportOccurrences()
 	}
-
 	return err
 }

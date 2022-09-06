@@ -128,11 +128,11 @@ func (b builderio) importPart(doiMap map[int]string) error {
 
 		res = append(res, &part)
 	}
-	return b.uploadParts(kv, res)
+	return b.importParts(kv, res)
 }
 
-func (b builderio) uploadParts(kv *badger.DB, items []*db.Part) error {
-	log.Info().Msgf("Uploading %s records to parts table.", humanize.Comma(int64(len(items))))
+func (b builderio) importParts(kv *badger.DB, items []*db.Part) error {
+	log.Info().Msgf("Importing %s records to parts table.", humanize.Comma(int64(len(items))))
 	columns := []string{"id", "page_id", "item_id", "length", "doi",
 		"contributor_name", "sequence_order", "segment_type", "title",
 		"container_title", "publication_details", "volume", "series",

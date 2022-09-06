@@ -12,7 +12,7 @@ import (
 func TestDefaultConfig(t *testing.T) {
 	test := config.Config{
 		BHLDumpURL:   "https://www.biodiversitylibrary.org/data/data.zip",
-		BHLIndexURL:  "bhlrpc.globalnames.org:80",
+		BHLNamesURL:  "bhlrpc.globalnames.org:80",
 		InputDir:     config.InputDir(),
 		DbHost:       "localhost",
 		DbUser:       "postgres",
@@ -24,7 +24,7 @@ func TestDefaultConfig(t *testing.T) {
 		Format:       gnfmt.CSV,
 		WithSynonyms: true,
 	}
-	test.DownloadFile = filepath.Join(test.InputDir, "data.zip")
+	test.DownloadBHLFile = filepath.Join(test.InputDir, "data.zip")
 	test.DownloadDir = filepath.Join(test.InputDir, "Data")
 	test.PageDir = filepath.Join(test.InputDir, "page")
 	test.PartDir = filepath.Join(test.InputDir, "part")
@@ -38,7 +38,7 @@ func TestDefaultConfig(t *testing.T) {
 func TestModifiedConfig(t *testing.T) {
 	test := config.Config{
 		BHLDumpURL:          "https://example.org",
-		BHLIndexURL:         "https://example.org",
+		BHLNamesURL:         "https://example.org",
 		InputDir:            "/tmp",
 		DbHost:              "10.0.0.10",
 		DbUser:              "john",
@@ -53,7 +53,7 @@ func TestModifiedConfig(t *testing.T) {
 		SortDesc:            true,
 		WithShortenedOutput: true,
 	}
-	test.DownloadFile = filepath.Join(test.InputDir, "data.zip")
+	test.DownloadBHLFile = filepath.Join(test.InputDir, "data.zip")
 	test.DownloadDir = filepath.Join(test.InputDir, "Data")
 	test.PageDir = filepath.Join(test.InputDir, "page")
 	test.PartDir = filepath.Join(test.InputDir, "part")

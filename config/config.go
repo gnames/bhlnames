@@ -17,10 +17,10 @@ type Config struct {
 	// names occurrences with BHL pages.
 	BHLDumpURL string
 
-	// BHLIndexURL provides URL to BHLindex RESTful API. This API provides
+	// BHLNamesURL provides URL to BHLindex RESTful API. This API provides
 	// names occurrences data. Together with data from BHL dumps it allows
 	// to connect a name to pages in BHL.
-	BHLIndexURL string
+	BHLNamesURL string
 
 	// DbHost provides an IP or host name where PostgreSQL is located. The
 	// database is used as the major data store for the project.
@@ -74,24 +74,33 @@ type Config struct {
 	// created.
 	InputDir string
 
-	// DownloadFile provides the path where BHL dump compressed file will be
+	// DownloadBHLFile provides the path where BHL dump compressed file will be
 	// stored.
-	DownloadFile string
+	DownloadBHLFile string
+
+	// DownloadNamesFile provides the path where BHL dump compressed file will be
+	// stored.
+	DownloadNamesFile string
 
 	// DownloadDir is the directory where  BHLnames extracts data from
 	// BHL dump.
 	DownloadDir string
 
-	// PageDir provides the directory where BHLnames keeps key-value
-	// database for pages information. We do not have file name of a page
-	// connected to page ID in the BHL data dump. So we have to calculate
-	// this ID by using page using page sequence in a title. We find out
-	// page id by concatenation of "FileNum|TitleID" fields.
+	// PageDir provides the directory where BHLnames keeps key-value database for
+	// pages information. We do not have file name of a page connected to page ID
+	// in the BHL data dump. So we have to calculate this ID by using page
+	// sequence in a title. We find out page id by concatenation of
+	// "FileNum|TitleID" fields.
+	//
+	// This key-value store is generated using data dump from BHL databse.
 	PageDir string
 
 	// PageFileDir provides the directory to a key-value store database that
 	// connects BHL's PageID to the page's file name in the BHL corpus
 	// directory structure.
+	//
+	// It is generated using bhlindex page dump and key-value store from
+	// PageDir
 	PageFileDir string
 
 	// PartDir is another key-value database to keep data about BHL's `parts`.
@@ -117,12 +126,9 @@ func OptBHLDumpURL(s string) Option {
 	}
 }
 
-func OptBHLIndexURL(s string) Option {
+func OptBHLNamesURL(s string) Option {
 	return func(cfg *Config) {
-		if s[len(s)-1] != '/' {
-			s = s + "/"
-		}
-		cfg.BHLIndexURL = s
+		cfg.BHLNamesURL = s
 	}
 }
 
@@ -229,10 +235,10 @@ func InputDir() string {
 func New(opts ...Option) Config {
 	cfg := Config{
 		BHLDumpURL:          "https://www.biodiversitylibrary.org/data/data.zip",
-		BHLIndexURL:         "https://bhlindex.globalnames.org/api/v0",
+		BHLNamesURL:         "http://opendata.globalnames.org/dumps/bhl-col.zip",
 		InputDir:            InputDir(),
 		Delimiter:           ',',
-		DbHost:              "localhost",
+		DbHost:              "0.0.0.0",
 		DbUser:              "postgres",
 		DbPass:              "postgres",
 		DbDatabase:          "bhlnames",
@@ -249,7 +255,8 @@ func New(opts ...Option) Config {
 		opt(&cfg)
 	}
 
-	cfg.DownloadFile = filepath.Join(cfg.InputDir, "data.zip")
+	cfg.DownloadBHLFile = filepath.Join(cfg.InputDir, "bhl-data.zip")
+	cfg.DownloadNamesFile = filepath.Join(cfg.InputDir, "bhl-names.zip")
 	cfg.DownloadDir = filepath.Join(cfg.InputDir, "Data")
 	cfg.PageDir = filepath.Join(cfg.InputDir, "page")
 	cfg.PageFileDir = filepath.Join(cfg.InputDir, "page-file")

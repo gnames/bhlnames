@@ -1,4 +1,5 @@
-/* Copyright © 2020 Dmitry Mozzherin <dmozzherin@gmail.com>
+/*
+	Copyright © 2020 Dmitry Mozzherin <dmozzherin@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -166,7 +167,7 @@ func nomensFromFile(bn bhlnames.BHLnames, f io.Reader, curate bool, output strin
 		return ""
 	}
 	count := 0
-	log.Info().Msg("Finding references")
+	log.Info().Msg("Finding references.")
 	for {
 		row, err := r.Read()
 		if err == io.EOF {
@@ -179,7 +180,7 @@ func nomensFromFile(bn bhlnames.BHLnames, f io.Reader, curate bool, output strin
 
 		count++
 		if count%1000 == 0 {
-			log.Info().Msgf("Processing %s-th line\n", humanize.Comma(int64(count)))
+			log.Info().Msgf("Processing %s-th line.\n", humanize.Comma(int64(count)))
 		}
 		opts := []input.Option{
 			input.OptID(csvVal(row, "Id")),

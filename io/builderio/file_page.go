@@ -17,17 +17,28 @@ import (
 )
 
 const (
-	pageIDF      = 0
-	pageItemIDF  = 1
+	// pageIDF is an automatically assigned page ID from BHL database.
+	// It is sequence that starts from 1 and autoincrmented by 1.
+	pageIDF = 0
+	// pageItemIDF is an automatically assigned item ID from BHL database.
+	pageItemIDF = 1
+	// pageFileNumF is a sequential number of page in an item. Sadly it
+	// does not correspond to number given in a page filename.
 	pageFileNumF = 2
-	pageNumberF  = 7
+	// pageNumberF is a 'real' page number given to a page by a publisher of
+	// an item. We need to connect this number to a number from a page
+	// filename. We can do it if we know which pageID corresponds to which
+	// number extracted from a page filename.
+	pageNumberF = 7
 )
 
 const BatchSize = 100_000
 
 func (b builderio) importPage(itemMap map[uint]string) error {
-	log.Info().Msg("Uploading page.txt data for db.")
-	err := db.ResetKeyVal(b.PageDir)
+	var err error
+	var id, itemID, fileNum, pageNum int
+	log.Info().Msg("Importing page.txt data to db.")
+	err = db.ResetKeyVal(b.PageDir)
 	if err != nil {
 		return err
 	}
@@ -35,7 +46,7 @@ func (b builderio) importPage(itemMap map[uint]string) error {
 	total := 0
 	pMap := make(map[int]struct{})
 	res := make([]*db.Page, 0, BatchSize)
-	path := filepath.Join(b.Config.DownloadDir, "page.txt")
+	path := filepath.Join(b.DownloadDir, "page.txt")
 	f, err := os.Open(path)
 	if err != nil {
 		return err
@@ -53,7 +64,7 @@ func (b builderio) importPage(itemMap map[uint]string) error {
 		l := scanner.Text()
 		fields := strings.Split(l, "\t")
 
-		id, err := strconv.Atoi(fields[pageIDF])
+		id, err = strconv.Atoi(fields[pageIDF])
 		if err != nil {
 			return err
 		}
@@ -66,19 +77,19 @@ func (b builderio) importPage(itemMap map[uint]string) error {
 		count++
 		page := &db.Page{ID: uint(id)}
 
-		itemID, err := strconv.Atoi(fields[pageItemIDF])
+		itemID, err = strconv.Atoi(fields[pageItemIDF])
 		if err != nil {
 			return err
 		}
 		page.ItemID = uint(itemID)
 
-		fileNum, err := strconv.Atoi(fields[pageFileNumF])
+		fileNum, err = strconv.Atoi(fields[pageFileNumF])
 		if err != nil {
 			return err
 		}
-		page.FileNum = uint(fileNum)
+		page.SequenceOrder = uint(fileNum)
 
-		pageNum, err := strconv.Atoi(fields[pageNumberF])
+		pageNum, err = strconv.Atoi(fields[pageNumberF])
 		if err == nil {
 			page.PageNum = sql.NullInt64{Int64: int64(pageNum), Valid: true}
 		}
@@ -89,7 +100,7 @@ func (b builderio) importPage(itemMap map[uint]string) error {
 			total += len(res)
 			pages := make([]*db.Page, len(res))
 			copy(pages, res)
-			err := b.processPages(kv, itemMap, pages, total)
+			err = b.processPages(kv, itemMap, pages, total)
 			if err != nil {
 				return err
 			}
@@ -109,7 +120,7 @@ func (b builderio) processPages(
 	pages []*db.Page,
 	total int,
 ) error {
-	columns := []string{"id", "item_id", "file_num", "page_num"}
+	columns := []string{"id", "item_id", "sequence_order", "page_num"}
 	transaction, err := b.DB.Begin()
 	if err != nil {
 		return err
@@ -121,8 +132,20 @@ func (b builderio) processPages(
 	}
 	kvTxn := kv.NewTransaction(true)
 
+	// we create a dataset with the following schema:
+	// key: "page sequence number|itemBarcode". For example "13|tropicosabc-3"
+	// value pageID (from the database)
+	//
+	// If we have an item from BHL filesystem with pages, we can calculate
+	// more or less accurate which page corresponds to which pageID by
+	// sorting pages according to filenames, and figuring out which number
+	// taken from the file-name corresponds to which pageID.
+	//
+	// This method is not perfect, but is good for most of the items. A better
+	// way would be to have the number exctracted from file in the page.txt
+	// dump.
 	for _, v := range pages {
-		key := fmt.Sprintf("%d|%s", v.FileNum, itemMap[v.ItemID])
+		key := fmt.Sprintf("%d|%s", v.SequenceOrder, itemMap[v.ItemID])
 		val := strconv.Itoa(int(v.ID))
 		if err = kvTxn.Set([]byte(key), []byte(val)); err == badger.ErrTxnTooBig {
 			err = kvTxn.Commit()
@@ -137,7 +160,7 @@ func (b builderio) processPages(
 			}
 		}
 
-		_, err = stmt.Exec(v.ID, v.ItemID, v.FileNum, v.PageNum)
+		_, err = stmt.Exec(v.ID, v.ItemID, v.SequenceOrder, v.PageNum)
 		if err != nil {
 			return err
 		}

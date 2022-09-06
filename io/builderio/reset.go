@@ -33,7 +33,7 @@ func (b builderio) migrate() {
 		&db.Page{},
 		&db.Part{},
 		&db.NameString{},
-		&db.PageNameString{},
+		&db.NameOccurrence{},
 	)
 	err := db.Truncate(b.DB, []string{"items", "pages", "parts"})
 	if err != nil {
@@ -59,9 +59,9 @@ func (b builderio) resetDirs() error {
 	if err != nil {
 		return err
 	}
-	exists, _ := gnsys.FileExists(b.DownloadFile)
+	exists, _ := gnsys.FileExists(b.DownloadBHLFile)
 	if exists {
-		return os.Remove(b.DownloadFile)
+		return os.Remove(b.DownloadBHLFile)
 	}
 	return nil
 }

@@ -61,7 +61,7 @@ func (l reffinderio) occurrences(name string, field string) []*row {
   itm.kingdom_percent, itm.paths_total, ns.id, ns.name, ns.matched_canonical,
   ns.match_type, ns.edit_distance
 	FROM name_strings ns
-			JOIN page_name_strings pns ON ns.id = pns.name_string_id
+			JOIN name_occurrences pns ON ns.id = pns.name_string_id
 			JOIN pages pg ON pg.id = pns.page_id
 			JOIN items itm ON itm.id = pg.item_id
 	WHERE ns.%s = %s

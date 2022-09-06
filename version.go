@@ -1,4 +1,4 @@
 package bhlnames
 
-var Version = "v0.0.1-dev"
+var Version = "v0.10.0+"
 var Build = "n/a"

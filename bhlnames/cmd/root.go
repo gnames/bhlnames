@@ -49,7 +49,7 @@ var (
 // configuration file, if it exists.
 type fConfig struct {
 	BHLDumpURL  string
-	BHLIndexURL string
+	BHLNamesURL string
 	InputDir    string
 	DbHost      string
 	DbUser      string
@@ -118,7 +118,8 @@ func initConfig() {
 	viper.AddConfigPath(configDir)
 	viper.SetConfigName(configFile)
 
-	viper.BindEnv("BHLDumpURL", "BHL_NAMES_DUMP_URL")
+	viper.BindEnv("BHLDumpURL", "BHL_DUMP_URL")
+	viper.BindEnv("BHLNamesURL", "BHL_NAMES_URL")
 	viper.BindEnv("BHLindexHost", "BHL_NAMES_INDEX_HOST")
 	viper.BindEnv("InputDir", "BHL_NAMES_INPUT_DIR")
 	viper.BindEnv("DbHost", "BHL_NAMES_DB_HOST")
@@ -155,8 +156,8 @@ func getOpts() []config.Option {
 	if cfg.BHLDumpURL != "" {
 		opts = append(opts, config.OptBHLDumpURL(cfg.BHLDumpURL))
 	}
-	if cfg.BHLIndexURL != "" {
-		opts = append(opts, config.OptBHLIndexURL(cfg.BHLIndexURL))
+	if cfg.BHLNamesURL != "" {
+		opts = append(opts, config.OptBHLNamesURL(cfg.BHLNamesURL))
 	}
 	if cfg.InputDir != "" {
 		opts = append(opts, config.OptInputDir(cfg.InputDir))

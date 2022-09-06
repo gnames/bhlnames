@@ -260,7 +260,7 @@ func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 	}
 
 	count := 0
-	log.Info().Msg("Finding references")
+	log.Info().Msg("Finding references.")
 	for {
 		row, err := r.Read()
 		if err == io.EOF {
@@ -268,12 +268,12 @@ func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 		}
 		if err != nil {
 			err = fmt.Errorf("nameFile: %#w", err)
-			log.Fatal().Err(err).Msg("Cannot read CSV row")
+			log.Fatal().Err(err).Msg("Cannot read CSV row.")
 		}
 
 		count++
 		if count%1000 == 0 {
-			log.Info().Msgf("Processing %s-th line\n", humanize.Comma(int64(count)))
+			log.Info().Msgf("Processing %s-th line.\n", humanize.Comma(int64(count)))
 		}
 		opts := []input.Option{
 			input.OptID(csvVal(row, "Id")),
@@ -285,7 +285,7 @@ func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 	}
 	close(in)
 	wg.Wait()
-	log.Info().Msg("Finish finding references")
+	log.Info().Msg("Finished finding references.")
 }
 
 func processResults(f gnfmt.Format, chOut <-chan *namerefs.NameRefs,

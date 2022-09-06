@@ -6,12 +6,11 @@
 # BHLDumpURL: https://www.biodiversitylibrary.org/data/data.zip
 
 ## BHL name index data need to be downloaded and combined with BHL dump data.
-## The gRPC URL is a bhlindex service that allows to download such data.
-# BHLIndexURL: https://bhlindex.globalnames.org/api/v0
+# BHLNamesURL: http://opendata.globalnames.org/dumps/bhl-col.zip
 
 ## Postgresql host for assembling data from BHL and BHL name index.
 ## Change it to IP address/Host of a database server.
-# DbHost: localhost
+# DbHost: 0.0.0.0
 
 ## Postgresql user. Change it to username existed in Postgres service.
 # DbUser: postgres

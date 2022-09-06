@@ -29,7 +29,7 @@ const (
 )
 
 func (b builderio) prepareTitle(doiMap map[int]string) (map[int]*title, error) {
-	log.Info().Msg("Processing title.txt")
+	log.Info().Msg("Processing title.txt.")
 	res := make(map[int]*title)
 	path := filepath.Join(b.DownloadDir, "title.txt")
 	f, err := os.Open(path)

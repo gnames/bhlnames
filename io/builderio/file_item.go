@@ -29,7 +29,7 @@ func (b builderio) importItem(titles map[int]*title) (map[uint]string, error) {
 	log.Info().Msg("Preparing item.txt data for db.")
 	iMap := make(map[int]struct{})
 	var res []*db.Item
-	path := filepath.Join(b.Config.DownloadDir, "item.txt")
+	path := filepath.Join(b.DownloadDir, "item.txt")
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,9 @@ func (b builderio) importItem(titles map[int]*title) (map[uint]string, error) {
 		l := scanner.Text()
 		fields := strings.Split(l, "\t")
 
-		id, err := strconv.Atoi(fields[itemIDF])
+		var id, titleID int
+
+		id, err = strconv.Atoi(fields[itemIDF])
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +56,7 @@ func (b builderio) importItem(titles map[int]*title) (map[uint]string, error) {
 		} else {
 			iMap[id] = struct{}{}
 		}
-		titleID, err := strconv.Atoi(fields[itemTitleIDF])
+		titleID, err = strconv.Atoi(fields[itemTitleIDF])
 		if err != nil {
 			return nil, err
 		}
@@ -73,19 +75,19 @@ func (b builderio) importItem(titles map[int]*title) (map[uint]string, error) {
 		res = append(res, &item)
 	}
 
-	if err := scanner.Err(); err != nil {
+	if err = scanner.Err(); err != nil {
 		return nil, err
 	}
 	var itemMap map[uint]string
-	itemMap, err = b.uploadItems(res)
+	itemMap, err = b.importItems(res)
 	if err != nil {
 		return nil, err
 	}
 	return itemMap, nil
 }
 
-func (b builderio) uploadItems(items []*db.Item) (map[uint]string, error) {
-	log.Info().Msgf("Uploading %s records to items table.", humanize.Comma(int64(len(items))))
+func (b builderio) importItems(items []*db.Item) (map[uint]string, error) {
+	log.Info().Msgf("Importing %s records to items table.", humanize.Comma(int64(len(items))))
 	columns := []string{"id", "bar_code", "vol", "year_start", "year_end",
 		"title_id", "title_doi", "title_name", "title_year_start", "title_year_end",
 		"title_lang"}
