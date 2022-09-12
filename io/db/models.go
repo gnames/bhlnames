@@ -101,29 +101,79 @@ type Page struct {
 	PageNum sql.NullInt64
 }
 
+// Part is a distinct part of an item. It can be a chapter, an article,
+// a scientific paper.
 type Part struct {
-	ID                 uint `gorm:"primary_key;auto_increment:false"`
-	PageID             sql.NullInt32
-	ItemID             sql.NullInt32
-	Length             sql.NullInt32
-	DOI                string `gorm:"type:varchar(100)"`
-	ContributorName    string `gorm:"type:varchar(255)"`
-	SequenceOrder      sql.NullInt32
-	SegmentType        string        `gorm:"type:varchar(100)"`
-	Title              string        `gorm:"type:text"`
-	ContainerTitle     string        `gorm:"type:text"`
-	PublicationDetails string        `gorm:"type:text"`
-	Volume             string        `gorm:"type:varchar(100)"`
-	Series             string        `gorm:"type:varchar(100)"`
-	Issue              string        `gorm:"type:varchar(100)"`
-	Date               string        `gorm:"type:varchar(100)"`
-	Year               sql.NullInt32 `gorm:"index:year"`
-	YearEnd            sql.NullInt32
-	Month              sql.NullInt32
-	Day                sql.NullInt32
-	PageNumStart       sql.NullInt32
-	PageNumEnd         sql.NullInt32
-	Language           string `gorm:"type:varchar(20)"`
+	// ID is an automatically generated identifier from BHL database.
+	ID uint `gorm:"primary_key;auto_increment:false"`
+
+	// PageID is an automatically generated identifier for a page. It comes
+	// from BHL database.
+	PageID sql.NullInt32
+
+	// ItemID is an automatically generated identifier for an item. It comes
+	// from BHL database.
+	ItemID sql.NullInt32
+
+	// Length is the length of a part in pages.
+	Length sql.NullInt32
+
+	// DOI is a DOI assigned to the part.
+	DOI string `gorm:"type:varchar(100)"`
+
+	// ContributorName is a name of a project/person which provided information
+	// about a part.
+	ContributorName string `gorm:"type:varchar(255)"`
+
+	// SequenceOrder is a sequencial position of a part in the item. For
+	// example the second scientific paper in a journal will have a
+	// the SequenceOrder 2.
+	SequenceOrder sql.NullInt32
+
+	// SegmentType describe a type of a part. For example chapter, article, etc.
+	SegmentType string `gorm:"type:varchar(100)"`
+
+	// Title is the title of the part.
+	Title string `gorm:"type:text"`
+
+	// ContainerTitle is a title of a parent unit (items title?).
+	ContainerTitle string `gorm:"type:text"`
+
+	// PublicationDetails describes information about publisher.
+	PublicationDetails string `gorm:"type:text"`
+
+	// Volume is the volume of a citation.
+	Volume string `gorm:"type:varchar(100)"`
+
+	// Series is series of a citation.
+	Series string `gorm:"type:varchar(100)"`
+
+	// Issue is an issue of a citation.
+	Issue string `gorm:"type:varchar(100)"`
+
+	// Date is the date of the part publication.
+	Date string `gorm:"type:varchar(100)"`
+
+	// Year is the year of a part.
+	Year sql.NullInt32 `gorm:"index:year"`
+
+	// YearEnd is the year when a part finished its publication.
+	YearEnd sql.NullInt32
+
+	// Month is the month when a part was published.
+	Month sql.NullInt32
+
+	// Day is the day when a part was published.
+	Day sql.NullInt32
+
+	// PageNumStart is the page number where a part starts.
+	PageNumStart sql.NullInt32
+
+	// PageNumEnd is the page number where a part ends.
+	PageNumEnd sql.NullInt32
+
+	// Language is the prevalent language of a part.
+	Language string `gorm:"type:varchar(20)"`
 }
 
 // NameString is a unique normalize name-string that had been matched,
@@ -175,6 +225,12 @@ type NameString struct {
 	// Classification contains a classification to the name provided by the
 	// Catalogue of Life.
 	Classification string
+
+	// ClassificationRanks provides ranks information for classification path.
+	ClassificationRanks string
+
+	// ClassificationIDs provides RankIDs for classification path.
+	ClassificationIDs string
 
 	// DataSourceID is the ID of the data-source according to GNverifier.
 	// The mapping of IDs to data-sources can be found at

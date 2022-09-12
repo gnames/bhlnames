@@ -76,11 +76,15 @@ func (bn *bhlnames) Close() error {
 }
 
 func (bn *bhlnames) Initialize() error {
+	var err error
 	if bn.cfg.WithRebuild {
 		bn.ResetData()
 	}
-	return bn.ImportData()
-
+	err = bn.ImportData()
+	if err == nil {
+		err = bn.CalculateTxStats()
+	}
+	return err
 }
 
 func (bn *bhlnames) NameRefs(data input.Input) (*namerefs.NameRefs, error) {

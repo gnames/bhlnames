@@ -11,27 +11,29 @@ import (
 )
 
 const (
-	NameIDF             = 0
-	DetectedNameF       = 1
-	CardinalityF        = 2
-	OccurrencesNumberF  = 3
-	OddsLog10F          = 4
-	MatchTypeF          = 5
-	EditDistanceF       = 6
-	StemEditDistanceF   = 7
-	MatchedCanonicalF   = 8
-	MatchedFullNameF    = 9
-	MatchedCardinalityF = 10
-	CurrentCanonicalF   = 11
-	CurrentFullNameF    = 12
-	CurrentCardinalityF = 13
-	ClassificationF     = 14
-	RecordIDF           = 15
-	DataSourceIDF       = 16
-	DataSourceF         = 17
-	DataSourcesNumberF  = 18
-	CurationF           = 19
-	ErrorF              = 20
+	NameIDF              = 0
+	DetectedNameF        = 1
+	CardinalityF         = 2
+	OccurrencesNumberF   = 3
+	OddsLog10F           = 4
+	MatchTypeF           = 5
+	EditDistanceF        = 6
+	StemEditDistanceF    = 7
+	MatchedCanonicalF    = 8
+	MatchedFullNameF     = 9
+	MatchedCardinalityF  = 10
+	CurrentCanonicalF    = 11
+	CurrentFullNameF     = 12
+	CurrentCardinalityF  = 13
+	ClassificationF      = 14
+	ClassificationRanksF = 15
+	ClassificationIDsF   = 16
+	RecordIDF            = 17
+	DataSourceIDF        = 18
+	DataSourceF          = 19
+	DataSourcesNumberF   = 20
+	CurationF            = 21
+	ErrorF               = 22
 )
 
 func (n namesbhlio) saveNames(ch <-chan [][]string) error {
@@ -41,7 +43,8 @@ func (n namesbhlio) saveNames(ch <-chan [][]string) error {
 		total += len(names)
 		columns := []string{"id", "name", "record_id", "match_type",
 			"edit_distance", "stem_edit_distance", "matched_name", "matched_canonical",
-			"current_name", "current_canonical", "classification", "data_source_id",
+			"current_name", "current_canonical", "classification",
+			"classification_ranks", "classification_ids", "data_source_id",
 			"data_source_title", "data_sources_number", "curation", "occurences",
 			"odds_log10", "error"}
 		transaction, err := n.db.Begin()
@@ -93,11 +96,10 @@ func (n namesbhlio) saveNames(ch <-chan [][]string) error {
 			}
 
 			_, err = stmt.Exec(v[NameIDF], v[DetectedNameF], v[RecordIDF],
-				v[MatchTypeF], eDist, stemDist,
-				v[MatchedFullNameF], v[MatchedCanonicalF], v[CurrentFullNameF],
-				v[CurrentCanonicalF], v[ClassificationF], dsID,
-				v[DataSourceF], dsNum, true,
-				occurs, odds, v[ErrorF])
+				v[MatchTypeF], eDist, stemDist, v[MatchedFullNameF],
+				v[MatchedCanonicalF], v[CurrentFullNameF], v[CurrentCanonicalF],
+				v[ClassificationF], v[ClassificationRanksF], v[ClassificationIDsF],
+				dsID, v[DataSourceF], dsNum, true, occurs, odds, v[ErrorF])
 			if err != nil {
 				log.Fatal().Err(err).Msg("saveNames:")
 				return err

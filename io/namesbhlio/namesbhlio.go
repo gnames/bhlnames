@@ -20,6 +20,11 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+const (
+	occurBatchSize = 50_000
+	nameBatchSize  = 50_000
+)
+
 type namesbhlio struct {
 	cfg    config.Config
 	client *http.Client
@@ -85,7 +90,7 @@ func (n namesbhlio) loadOccurrences(chIn chan<- []db.NameOccurrence) error {
 		return err
 	}
 
-	chunk := make([][]string, OccurBatchSize)
+	chunk := make([][]string, occurBatchSize)
 	var count int
 
 	var row []string
@@ -99,14 +104,14 @@ func (n namesbhlio) loadOccurrences(chIn chan<- []db.NameOccurrence) error {
 			log.Fatal().Err(err).Msg("loadOccurrences:")
 			return err
 		}
-		if count == OccurBatchSize {
+		if count == occurBatchSize {
 			occurs, err = convertToOccurs(kv, chunk)
 			if err != nil {
 				log.Fatal().Err(err).Msg("loadOccurrences:")
 				return err
 			}
 			chIn <- occurs
-			chunk = make([][]string, OccurBatchSize)
+			chunk = make([][]string, occurBatchSize)
 			count = 0
 		}
 		chunk[count] = row
@@ -240,8 +245,7 @@ func (n namesbhlio) loadNames(chIn chan<- [][]string) error {
 		return err
 	}
 
-	chunkSize := 50_000
-	chunk := make([][]string, chunkSize)
+	chunk := make([][]string, nameBatchSize)
 	var count int
 
 	for {
@@ -253,9 +257,9 @@ func (n namesbhlio) loadNames(chIn chan<- [][]string) error {
 			log.Fatal().Err(err).Msg("loadNames:")
 			return err
 		}
-		if count == chunkSize {
+		if count == nameBatchSize {
 			chIn <- chunk
-			chunk = make([][]string, chunkSize)
+			chunk = make([][]string, nameBatchSize)
 			count = 0
 		}
 		chunk[count] = row

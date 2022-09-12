@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Add [#33] use bhlindex dump files to import data.
+- Add [#33]: use bhlindex dump files to import data.
+- Add [#31]: calculate taxonomic statistics for each item.
 - Add [#30]: use zerolog for logging.
 - Add [#29]: switch to BHLIndex RESTful api.
 - Add [#27]: Bayes training.

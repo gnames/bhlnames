@@ -11,12 +11,11 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/gnames/aho_corasick v0.1.2
 	github.com/gnames/bayes v0.4.0
-	github.com/gnames/bhlindex v0.13.1
 	github.com/gnames/gner v0.1.4
 	github.com/gnames/gnfmt v0.2.0
 	github.com/gnames/gnparser v1.6.3
+	github.com/gnames/gnstats v0.1.0
 	github.com/gnames/gnsys v0.2.2
-	github.com/gnames/uuid5 v0.1.1
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/gorm v1.9.16
 	github.com/lib/pq v1.10.5
@@ -31,15 +30,12 @@ require (
 )
 
 require (
-	github.com/abadojack/whatlanggo v1.0.1 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgraph-io/ristretto v0.0.3-0.20200630154024-f66de99634de // indirect
 	github.com/dgryski/go-farm v0.0.0-20190423205320-6a90982ecee2 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/gnames/gnfinder v1.0.0 // indirect
 	github.com/gnames/gnlib v0.14.0 // indirect
-	github.com/gnames/gnstats v0.1.0 // indirect
 	github.com/gnames/gnuuid v0.1.1 // indirect
 	github.com/gnames/organizer v0.1.1 // indirect
 	github.com/gnames/tribool v0.1.1 // indirect
@@ -63,13 +59,13 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/shivamMg/ppds v0.0.1 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
+	golang.org/x/crypto v0.0.0-20220507011949-2cf3adece122 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
 	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
 	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect
