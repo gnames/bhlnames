@@ -2,6 +2,7 @@ package namesbhlio
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/dustin/go-humanize"
@@ -15,25 +16,18 @@ const OccurBatchSize = 50_000
 func (n namesbhlio) saveOcurrences(chIn <-chan []db.NameOccurrence) error {
 	columns := []string{"page_id", "name_string_id", "offset_start",
 		"offset_end", "odds_log10", "nomen_annot"}
-	transaction, err := n.db.Begin()
-	if err != nil {
-		err = fmt.Errorf("saveOccurrences: %w", err)
-		log.Fatal().Err(err)
-		return err
-	}
-	stmt, err := transaction.Prepare(pq.CopyIn("name_occurrences", columns...))
-	if err != nil {
-		log.Fatal().Err(err)
-		return fmt.Errorf("saveOccurrences: %w", err)
-	}
-
-	var count int
-	var missing int
+	var count, missing int
 	for ocs := range chIn {
-		count += len(ocs)
-		missing += OccurBatchSize - len(ocs)
-		fmt.Printf("\r%s", strings.Repeat(" ", 47))
-		fmt.Printf("\rImported %s occurrences to db", humanize.Comma(int64(count)))
+		transaction, err := n.db.Begin()
+		if err != nil {
+			err = fmt.Errorf("saveOccurrences: %w", err)
+			return err
+		}
+		stmt, err := transaction.Prepare(pq.CopyIn("name_occurrences", columns...))
+		if err != nil {
+			return fmt.Errorf("saveOccurrences: %w", err)
+		}
+
 		for i := range ocs {
 			_, err = stmt.Exec(ocs[i].PageID, ocs[i].NameStringID,
 				ocs[i].OffsetStart, ocs[i].OffsetEnd, ocs[i].OddsLog10,
@@ -42,18 +36,23 @@ func (n namesbhlio) saveOcurrences(chIn <-chan []db.NameOccurrence) error {
 				return fmt.Errorf("saveOccurrences: %w", err)
 			}
 		}
-	}
 
-	err = stmt.Close()
-	if err != nil {
-		return fmt.Errorf("saveOccurrences: %w", err)
-	}
+		count += len(ocs)
+		missing += OccurBatchSize - len(ocs)
+		fmt.Fprintf(os.Stderr, "\r%s", strings.Repeat(" ", 47))
+		fmt.Fprintf(os.Stderr, "\rImported %s occurrences.", humanize.Comma(int64(count)))
 
-	err = transaction.Commit()
-	if err != nil {
-		return fmt.Errorf("saveOccurrences: %w", err)
+		err = stmt.Close()
+		if err != nil {
+			return fmt.Errorf("saveOccurrences: %w", err)
+		}
+
+		err = transaction.Commit()
+		if err != nil {
+			return fmt.Errorf("saveOccurrences: %w", err)
+		}
 	}
-	fmt.Println()
+	fmt.Fprintln(os.Stderr)
 	log.Info().Msgf(
 		"Imported %s name occurrences, %s occurrences ignored (no page reference).",
 		humanize.Comma(int64(count)),

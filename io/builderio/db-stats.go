@@ -7,6 +7,8 @@ import (
 
 	"github.com/gnames/bhlnames/ent/txstats"
 	gnstats "github.com/gnames/gnstats/ent/stats"
+	"github.com/lib/pq"
+	"github.com/rs/zerolog/log"
 )
 
 func (b builderio) itemsNum() (int, error) {
@@ -16,40 +18,117 @@ func (b builderio) itemsNum() (int, error) {
 }
 
 func (b builderio) addStatsToItems(chIn <-chan []txstats.ItemTaxa) error {
-	var err error
-	var pathsTotal int
-	var st gnstats.Stats
-	for itxs := range chIn {
-		for _, t := range itxs {
-			st = gnstats.New(t.Taxa, 0.5)
-			pathsTotal = st.NamesNum
-			majorKingdom := st.Kingdom.Name
-			kingdomPercent := math.Round(float64(st.KingdomPercentage))
-			mainTaxon := st.MainTaxon.Name
-			anim, plant, fungi, bact := kingdomDistribution(st)
-			q := `
-UPDATE items 
-  SET (paths_total, major_kingdom, kingdom_percent, main_taxon,
-			       animalia_num, plantae_num, fungi_num, bacteria_num)
-      = (v.paths_total::integer, v.major_kingdom, v.kingdom_percent::integer,
-      v.main_taxon, v.animalia_num::integer, v.plantae_num::integer,
-      v.fungi_num::integer, v.bacteria_num::integer)
-  FROM (
-			  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        ) AS v(paths_total, major_kingdom, kingdom_percent,
-            main_taxon, animalia_num, plantae_num, fungi_num,
-            bacteria_num)
-        WHERE id = $9;
-`
-			_, err = b.DB.Exec(q, pathsTotal, majorKingdom, kingdomPercent, mainTaxon,
-				anim, plant, fungi, bact, t.ItemID)
+	columns := []string{
+		"id", "names_total", "main_taxon", "main_taxon_rank", "main_taxon_percent",
+		"main_kingdom", "main_kingdom_percent", "animalia_num", "plantae_num",
+		"fungi_num", "bacteria_num", "main_phylum", "main_phylum_percent",
+		"main_class", "main_class_percent", "main_order", "main_order_percent",
+		"main_family", "main_family_percent",
+	}
+
+	for taxa := range chIn {
+		transaction, err := b.DB.Begin()
+		if err != nil {
+			return err
+		}
+		stmt, err := transaction.Prepare(pq.CopyIn("item_stats", columns...))
+		if err != nil {
+			return err
+		}
+
+		var taxon, taxonRank, kingdom, phylum, class, order, family sql.NullString
+		var taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt,
+			familyPcnt sql.NullInt16
+		var total, animNum, plantNum, fungiNum, bactNum uint
+		var st gnstats.Stats
+
+		for _, v := range taxa {
+			st = gnstats.New(v.Taxa, 0.5)
+			total = uint(st.NamesNum)
+			animNum, plantNum, fungiNum, bactNum = kingdomDistribution(st)
+			taxon, taxonRank, kingdom, phylum, class, order, family = statStrings(st)
+			taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt,
+				familyPcnt = statInts(st)
+
+			_, err = stmt.Exec(
+				v.ItemID, total, taxon, taxonRank, taxonPcnt, kingdom, kingdomPcnt,
+				animNum, plantNum, fungiNum, bactNum, phylum, phylumPcnt,
+				class, classPcnt, order, orderPcnt, family, familyPcnt,
+			)
 			if err != nil {
-				err = fmt.Errorf("addStatsToItems: %w", err)
+				log.Fatal().Err(err).Msg("saveNames:")
 				return err
 			}
 		}
+
+		err = stmt.Close()
+		if err != nil {
+			return err
+		}
+		err = transaction.Commit()
+		if err != nil {
+			return err
+		}
 	}
 	return nil
+}
+
+func statInts(st gnstats.Stats) (
+	sql.NullInt16, sql.NullInt16, sql.NullInt16,
+	sql.NullInt16, sql.NullInt16, sql.NullInt16) {
+	var taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt,
+		familyPcnt sql.NullInt16
+	if st.MainTaxon.Name != "" {
+		taxonPcnt = floatToNullInt(st.MainTaxonPercentage)
+	}
+	if st.Kingdom.Name != "" {
+		kingdomPcnt = floatToNullInt(st.KingdomPercentage)
+	}
+	if st.Phylum.Name != "" {
+		phylumPcnt = floatToNullInt(st.PhylumPercentage)
+	}
+	if st.Class.Name != "" {
+		classPcnt = floatToNullInt(st.ClassPercentage)
+	}
+	if st.Order.Name != "" {
+		orderPcnt = floatToNullInt(st.OrderPercentage)
+	}
+	if st.Family.Name != "" {
+		familyPcnt = floatToNullInt(st.FamilyPercentage)
+	}
+	return taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt, familyPcnt
+}
+
+func floatToNullInt(f float32) sql.NullInt16 {
+	i := math.Round(float64(f) * 100)
+	return sql.NullInt16{Int16: int16(i), Valid: true}
+}
+
+func statStrings(st gnstats.Stats) (
+	sql.NullString, sql.NullString,
+	sql.NullString, sql.NullString, sql.NullString, sql.NullString,
+	sql.NullString) {
+	var taxon, taxonRank, kingdom, phylum, class, order, family sql.NullString
+	if st.MainTaxon.Name != "" {
+		taxon = sql.NullString{String: st.MainTaxon.Name, Valid: true}
+		taxonRank = sql.NullString{String: st.MainTaxon.RankStr, Valid: true}
+	}
+	if st.Kingdom.Name != "" {
+		kingdom = sql.NullString{String: st.Kingdom.Name, Valid: true}
+	}
+	if st.Phylum.Name != "" {
+		phylum = sql.NullString{String: st.Phylum.Name, Valid: true}
+	}
+	if st.Class.Name != "" {
+		class = sql.NullString{String: st.Class.Name, Valid: true}
+	}
+	if st.Order.Name != "" {
+		order = sql.NullString{String: st.Order.Name, Valid: true}
+	}
+	if st.Family.Name != "" {
+		family = sql.NullString{String: st.Family.Name, Valid: true}
+	}
+	return taxon, taxonRank, kingdom, phylum, class, order, family
 }
 
 func kingdomDistribution(st gnstats.Stats) (uint, uint, uint, uint) {
@@ -112,7 +191,9 @@ ORDER BY i.id
 		}
 		hs = append(hs, gnstats.Hierarchy(ts))
 	}
-	res = append(res, txstats.ItemTaxa{ItemID: curItemID, Taxa: hs})
+	if curItemID > 0 {
+		res = append(res, txstats.ItemTaxa{ItemID: curItemID, Taxa: hs})
+	}
 
 	return res, nil
 }

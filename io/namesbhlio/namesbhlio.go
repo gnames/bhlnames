@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	occurBatchSize = 50_000
+	occurBatchSize = 100_000
 	nameBatchSize  = 50_000
 )
 

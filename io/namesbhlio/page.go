@@ -90,15 +90,15 @@ func (n namesbhlio) loadPages(chIn chan<- item) error {
 			chIn <- i
 			i = item{ID: itm}
 			if count%1000 == 0 {
-				fmt.Printf("\r%s", strings.Repeat(" ", 47))
-				fmt.Printf("\rProcessed page ID mappings for %s items", humanize.Comma(int64(count)))
+				fmt.Fprintf(os.Stderr, "\r%s", strings.Repeat(" ", 47))
+				fmt.Fprintf(os.Stderr, "\rProcessed page ID mappings for %s items", humanize.Comma(int64(count)))
 			}
 		}
 		i.Pages = append(i.Pages, pg)
 	}
 	count++
 	chIn <- i
-	fmt.Println()
+	fmt.Fprintln(os.Stderr)
 	log.Info().Msgf("Processed all page IDs for %d items.", count)
 	return nil
 }

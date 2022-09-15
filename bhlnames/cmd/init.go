@@ -59,6 +59,7 @@ after enother. The resul will be identical to "bhlnames init".`,
 			err = fmt.Errorf("initCmd: %#w", err)
 			log.Fatal().Err(err)
 		}
+		log.Info().Msg("Import of BHL data and names is done.")
 	},
 }
 

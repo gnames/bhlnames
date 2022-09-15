@@ -2,6 +2,7 @@ package namesbhlio
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -109,13 +110,13 @@ func (n namesbhlio) saveNames(ch <-chan [][]string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("\r%s", strings.Repeat(" ", 47))
-		fmt.Printf("\rImported %s names to db", humanize.Comma(int64(total)))
+		fmt.Fprintf(os.Stderr, "\r%s", strings.Repeat(" ", 47))
+		fmt.Fprintf(os.Stderr, "\rImported %s names to db", humanize.Comma(int64(total)))
 		err = transaction.Commit()
 		if err != nil {
 			return err
 		}
 	}
-	fmt.Println()
+	fmt.Fprintln(os.Stderr)
 	return nil
 }

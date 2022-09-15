@@ -110,7 +110,7 @@ func (b builderio) importPage(itemMap map[uint]string) error {
 	}
 	total += len(res)
 	err = b.processPages(kv, itemMap, res, total)
-	fmt.Println()
+	fmt.Fprintln(os.Stderr)
 	return err
 }
 
@@ -180,7 +180,7 @@ func (b builderio) processPages(
 	if err != nil {
 		return err
 	}
-	fmt.Printf("\r%s", strings.Repeat(" ", 35))
-	fmt.Printf("\rImported %s pages to db", humanize.Comma(int64(total)))
+	fmt.Fprintf(os.Stderr, "\r%s", strings.Repeat(" ", 35))
+	fmt.Fprintf(os.Stderr, "\rImported %s pages to db", humanize.Comma(int64(total)))
 	return transaction.Commit()
 }

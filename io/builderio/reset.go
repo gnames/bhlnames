@@ -30,6 +30,7 @@ COMMENT ON SCHEMA public IS 'standard public schema'`
 func (b builderio) migrate() {
 	b.GormDB.AutoMigrate(
 		&db.Item{},
+		&db.ItemStats{},
 		&db.Page{},
 		&db.Part{},
 		&db.NameString{},

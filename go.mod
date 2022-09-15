@@ -2,8 +2,6 @@ module github.com/gnames/bhlnames
 
 go 1.19
 
-// replace github.com/gnames/bhlindex => ../bhlindex
-
 require (
 	code.cloudfoundry.org/bytefmt v0.0.0-20211005130812-5bb3c17173e5
 	github.com/dgraph-io/badger/v2 v2.2007.4
@@ -14,7 +12,7 @@ require (
 	github.com/gnames/gner v0.1.4
 	github.com/gnames/gnfmt v0.2.0
 	github.com/gnames/gnparser v1.6.3
-	github.com/gnames/gnstats v0.1.0
+	github.com/gnames/gnstats v0.2.0
 	github.com/gnames/gnsys v0.2.2
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/gorm v1.9.16

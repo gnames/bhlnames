@@ -84,6 +84,7 @@ func (bn *bhlnames) Initialize() error {
 	if err == nil {
 		err = bn.CalculateTxStats()
 	}
+	err = fmt.Errorf("Initialize: %w", err)
 	return err
 }
 

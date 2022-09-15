@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add [#34]: enhance taxonomic statistics to all major taxons.
 - Add [#33]: use bhlindex dump files to import data.
 - Add [#31]: calculate taxonomic statistics for each item.
 - Add [#30]: use zerolog for logging.
