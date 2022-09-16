@@ -87,6 +87,7 @@ usages found at BHL for a scientific name.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -132,7 +133,7 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	configPath := filepath.Join(configDir, fmt.Sprintf("%s.yaml", configFile))
-	touchConfigFile(configPath, configFile)
+	touchConfigFile(configPath)
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
@@ -184,7 +185,7 @@ func getOpts() []config.Option {
 }
 
 // touchConfigFile checks if config file exists, and if not, it gets created.
-func touchConfigFile(configPath string, configFile string) {
+func touchConfigFile(configPath string) {
 	exists, _ := gnsys.FileExists(configPath)
 	if exists {
 		return

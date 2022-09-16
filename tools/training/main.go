@@ -41,11 +41,11 @@ func main() {
 	nb.Train(lfs)
 	nbDump, err := nb.Dump()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 	err = os.WriteFile(outputFile, nbDump, 0644)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 }
 
