@@ -171,7 +171,7 @@ func convertToOccurs(kv *badger.DB, data [][]string) ([]db.NameOccurrence, error
 			OffsetStart:  uint(start),
 			OffsetEnd:    uint(end),
 			OddsLog10:    odds,
-			NomenAnnot:   v[occAnnotation],
+			AnnotNomen:   v[occAnnotation],
 		}
 		keys[i] = v[occPageBarcodeNumF] + "*" + v[occItemBarcodeF]
 		resPrelim[i] = oc

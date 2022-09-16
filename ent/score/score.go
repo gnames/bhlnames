@@ -5,6 +5,7 @@ import (
 
 	"github.com/gnames/bayes"
 	ft "github.com/gnames/bayes/ent/feature"
+	bout "github.com/gnames/bayes/ent/output"
 	"github.com/gnames/bayes/ent/posterior"
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
@@ -58,9 +59,10 @@ func (s *score) Calculate(
 		}
 		postOdds, _ := s.calculateOdds(nb)
 		oddsVal := postOdds.ClassOdds[ft.Class("isNomen")]
+		detail := bout.New(postOdds, "isNomen")
 		refs[i].Score = refbhl.Score{
 			Odds:       oddsVal,
-			OddsDetail: postOdds.Likelihoods[ft.Class("isNomen")],
+			OddsDetail: detail,
 			Total:      s.total,
 			Annot:      s.annot,
 			Year:       s.year,
@@ -115,6 +117,8 @@ func (s *score) String() string {
 	return string(res)
 }
 
+// BoostBestResult provides additional score for the best result in
+// NameRefs.
 func BoostBestResult(nr *namerefs.NameRefs, nb bayes.Bayes) {
 	if len(nr.References) > 0 {
 		f := ft.Feature{Name: ft.Name("bestRes"), Value: ft.Value("true")}

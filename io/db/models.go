@@ -122,6 +122,13 @@ type ItemStats struct {
 	// MainFamilyPercent is the percentage of taxa associated with the
 	// MainFamily.
 	MainFamilyPercent uint
+
+	// MainGenus is the family that contains most of the taxa in the item.
+	MainGenus string `gorm:"type:varchar(100)"`
+
+	// MainGenusPercent is the percentage of taxa associated with the
+	// MainGenus.
+	MainGenusPercent uint
 }
 
 // Page contains metadata about a page file from BHL archive.
@@ -330,7 +337,7 @@ type NameOccurrence struct {
 	// actually a scientific name according to a Naive Bayes algorithm.
 	OddsLog10 float64
 
-	// NomenAnnot is a normalized nomenclatural annotation detected in a vicinity
+	// AnnotNomen is a normalized nomenclatural annotation detected in a vicinity
 	// of the occurrence. Examples of annotations are `NO_ANNOT`, `SP_NOV` etc.
-	NomenAnnot string `gorm:"type:varchar(50);index:annot"`
+	AnnotNomen string `gorm:"type:varchar(50);index:annot"`
 }

@@ -46,7 +46,8 @@ func OptParser(gnp gnparser.GNparser) Option {
 
 func OptNLP(n nlp.NLP) Option {
 	return func(bn *bhlnames) {
-		bn.Bayes = n.Load()
+		bayesWithData := n.Load()
+		bn.Bayes = bayesWithData
 	}
 }
 
@@ -125,12 +126,12 @@ func (bn *bhlnames) nameRefsWorker(
 func (bn *bhlnames) NomenRefs(
 	inp input.Input,
 ) (*namerefs.NameRefs, error) {
-	nr, err := bn.ReferencesBHL(inp)
+	nrs, err := bn.ReferencesBHL(inp)
 	if err != nil {
 		return nil, err
 	}
-	err = bn.sortByScore(nr)
-	return nr, err
+	err = bn.sortByScore(nrs)
+	return nrs, err
 }
 
 func (bn *bhlnames) NomenRefsStream(

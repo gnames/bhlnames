@@ -33,7 +33,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err)
 	}
-	var lfs []ft.LabeledFeatures
+	var lfs []ft.ClassFeatures
 	for _, v := range data {
 		lfs = append(lfs, bayesData(v)...)
 	}
@@ -49,39 +49,39 @@ func main() {
 	}
 }
 
-func bayesData(nr *namerefs.NameRefs) []ft.LabeledFeatures {
-	var res []ft.LabeledFeatures
+func bayesData(nr *namerefs.NameRefs) []ft.ClassFeatures {
+	var res []ft.ClassFeatures
 	for i, v := range nr.References {
-		label := ft.Label("notNomen")
+		class := ft.Class("notNomen")
 		if v.IsNomenRef {
-			label = ft.Label("isNomen")
+			class = ft.Class("isNomen")
 		}
 		bestRes := strconv.FormatBool(i == 0)
 		resNum := "many"
 		if nr.ReferenceNumber <= 5 {
 			resNum = "few"
 		}
-		res = append(res, ft.LabeledFeatures{
-			Label: label,
+		res = append(res, ft.ClassFeatures{
+			Class: class,
 			Features: []ft.Feature{
-				{Name: ft.Name("bestRes"), Value: ft.Val(bestRes)},
-				{Name: ft.Name("resNum"), Value: ft.Val(resNum)},
+				{Name: ft.Name("bestRes"), Value: ft.Value(bestRes)},
+				{Name: ft.Name("resNum"), Value: ft.Value(resNum)},
 				{Name: ft.Name("yrPage"), Value: getYearPage(v.Score.Labels)},
-				{Name: ft.Name("annot"), Value: ft.Val(v.Score.Labels["annot"])},
-				{Name: ft.Name("title"), Value: ft.Val(v.Score.Labels["title"])},
-				{Name: ft.Name("vol"), Value: ft.Val(v.Score.Labels["vol"])},
+				{Name: ft.Name("annot"), Value: ft.Value(v.Score.Labels["annot"])},
+				{Name: ft.Name("title"), Value: ft.Value(v.Score.Labels["title"])},
+				{Name: ft.Name("vol"), Value: ft.Value(v.Score.Labels["vol"])},
 			},
 		})
 	}
 	return res
 }
 
-func getYearPage(ls map[string]string) ft.Val {
+func getYearPage(ls map[string]string) ft.Value {
 	page := "true"
 	if ls["pages"] == "none" {
 		page = "false"
 	}
 
 	l := ls["year"] + "|" + page
-	return ft.Val(l)
+	return ft.Value(l)
 }

@@ -16,13 +16,13 @@ of a new binomial genus/species combination.
 
 This program tries to answer the following questions:
 
-* Where a particular name-string appears in BHL?
+- Where a particular name-string appears in BHL?
 
-* Given a names string, where species it assigned to appears in BHL? In this
+- Given a names string, where species it assigned to appears in BHL? In this
   case we find all synonyms of the name-string and the currently accepted
   name of the species
 
-* Given a name-string and its original publication, does this publication
+- Given a name-string and its original publication, does this publication
   exists in BHL, and what is the link to it?
 
 The `bhlnames` app uses [Catalogue Of Life (CoL)][col] synonymy information to
@@ -33,21 +33,21 @@ the future it will support other resources with synonymy information.
 
 1. Find references in BHL where a scientific name-string appears.
 
-    Searching for a name-string without synonyms.
+   Searching for a name-string without synonyms.
 
 2. Find references in BHL where a taxon, represented by a name-string appears.
 
-    Determining the corresponding taxon an entered name-string. This taxon
-    has a currently accepted name and a variety of synonym name-strings.
-    Entered name-string might match either a synonym, or the currently accepted
-    name. Searching for references where any of the found name-strings
-    appear.
+   Determining the corresponding taxon an entered name-string. This taxon
+   has a currently accepted name and a variety of synonym name-strings.
+   Entered name-string might match either a synonym, or the currently accepted
+   name. Searching for references where any of the found name-strings
+   appear.
 
 3. Find a reference to the original description of a name or a new combination.
 
-    In this case the input is a nomenclatural event represented by a name and
-    its official nomenclatural publication. We use provided information trying
-    to find a BHL reference that corresponds to that publication.
+   In this case the input is a nomenclatural event represented by a name and
+   its official nomenclatural publication. We use provided information trying
+   to find a BHL reference that corresponds to that publication.
 
 4. Provide REST API and command line tool to access aforementioned
    functionalities.
@@ -56,27 +56,27 @@ the future it will support other resources with synonymy information.
 
 To be able to use this program you need
 
-* a modern computer (laptop or desktop)
-* one of the 3 operating systems (Linux, Mac OS, Windows)
-* a functional Postgresql database
-* 30+ GB of space on a hard drive
-* 8GB or more of memory
+- a modern computer (laptop or desktop)
+- one of the 3 operating systems (Linux, Mac OS, Windows)
+- a functional Postgresql database
+- 30+ GB of space on a hard drive
+- 8GB or more of memory
 
 ## Installation
 
 1. Download the [latest release] of `bhlnames`, untar or unzip the executable
-`bhlnames` or `bhlnames.exe` and place it somewhere in your PATH.
+   `bhlnames` or `bhlnames.exe` and place it somewhere in your PATH.
 
 2. Create a database (for example, `bhlnames`) on your Postgresql server. We
-are not covering how to use Postgresql in this document. There are many
-tutorials about it on the web. Make sure that the database is accessible from
-the computer where you installed `bhlnames` executable.
+   are not covering how to use Postgresql in this document. There are many
+   tutorials about it on the web. Make sure that the database is accessible from
+   the computer where you installed `bhlnames` executable.
 
 3. When you run the program first time it will create
-`$HOME/.config/bhlnames.yaml` config file. Exit bhlnames and modify database
-parameters in the config. You can also change setup for `InputDir` directory
-for downloaded and temporary files, as well as for key-value store databases.
-You can leave other parameters as is for now.
+   `$HOME/.config/bhlnames.yaml` config file. Exit bhlnames and modify database
+   parameters in the config. You can also change setup for `InputDir` directory
+   for downloaded and temporary files, as well as for key-value store databases.
+   You can leave other parameters as is for now.
 
 The system should be ready for the initialization step.
 
@@ -108,7 +108,7 @@ longer if your computer or internet connection is slow.
 
 If for some reason you have to restart the program, you do not need to delete
 working directories or the database. All of them will be updated automatically.
-Some slow steps will not be repeated (such  as downloading full dump of BHL
+Some slow steps will not be repeated (such as downloading full dump of BHL
 database), unless you use `-r` option during initialization:
 
 ```bash
@@ -127,60 +127,60 @@ To find references for a whole taxon (synonyms and currently accepted name)
 from a name-string:
 
 ```bash
-bhlnames refs "Pardosa moesta"
+bhlnames name "Pardosa moesta"
 ```
 
 The result (in JSON format) will be sent to `STDOUT` and can be redirected to a
 file
 
 ```bash
-bhlnames refs "Pardosa moesta" > pm.json
+bhlnames name "Pardosa moesta" > pm.json
 ```
 
 By default, JSON is returned in its compact form. Optionally you can get data in
 a more human-readable form with:
 
 ```bash
-bhlnames refs "Pardosa moesta" -f pretty
+bhlnames name "Pardosa moesta" -f pretty
 ```
 
 You can also use [jq] or a similar tool
 
 ```bash
-bhlnames refs "Pardosa moesta" | jq
+bhlnames name "Pardosa moesta" | jq
 ```
 
 In case if it is preferable to have the oldest publications last, you can reverse
 sorting order with:
 
 ```bash
-bhlnames refs "Pardosa moesta" -f pretty -d
+bhlnames name "Pardosa moesta" -f pretty -d
 ```
 
 To search for a large collection of names provide the name of a file instead (one
 name per line):
 
 ```bash
-bhlnames refs names.txt
+bhlnames name names.txt
 ```
 
 For computers with modern multi-core CPU, you can increase number of parallel
 jobs. Usually, there is no much gain to go over 8 jobs.
 
 ```bash
-bhlnames refs names.txt -j 8
+bhlnames name names.txt -j 8
 ```
 
 To get a short version of data without details for references:
 
 ```bash
-bhlnames refs names.txt -s
+bhlnames name names.txt -s
 ```
 
 To get results without synonyms:
 
 ```bash
-bhlnames refs names.txt --no_synonyms
+bhlnames name names.txt --no_synonyms
 ```
 
 To find a link to name-string with its original reference you can use a
@@ -222,14 +222,14 @@ bhlnames rest -p 1234
 
 ### REST end-points
 
-* `/name_refs` (POST) to find occurrences of a names-string. Takes JSON encoded
-list of name-strings as an argument.
+- `/name_refs` (POST) to find occurrences of a names-string. Takes JSON encoded
+  list of name-strings as an argument.
 
-* `/taxon_refs` (POST) to find occurrences of a taxon. Takes JSON encoded list
-of name-strings as an argument.
+- `/taxon_refs` (POST) to find occurrences of a taxon. Takes JSON encoded list
+  of name-strings as an argument.
 
-* `/nomen_refs` (POST) to find a link to the provided reference.
-Takes a JSON-encoded structure.
+- `/nomen_refs` (POST) to find a link to the provided reference.
+  Takes a JSON-encoded structure.
 
 For more details how to use API you can refer to the [REST test file].
 
@@ -237,7 +237,7 @@ For more details how to use API you can refer to the [REST test file].
 
 ### Taxon and name-string output
 
-This output is created by `bhlnames refs` command.
+This output is created by `bhlnames name` command.
 
 Returning information can be quite large. You will get data in chronological
 order. If there is data about a specific paper, we return information about
@@ -286,20 +286,21 @@ the highest chance for the correct result.
    the `postgresql.conf` accordingly.
 4. Make sure that `pg_hba.conf` allows connection with password to public IP:
 
-    host    all             all             10.0.0.0/8              md5
-    host    all             all             172.16.0.0/12           md5
-    host    all             all             192.168.0.0/16          md5
+   host all all 10.0.0.0/8 md5
+   host all all 172.16.0.0/12 md5
+   host all all 192.168.0.0/16 md5
+
 5. Run `make dc` from the root of the project
 6. Run `docker-compose up` in another terminal to set REST service
 7. Run `go test ./...`
 
 ## Authors
 
-* [Dmitry Mozzherin]
+- [Dmitry Mozzherin]
 
 ## Contributors
 
-* [Geoff Ower]
+- [Geoff Ower]
 
 ## License
 
@@ -310,7 +311,7 @@ Released under [MIT license]
 [latest release]: https://github.com/gnames/bhlnames/releases/latest
 [config]: https://raw.githubusercontent.com/gnames/bhlnames/master/config_example/.bhlnames.yaml
 [jq]: https://github.com/stedolan/jq
-[Dmitry Mozzherin]: https://github.com/dimus
-[Geoff Ower]: https://github.com/gdower
-[MIT license]: https://github.com/gnames/bhlnames/blob/master/LICENSE
-[REST test file]: https://github.com/gnames/bhlnames/blob/master/rest/rest_test.go
+[dmitry mozzherin]: https://github.com/dimus
+[geoff ower]: https://github.com/gdower
+[mit license]: https://github.com/gnames/bhlnames/blob/master/LICENSE
+[rest test file]: https://github.com/gnames/bhlnames/blob/master/rest/rest_test.go

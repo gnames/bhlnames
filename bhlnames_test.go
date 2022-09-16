@@ -7,6 +7,7 @@ import (
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/reffinder/reffindertest"
+	"github.com/gnames/bhlnames/io/bayesio"
 	"github.com/gnames/bhlnames/io/titlemio"
 	"github.com/gnames/gnparser"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ func TestNameRefs(t *testing.T) {
 	}{
 		{
 			"acheniumh", "Achenium lusitanicum Skalitzky, 1884",
-			"Achenium nigriventre", 13, nil,
+			"Achenium nigriventris", 13, nil,
 		},
 	}
 
@@ -45,9 +46,9 @@ func TestNameRefs(t *testing.T) {
 		inp := input.New(gnp, opt)
 		res, err := bn.NameRefs(inp)
 		assert.Nil(t, err)
-		assert.Equal(t, rf.ReferencesBHLCallCount(), 1)
-		assert.Equal(t, res.CurrentCanonical, v.current)
-		assert.Equal(t, res.ReferenceNumber, v.refNum)
+		assert.Equal(t, 1, rf.ReferencesBHLCallCount())
+		assert.Equal(t, v.current, res.CurrentCanonical)
+		assert.Equal(t, v.refNum, res.ReferenceNumber)
 	}
 }
 
@@ -116,6 +117,7 @@ func TestNomenRefs(t *testing.T) {
 		bhlnames.OptParser(gnp),
 		bhlnames.OptRefFinder(rf),
 		bhlnames.OptTitleMatcher(tm),
+		bhlnames.OptNLP(bayesio.New()),
 	}
 
 	bn := bhlnames.New(cfg, opts...)
@@ -132,10 +134,10 @@ func TestNomenRefs(t *testing.T) {
 		assert.Nil(t, err)
 		assert.True(t, len(res.References) > 0)
 		ref := res.References[0]
-		assert.Equal(t, ref.ItemID, v.itemID, v.msg)
-		assert.Equal(t, ref.Score.Total, v.score, v.msg)
-		assert.Equal(t, ref.Score.Annot, v.scoreAnnot, v.msg)
-		assert.Equal(t, ref.Score.Year, v.scoreYear, v.msg)
-		assert.Equal(t, ref.Score.RefTitle, v.scoreTitle, v.msg)
+		assert.Equal(t, v.itemID, ref.ItemID, v.msg)
+		assert.Equal(t, v.score, ref.Score.Total, v.msg)
+		assert.Equal(t, v.scoreAnnot, ref.Score.Annot, v.msg)
+		assert.Equal(t, v.scoreYear, ref.Score.Year, v.msg)
+		assert.Equal(t, v.scoreTitle, v.scoreTitle, v.msg)
 	}
 }

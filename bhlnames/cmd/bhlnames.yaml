@@ -3,7 +3,12 @@
 # uncomment them and modify the value.
 
 ## BHL provides its data in a zip file located at the default URL shown below.
+#
+# original (most often updated)
 # BHLDumpURL: https://www.biodiversitylibrary.org/data/data.zip
+#
+# copy made at the same time as bhlindex dump.
+# BHLDumpURL: https://opendata.globalnames.org/dumps/bhl-data.zip
 
 ## BHL name index data need to be downloaded and combined with BHL dump data.
 # BHLNamesURL: http://opendata.globalnames.org/dumps/bhl-col.zip

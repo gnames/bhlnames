@@ -23,7 +23,7 @@ func (b builderio) addStatsToItems(chIn <-chan []txstats.ItemTaxa) error {
 		"main_kingdom", "main_kingdom_percent", "animalia_num", "plantae_num",
 		"fungi_num", "bacteria_num", "main_phylum", "main_phylum_percent",
 		"main_class", "main_class_percent", "main_order", "main_order_percent",
-		"main_family", "main_family_percent",
+		"main_family", "main_family_percent", "main_genus", "main_genus_percent",
 	}
 
 	for taxa := range chIn {
@@ -36,9 +36,10 @@ func (b builderio) addStatsToItems(chIn <-chan []txstats.ItemTaxa) error {
 			return err
 		}
 
-		var taxon, taxonRank, kingdom, phylum, class, order, family sql.NullString
+		var taxon, taxonRank, kingdom, phylum, class, order,
+			family, genus sql.NullString
 		var taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt,
-			familyPcnt sql.NullInt16
+			familyPcnt, genusPcnt sql.NullInt16
 		var total, animNum, plantNum, fungiNum, bactNum uint
 		var st gnstats.Stats
 
@@ -46,14 +47,15 @@ func (b builderio) addStatsToItems(chIn <-chan []txstats.ItemTaxa) error {
 			st = gnstats.New(v.Taxa, 0.5)
 			total = uint(st.NamesNum)
 			animNum, plantNum, fungiNum, bactNum = kingdomDistribution(st)
-			taxon, taxonRank, kingdom, phylum, class, order, family = statStrings(st)
+			taxon, taxonRank, kingdom, phylum, class, order, family,
+				genus = statStrings(st)
 			taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt,
-				familyPcnt = statInts(st)
+				familyPcnt, genusPcnt = statInts(st)
 
 			_, err = stmt.Exec(
 				v.ItemID, total, taxon, taxonRank, taxonPcnt, kingdom, kingdomPcnt,
-				animNum, plantNum, fungiNum, bactNum, phylum, phylumPcnt,
-				class, classPcnt, order, orderPcnt, family, familyPcnt,
+				animNum, plantNum, fungiNum, bactNum, phylum, phylumPcnt, class,
+				classPcnt, order, orderPcnt, family, familyPcnt, genus, genusPcnt,
 			)
 			if err != nil {
 				log.Fatal().Err(err).Msg("saveNames:")
@@ -75,9 +77,9 @@ func (b builderio) addStatsToItems(chIn <-chan []txstats.ItemTaxa) error {
 
 func statInts(st gnstats.Stats) (
 	sql.NullInt16, sql.NullInt16, sql.NullInt16,
-	sql.NullInt16, sql.NullInt16, sql.NullInt16) {
+	sql.NullInt16, sql.NullInt16, sql.NullInt16, sql.NullInt16) {
 	var taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt,
-		familyPcnt sql.NullInt16
+		familyPcnt, genusPcnt sql.NullInt16
 	if st.MainTaxon.Name != "" {
 		taxonPcnt = floatToNullInt(st.MainTaxonPercentage)
 	}
@@ -96,7 +98,10 @@ func statInts(st gnstats.Stats) (
 	if st.Family.Name != "" {
 		familyPcnt = floatToNullInt(st.FamilyPercentage)
 	}
-	return taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt, familyPcnt
+	if st.Genus.Name != "" {
+		genusPcnt = floatToNullInt(st.GenusPercentage)
+	}
+	return taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt, familyPcnt, genusPcnt
 }
 
 func floatToNullInt(f float32) sql.NullInt16 {
@@ -107,8 +112,8 @@ func floatToNullInt(f float32) sql.NullInt16 {
 func statStrings(st gnstats.Stats) (
 	sql.NullString, sql.NullString,
 	sql.NullString, sql.NullString, sql.NullString, sql.NullString,
-	sql.NullString) {
-	var taxon, taxonRank, kingdom, phylum, class, order, family sql.NullString
+	sql.NullString, sql.NullString) {
+	var taxon, taxonRank, kingdom, phylum, class, order, family, genus sql.NullString
 	if st.MainTaxon.Name != "" {
 		taxon = sql.NullString{String: st.MainTaxon.Name, Valid: true}
 		taxonRank = sql.NullString{String: st.MainTaxon.RankStr, Valid: true}
@@ -128,7 +133,10 @@ func statStrings(st gnstats.Stats) (
 	if st.Family.Name != "" {
 		family = sql.NullString{String: st.Family.Name, Valid: true}
 	}
-	return taxon, taxonRank, kingdom, phylum, class, order, family
+	if st.Genus.Name != "" {
+		genus = sql.NullString{String: st.Genus.Name, Valid: true}
+	}
+	return taxon, taxonRank, kingdom, phylum, class, order, family, genus
 }
 
 func kingdomDistribution(st gnstats.Stats) (uint, uint, uint, uint) {

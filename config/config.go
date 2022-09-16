@@ -234,7 +234,7 @@ func InputDir() string {
 
 func New(opts ...Option) Config {
 	cfg := Config{
-		BHLDumpURL:          "https://www.biodiversitylibrary.org/data/data.zip",
+		BHLDumpURL:          "http://opendata.globalnames.org/dumps/bhl-data.zip",
 		BHLNamesURL:         "http://opendata.globalnames.org/dumps/bhl-col.zip",
 		InputDir:            InputDir(),
 		Delimiter:           ',',

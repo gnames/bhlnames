@@ -1,10 +1,10 @@
 {
-  "labels": [
+  "classes": [
     "isNomen",
     "notNomen"
   ],
   "casesTotal": 3479,
-  "labelCases": {
+  "classCases": {
     "isNomen": 486,
     "notNomen": 2993
   },

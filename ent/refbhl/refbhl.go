@@ -1,6 +1,6 @@
 package refbhl
 
-import ft "github.com/gnames/bayes/ent/feature"
+import bout "github.com/gnames/bayes/ent/output"
 
 // ReferenceBHL is a representation of a BHL entity that was matched with a
 // scientific name-string.
@@ -56,9 +56,9 @@ type ReferenceBHL struct {
 	ItemKingdomPercent int `json:"itemKingdomPercent"`
 	// StatNamesNum is the number of names in the Item.
 	StatNamesNum int `json:"statNamesNum"`
-	// ItemContext provides a clade that contains a majority of scientific names
+	// ItemMainTaxon provides a clade that contains a majority of scientific names
 	// mentioned in the Item.
-	ItemContext string `json:"itemContext"`
+	ItemMainTaxon string `json:"itemMainTaxon"`
 	// TitleYearStart is the year when book is published, or when a journal was
 	// published first time.
 	TitleYearStart int `json:"titleYearStart"`
@@ -81,7 +81,7 @@ type Score struct {
 	//Odds is total naive bayes odds ofr the score.
 	Odds float64 `json:"odds"`
 
-	OddsDetail map[ft.Feature]float64 `json:"oddsDetail"`
+	OddsDetail bout.OddsDetails `json:"oddsDetail"`
 
 	// Total is a simple sum of all available individual score.
 	Total int `json:"total"`
