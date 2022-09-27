@@ -39,7 +39,7 @@ func (b builderio) migrate() {
 	err := db.Truncate(b.DB, []string{"items", "pages", "parts"})
 	if err != nil {
 		err = fmt.Errorf("builderio.migrate: %w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("migration")
 	}
 }
 

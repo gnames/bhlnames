@@ -6,7 +6,7 @@ name-string/publication input and the corresponding BHL reference.
 
 ## Introduction
 
-[Biodiversity Heritage Library (BHL)][bhl] contains more than 200 000 volumes
+[Biodiversity Heritage Library (BHL)][bhl] contains more than 250 000 volumes
 (books, scientific journals, diaries of explorers, etc.). BHL provides an
 important biodiversity information. Since the middle of 18th century,
 scientists use Latinized scientific names as identifiers for known species. For
@@ -22,8 +22,11 @@ This program tries to answer the following questions:
   case we find all synonyms of the name-string and the currently accepted
   name of the species
 
-- Given a name-string and its original publication, does this publication
-  exists in BHL, and what is the link to it?
+- Given a name-string and a reference to its original publication, does this
+  publication exists in BHL, and what is the link to it?
+
+- Given a name-string and a reference to a publication about the name-string,
+  find a link to this publication in BHL.
 
 The `bhlnames` app uses [Catalogue Of Life (CoL)][col] synonymy information to
 find publications not only about a given name but also about its synonyms. In
@@ -49,7 +52,10 @@ the future it will support other resources with synonymy information.
    its official nomenclatural publication. We use provided information trying
    to find a BHL reference that corresponds to that publication.
 
-4. Provide REST API and command line tool to access aforementioned
+4. Find a link to a publication, using a publication reference and
+   a name used in the publication.
+
+5. Provide REST API and command line tool to access aforementioned
    functionalities.
 
 ## Prerequisites
@@ -60,31 +66,29 @@ To be able to use this program you need
 - one of the 3 operating systems (Linux, Mac OS, Windows)
 - a functional Postgresql database
 - 30+ GB of space on a hard drive
-- 8GB or more of memory
+- 32GB or more of memory
 
 ## Installation
 
 1. Download the [latest release] of `bhlnames`, untar or unzip the executable
    `bhlnames` or `bhlnames.exe` and place it somewhere in your PATH.
 
-2. Create a database (for example, `bhlnames`) on your Postgresql server. We
+2. Create a database (default name is `bhlnames`) on your Postgresql server. We
    are not covering how to use Postgresql in this document. There are many
-   tutorials about it on the web. Make sure that the database is accessible from
-   the computer where you installed `bhlnames` executable.
+   tutorials about it on the web. Make sure that the database is accessible
+   from the computer where you installed `bhlnames` executable.
 
-3. When you run the program first time it will create
-   `$HOME/.config/bhlnames.yaml` config file. Exit bhlnames and modify database
-   parameters in the config. You can also change setup for `InputDir` directory
-   for downloaded and temporary files, as well as for key-value store databases.
-   You can leave other parameters as is for now.
+3. Run `bhlnames -V`. It will show the version number of the program and will
+   create a configuration file. Terminal output will provide information where
+   the file is located. For example on Linux machines it will be placed in
+   `$HOME/.config/bhlnames.yaml`.
+
+4. Go to the configuration file and modify database parameters in the config.
+   You can also change setup for `InputDir` directory for downloaded and
+   temporary files, as well as for key-value store databases. You can leave
+   other parameters as is for now.
 
 The system should be ready for the initialization step.
-
-To make sure you have the right version of `bhlnames` run:
-
-```bash
-bhlnames -V
-```
 
 ## Initialization
 
@@ -92,10 +96,10 @@ This step downloads all the needed BHL and names metadata on your computer.
 Some of the data go to the Postgresql database, others to a key-value store.
 You do not need to worry about the creation of tables, or key-value databases;
 they will be populated automatically. The program uses a file containing
-metadata dump from BHL, as well as a remote `bhlindex` service. Dump provides
-information about papers (parts in BHL terminology), volumes (issues), and
-books (titles). The `bhlindex` provides fresh information about names and their
-occurrences in BHL.
+metadata dump from BHL, as well as names data created by `bhlindex`. Dump
+provides information about papers (parts in BHL terminology), volumes (issues),
+and books/journal volume sets (titles). The `bhlindex` provides fresh
+information about names and their occurrences in BHL.
 
 To start the initialization process type:
 
@@ -103,8 +107,8 @@ To start the initialization process type:
 bhlnames init
 ```
 
-The whole process will take about 3 hours, but it could take significantly
-longer if your computer or internet connection is slow.
+The whole process will take about 1-2 hours, but it could take significantly
+longer if your computer or internet connection are slow.
 
 If for some reason you have to restart the program, you do not need to delete
 working directories or the database. All of them will be updated automatically.
@@ -123,7 +127,7 @@ from time to time from scratch.
 
 ## Usage
 
-To find references for a whole taxon (synonyms and currently accepted name)
+To find references to a whole taxon (synonyms and currently accepted name)
 from a name-string:
 
 ```bash
@@ -147,25 +151,25 @@ bhlnames name "Pardosa moesta" -f pretty
 You can also use [jq] or a similar tool
 
 ```bash
-bhlnames name "Pardosa moesta" | jq
+bhlnames name "Pardosa moesta" 2>/dev/null | jq
 ```
 
-In case if it is preferable to have the oldest publications last, you can reverse
-sorting order with:
+In case if it is preferable to have the oldest publications last,
+you can reverse sorting order with:
 
 ```bash
 bhlnames name "Pardosa moesta" -f pretty -d
 ```
 
-To search for a large collection of names provide the name of a file instead (one
-name per line):
+To search for a large collection of names provide the name of a file instead
+(one name per line):
 
 ```bash
 bhlnames name names.txt
 ```
 
 For computers with modern multi-core CPU, you can increase number of parallel
-jobs. Usually, there is no much gain to go over 8 jobs.
+jobs. Usually, there is no much gain from setting more than 8 jobs.
 
 ```bash
 bhlnames name names.txt -j 8
@@ -183,17 +187,25 @@ To get results without synonyms:
 bhlnames name names.txt --no_synonyms
 ```
 
-To find a link to name-string with its original reference you can use a
-CSV file with the following fields:
+To find a link to a name-string with its original reference you can use a
+CSV.
+
+Mimumal fields are:
 
 ```csv
-Id,NameCanonical,NameAuthorship,NameYear,RefString,RefYear
+Id,NameString,RefString
 ```
 
-Where `Id` is an internal identifier, `NameCanonical` canonical form of a name,
-`NameYear` the year when a original description of combination were created,
-`RefString` unparsed reference string, `RefYear` the year when the reference
-was published.
+Where `Id` is an internal identifier, `NameString` is a full scientific name
+with authorship and year (if they are given), `RefString` is an unparsed
+reference string.
+
+If you have a more detailed information the following fields can also be used:
+
+`NameCanonical` canonical form of a name, `NameYear` the year of the name
+publication, `RefYear` the year of the reference publication.
+
+Most
 
 You can use the following command:
 
@@ -268,39 +280,18 @@ from BHL that was the picked as the best candidate to the link for the
 input reference. If we did not get any feasible candidates, no BHL reference
 is provided.
 
-According to our estimates approximately 40% of returned links do point to the
-given with input original publication. Others are false positives. We will
-try to increase Precision and Recall while we continue to work on the
-application.
-
-The score data has an 'overall' field. If the overall score is 2, there this is
-the highest chance for the correct result.
+TODO: Explain score and score thresholds.
 
 ## Development
 
 ### Running tests
 
-1. Install `docker` and `docker-compose`
-2. Copy `.env.example` to `.env`, change database to public IP address
-3. Make sure that postgresql listens on the public IP address, if not, change
-   the `postgresql.conf` accordingly.
-4. Make sure that `pg_hba.conf` allows connection with password to public IP:
-
-   host all all 10.0.0.0/8 md5
-   host all all 172.16.0.0/12 md5
-   host all all 192.168.0.0/16 md5
-
-5. Run `make dc` from the root of the project
-6. Run `docker-compose up` in another terminal to set REST service
-7. Run `go test ./...`
+1. Install bhlnames and its data as described above.
+2. Run `go test ./...`
 
 ## Authors
 
-- [Dmitry Mozzherin]
-
-## Contributors
-
-- [Geoff Ower]
+- [Dmitry Mozzherin], [Geoff Ower]
 
 ## License
 

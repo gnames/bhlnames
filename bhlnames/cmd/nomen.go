@@ -62,7 +62,10 @@ a putative link in BHL to the event.
 		yr := yearFlag(cmd)
 		delim := delimiterFlag(cmd)
 		curate := curationFlag(cmd)
-		output := outputFlag(cmd)
+		var output string
+		if curate {
+			output = outputFlag(cmd)
+		}
 		opts = append(opts,
 			config.OptFormat(f),
 		)
@@ -129,7 +132,7 @@ func nomen(bn bhlnames.BHLnames, data string, year int, curate bool, output stri
 		f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 		if err != nil {
 			err = fmt.Errorf("nomen: %#w", err)
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("nomen")
 		}
 		nomensFromFile(bn, f, curate, output)
 		f.Close()
@@ -224,7 +227,7 @@ func nomenFromString(bn bhlnames.BHLnames, name string, year int) {
 	res, err := bn.NomenRefs(data)
 	if err != nil {
 		err = fmt.Errorf("nomenFromString: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("nomenFromString")
 	}
 	out, _ := enc.Encode(res)
 	fmt.Println(string(out))
@@ -273,7 +276,7 @@ func curationFlag(cmd *cobra.Command) bool {
 	cur, err := cmd.Flags().GetBool("curation")
 	if err != nil {
 		err = fmt.Errorf("curationFlag: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("curationFlag")
 	}
 
 	return cur
@@ -282,11 +285,11 @@ func curationFlag(cmd *cobra.Command) bool {
 func outputFlag(cmd *cobra.Command) string {
 	output, err := cmd.Flags().GetString("output")
 	if output == "" {
-		log.Fatal().Err(errors.New("output should be set"))
+		err = errors.New("output path for curated results should be set")
 	}
 	if err != nil {
 		err = fmt.Errorf("outputFlag: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("outputFlag")
 	}
 	return output
 }

@@ -48,13 +48,13 @@ func main() {
 
 	gold, err := os.ReadFile(goldFile)
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("")
 	}
 	var nrs []*namerefs.NameRefs
 	enc := gnfmt.GNjson{Pretty: true}
 	err = enc.Decode(gold, &nrs)
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("")
 	}
 	sts := new(stats)
 	sts.namesNum = len(nrs)
@@ -161,10 +161,10 @@ func output(nrs []*namerefs.NameRefs) {
 	}
 	bs, err := enc.Encode(res)
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("")
 	}
 	err = os.WriteFile(resFile, bs, 0644)
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("")
 	}
 }

@@ -73,7 +73,6 @@ func (rf reffinderio) ReferencesBHL(data input.Input) (*namerefs.NameRefs, error
 	}
 
 	res.ImagesURL = imagesUrl(res.CurrentCanonical)
-
 	rf.updateOutput(res, rows)
 	return res, nil
 }

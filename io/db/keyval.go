@@ -17,7 +17,7 @@ func InitKeyVal(dir string) *badger.DB {
 	bdb, err := badger.Open(options)
 	if err != nil {
 		err = fmt.Errorf("db.InitKeyVal: %w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("")
 	}
 	return bdb
 }
@@ -28,7 +28,7 @@ func GetValue(kv *badger.DB, key string) int {
 		err := txn.Commit()
 		if err != nil {
 			err = fmt.Errorf("db.GetValue: %w", err)
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("")
 		}
 	}()
 	val, err := txn.Get([]byte(key))
@@ -36,13 +36,13 @@ func GetValue(kv *badger.DB, key string) int {
 		return 0
 	} else if err != nil {
 		err = fmt.Errorf("db.GetValue: %w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("")
 	}
 	var res []byte
 	res, err = val.ValueCopy(res)
 	if err != nil {
 		err = fmt.Errorf("db.GetValue: %w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("")
 	}
 	id, _ := strconv.Atoi(string(res))
 	return id
@@ -55,7 +55,7 @@ func GetValues(kv *badger.DB, keys []string) (map[string][]byte, error) {
 		err := txn.Commit()
 		if err != nil {
 			err = fmt.Errorf("db.GetValues: %w", err)
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("")
 		}
 	}()
 	for i := range keys {

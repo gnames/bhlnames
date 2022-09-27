@@ -28,7 +28,7 @@ func newTitleStore(cfg config.Config, titles map[int]*title) *titleStore {
 	shortWords, err := d.ShortWords()
 	if err != nil {
 		err = fmt.Errorf("builderio.newTitleStore: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("newTitleStore")
 	}
 	res := titleStore{
 		cfg:        cfg,

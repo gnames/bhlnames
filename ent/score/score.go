@@ -124,7 +124,7 @@ func BoostBestResult(nr *namerefs.NameRefs, nb bayes.Bayes) {
 		f := ft.Feature{Name: ft.Name("bestRes"), Value: ft.Value("true")}
 		bestRes, err := nb.Likelihood(f, ft.Class("isNomen"))
 		if err != nil {
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("BoostBestResult")
 		}
 		nr.References[0].Score.Odds *= bestRes
 	}

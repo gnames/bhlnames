@@ -11,7 +11,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func curateData(out <-chan *namerefs.NameRefs, output string) {
+// curateData is used for creation of a golden standard. The input is set
+// through nomen calculation and the result is sent to terminal for a human
+// desition, if found references are nomenclatural events or not.
+// For example io/bayes/data/gold.json was created from such curation
+// events.
+func curateData(out <-chan *namerefs.NameRefs, outputPath string) {
 	var res []*namerefs.NameRefs
 	for r := range out {
 		if r.Error != nil {
@@ -19,7 +24,7 @@ func curateData(out <-chan *namerefs.NameRefs, output string) {
 		}
 		res = append(res, r)
 	}
-	curate(res, output)
+	curate(res, outputPath)
 }
 
 func printKeys() {
@@ -27,7 +32,7 @@ func printKeys() {
 	c.Println("Selections: [z] right & forward; ['] wrong & next; [b] back;")
 }
 
-func curate(nrs []*namerefs.NameRefs, output string) {
+func curate(nrs []*namerefs.NameRefs, outputPath string) {
 	cursor := 0
 	printKeys()
 	var choice string
@@ -85,10 +90,10 @@ NEXT_NR:
 		}
 		cursor++
 	}
-	getOutput(nrs, output)
+	getOutput(nrs, outputPath)
 }
 
-func getOutput(nrs []*namerefs.NameRefs, output string) {
+func getOutput(nrs []*namerefs.NameRefs, outputPath string) {
 	enc := gnfmt.GNjson{Pretty: true}
 	var res []*namerefs.NameRefs
 	for i := range nrs {
@@ -103,12 +108,12 @@ func getOutput(nrs []*namerefs.NameRefs, output string) {
 	resJSON, err := enc.Encode(res)
 	if err != nil {
 		err = fmt.Errorf("cmd getOutput: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("getOutput")
 	}
 
-	err = os.WriteFile(output, resJSON, 0644)
+	err = os.WriteFile(outputPath, resJSON, 0644)
 	if err != nil {
 		err = fmt.Errorf("cmd getOutput: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("GetOutput")
 	}
 }

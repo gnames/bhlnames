@@ -25,13 +25,13 @@ func (l label) String() string {
 func main() {
 	gold, err := os.ReadFile(goldFile)
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("main")
 	}
 	var data []*namerefs.NameRefs
 	enc := gnfmt.GNjson{Pretty: true}
 	err = enc.Decode(gold, &data)
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("main")
 	}
 	var lfs []ft.ClassFeatures
 	for _, v := range data {
@@ -41,11 +41,11 @@ func main() {
 	nb.Train(lfs)
 	nbDump, err := nb.Dump()
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("main")
 	}
 	err = os.WriteFile(outputFile, nbDump, 0644)
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("main")
 	}
 }
 

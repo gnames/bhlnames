@@ -20,7 +20,7 @@ func NewDbGorm(cnf config.Config) *gorm.DB {
 	db, err := gorm.Open("postgres", opts(cnf))
 	if err != nil {
 		err = fmt.Errorf("db.NewDbGorm: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("NewDbGorm")
 	}
 	return db
 }
@@ -29,7 +29,7 @@ func NewDB(cnf config.Config) *sql.DB {
 	db, err := sql.Open("postgres", opts(cnf))
 	if err != nil {
 		err = fmt.Errorf("db.NewDB: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("NewDB")
 	}
 	return db
 }
@@ -49,7 +49,7 @@ func RunQuery(d *sql.DB, q string) *sql.Rows {
 	rows, err := d.Query(q)
 	if err != nil {
 		err = fmt.Errorf("db.RunQuery: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("RunQuery")
 	}
 	return rows
 }

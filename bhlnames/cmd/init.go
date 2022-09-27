@@ -46,7 +46,7 @@ after enother. The resul will be identical to "bhlnames init".`,
 		rebuild, err := cmd.Flags().GetBool("rebuild")
 		if err != nil {
 			err = fmt.Errorf("initCmd: %#w", err)
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("initCmd")
 		}
 		opts = append(opts, config.OptWithRebuild(rebuild))
 		cfg := config.New(opts...)
@@ -57,7 +57,7 @@ after enother. The resul will be identical to "bhlnames init".`,
 		err = bn.Initialize()
 		if err != nil {
 			err = fmt.Errorf("initCmd: %#w", err)
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("initCmd")
 		}
 		log.Info().Msg("Import of BHL data and names is done.")
 	},

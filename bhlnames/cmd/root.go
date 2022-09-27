@@ -70,7 +70,7 @@ usages found at BHL for a scientific name.`,
 		version, err := cmd.Flags().GetBool("version")
 		if err != nil {
 			err = fmt.Errorf("main: %#w", err)
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("rootCmd")
 		}
 		if version {
 			fmt.Printf("\nversion: %s\nbuild: %s\n\n", bhlnames.Version, bhlnames.Build)
@@ -151,7 +151,7 @@ func getOpts() []config.Option {
 	err := viper.Unmarshal(cfg)
 	if err != nil {
 		err = fmt.Errorf("main: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("getOpts")
 	}
 
 	if cfg.BHLDumpURL != "" {

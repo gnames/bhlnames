@@ -35,7 +35,7 @@ func New(cfg config.Config) title_matcher.TitleMatcher {
 	ac, err := res.getAhoCorasick()
 	if err != nil {
 		err = fmt.Errorf("titlemio.New: %w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("")
 	}
 	res.AhoCorasick = ac
 	return res

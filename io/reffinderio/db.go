@@ -87,9 +87,9 @@ func (l reffinderio) occurrences(name string, field string) []*row {
 			&nameID, &nameString, &matchedCanonical, &matchType, &editDistance)
 		if err != nil {
 			err = fmt.Errorf("reffinderio.occurrences: %w", err)
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("")
 		}
-		res = append(res, &row{
+		rec := &row{
 			itemID:             itemID,
 			titleID:            titleID,
 			pageID:             pageID,
@@ -111,7 +111,9 @@ func (l reffinderio) occurrences(name string, field string) []*row {
 			matchedCanonical:   matchedCanonical.String,
 			matchType:          matchType.String,
 			editDistance:       int(editDistance.Int32),
-		})
+		}
+
+		res = append(res, rec)
 	}
 	return res
 }

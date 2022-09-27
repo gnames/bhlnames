@@ -188,7 +188,7 @@ func checkStdin() bool {
 	stat, err := stdInFile.Stat()
 	if err != nil {
 		err = fmt.Errorf("checkStdin: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("checkStdin")
 	}
 	return (stat.Mode() & os.ModeCharDevice) == 0
 }
@@ -211,7 +211,7 @@ func name(bn bhlnames.BHLnames, data string) {
 		f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 		if err != nil {
 			err = fmt.Errorf("name: %#w", err)
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("name")
 		}
 		nameFile(bn, f)
 		f.Close()
@@ -300,12 +300,12 @@ func processResults(f gnfmt.Format, chOut <-chan *namerefs.NameRefs,
 	encDump, err := enc.Encode(dump)
 	if err != nil {
 		err = fmt.Errorf("processResults: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("processResults")
 	}
 	err = os.WriteFile("testdata/stubs_namerefs.json", encDump, 0644)
 	if err != nil {
 		err = fmt.Errorf("processResults: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("processResults")
 	}
 }
 
@@ -316,7 +316,7 @@ func nameString(bn bhlnames.BHLnames, name string) {
 	res, err := bn.NameRefs(data)
 	if err != nil {
 		err = fmt.Errorf("nameString: %#w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("nameString")
 	}
 	fmt.Println(enc.Output(res, bn.Config().Format))
 }

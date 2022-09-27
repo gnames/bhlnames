@@ -124,7 +124,7 @@ func (n namesbhlio) savePageMaps(kv *badger.DB, chIn <-chan item) error {
 			err := savePageIDs(kv, res)
 			if err != nil {
 				err = fmt.Errorf("savePageMaps: %w", err)
-				log.Fatal().Err(err)
+				log.Fatal().Err(err).Msg("")
 				return err
 			}
 			res = make(map[string]int)
@@ -135,7 +135,7 @@ func (n namesbhlio) savePageMaps(kv *badger.DB, chIn <-chan item) error {
 	err := savePageIDs(kv, res)
 	if err != nil {
 		err = fmt.Errorf("savePageMaps: %w", err)
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("")
 		return err
 	}
 	return nil

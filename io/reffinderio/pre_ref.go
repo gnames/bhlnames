@@ -23,25 +23,37 @@ func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*row) {
 	for _, v := range raw {
 		partID := checkPart(kv, v.pageID)
 		if partID == 0 {
+			// find the first name in the Item
 			id := genMapID(v.itemID, v.matchedCanonical)
 			if ref, ok := itemsMap[id]; !ok {
 				itemsMap[id] = &preReference{item: v, part: &db.Part{}}
-			} else if ref.item.annotation == "NO_ANNOT" && v.annotation != "NO_ANNOT" {
-				itemsMap[id] = &preReference{item: v, part: &db.Part{}}
+			} else {
+				// prefer annotation
+				if ref.item.annotation == "NO_ANNOT" && v.annotation != "NO_ANNOT" {
+					itemsMap[id] = &preReference{item: v, part: &db.Part{}}
+				}
+				// prefer a parsed page number
+				if ref.item.pageNum == 0 && v.pageNum > 0 {
+					itemsMap[id] = &preReference{item: v, part: &db.Part{}}
+				}
 			}
 		} else {
+			// find the first name in a Part
 			id := genMapID(partID, v.matchedCanonical)
+			part := &db.Part{}
 			if ref, ok := partsMap[id]; !ok {
-				part := &db.Part{}
 				l.GormDB.Where("id = ?", partID).First(part)
-				if part != nil {
+				partsMap[id] = &preReference{item: v, part: part}
+			} else {
+				// prefer annotation
+				if ref.item.annotation == "NO_ANNOT" &&
+					v.annotation != "NO_ANNOT" {
+					l.GormDB.Where("id = ?", partID).First(part)
 					partsMap[id] = &preReference{item: v, part: part}
 				}
-			} else if ref.item.annotation == "NO_ANNOT" &&
-				v.annotation != "NO_ANNOT" {
-				part := &db.Part{}
-				l.GormDB.Where("id = ?", partID).First(part)
-				if part != nil {
+				// prefer a parsed page number
+				if ref.item.pageNum == 0 && v.pageNum > 0 {
+					l.GormDB.Where("id = ?", partID).First(part)
 					partsMap[id] = &preReference{item: v, part: part}
 				}
 			}

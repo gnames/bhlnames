@@ -45,7 +45,7 @@ func (b builderio) touchDirs() {
 			err := gnsys.MakeDir(dirs[i])
 			if err != nil {
 				err = fmt.Errorf("builderio.touchDirs: %#w", err)
-				log.Fatal().Err(err)
+				log.Fatal().Err(err).Msg("touchDirs")
 			}
 		}
 	}

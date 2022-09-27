@@ -144,7 +144,7 @@ func OptInputDir(s string) Option {
 		s, err = gnsys.ConvertTilda(s)
 		if err != nil {
 			err = fmt.Errorf("config.OptInputDir: %#w", err)
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("OptInputDir")
 		}
 		cfg.InputDir = s
 	}
