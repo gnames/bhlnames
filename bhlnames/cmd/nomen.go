@@ -1,5 +1,5 @@
 /*
-	Copyright © 2020 Dmitry Mozzherin <dmozzherin@gmail.com>
+	Copyright © 2020-2022 Dmitry Mozzherin <dmozzherin@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -91,14 +91,15 @@ a putative link in BHL to the event.
 			bhlnames.OptNLP(bayesio.New()),
 		}
 
-		bhln := bhlnames.New(cfg, bnOpts...)
+		bn := bhlnames.New(cfg, bnOpts...)
+		defer bn.Close()
 
 		if len(args) == 0 {
-			processStdin(cmd, bhln)
+			processStdin(cmd, bn)
 			os.Exit(0)
 		}
 		data := getInput(cmd, args)
-		nomen(bhln, data, yr, curate, output)
+		nomen(bn, data, yr, curate, output)
 	},
 }
 
@@ -190,7 +191,7 @@ func nomensFromFile(bn bhlnames.BHLnames, f io.Reader, curate bool, output strin
 			input.OptNameString(csvVal(row, "NameString")),
 			input.OptRefString(csvVal(row, "RefString")),
 		}
-		input := input.New(bn, opts...)
+		input := input.New(bn.Parser(), opts...)
 		chIn <- input
 	}
 	close(chIn)

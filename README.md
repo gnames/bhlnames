@@ -64,7 +64,7 @@ To be able to use this program you need
 
 - a modern computer (laptop or desktop)
 - one of the 3 operating systems (Linux, Mac OS, Windows)
-- a functional Postgresql database
+- a PostgreSQL database
 - 30+ GB of space on a hard drive
 - 32GB or more of memory
 
@@ -287,7 +287,13 @@ TODO: Explain score and score thresholds.
 ### Running tests
 
 1. Install bhlnames and its data as described above.
-2. Run `go test ./...`
+2. Start RESTful service in another terminal window:
+
+   ```bash
+   bhlnames rest
+   ```
+
+3. Run `go test ./...`
 
 ## Authors
 

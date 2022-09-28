@@ -1,0 +1,14 @@
+# Statistics for manually checked names
+
+Total names: 3000
+Names considered: 955
+Found nomens: 421
+nomen/total: 14.03%
+
+Odds distribution
+
+Odds > 10.0:  all 239, nomen 235, prob 0.983, odds 58.750
+Odds > 1.0:   all 119, nomen 100, prob 0.840, odds 5.263
+Odds > 0.1:   all 126, nomen  59, prob 0.468, odds 0.881
+Odds > 0.01:  all 165, nomen  22, prob 0.133, odds 0.154
+Odds > 0:     all 306, nomen   5, prob 0.016, odds 0.017

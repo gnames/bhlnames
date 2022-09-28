@@ -66,10 +66,10 @@ func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*row) {
 		preRefs = append(preRefs, v)
 	}
 	refs := l.genReferences(preRefs)
-	if l.WithSynonyms {
+	if l.withSynonyms {
 		o.Synonyms = genSynonyms(refs, o.CurrentCanonical)
 	}
-	if !l.WithShortenedOutput {
+	if !l.withShortenedOutput {
 		o.References = refs
 	}
 }
@@ -148,7 +148,7 @@ func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceBHL {
 			ItemYearEnd:        v.item.yearEnd,
 		}
 	}
-	if l.SortDesc {
+	if l.sortDesc {
 		sort.SliceStable(res, func(i, j int) bool {
 			return res[i].YearAggr > res[j].YearAggr
 		})

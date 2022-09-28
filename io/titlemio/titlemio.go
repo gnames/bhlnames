@@ -15,9 +15,8 @@ import (
 )
 
 type titlemio struct {
-	// Config contains general configuration of BHLnames. Some of the config
-	// settings modify behavior of algorithms to find BHL references.
-	config.Config
+	// acDir is the directory for AhoCorasick files.
+	acDir string
 
 	// AC is AhoCorasick object for matching references to BHL titles.
 	aho_corasick.AhoCorasick
@@ -29,7 +28,7 @@ type titlemio struct {
 
 func New(cfg config.Config) title_matcher.TitleMatcher {
 	res := &titlemio{
-		Config:  cfg,
+		acDir:   cfg.AhoCorasickDir,
 		TitleKV: db.InitKeyVal(cfg.AhoCorKeyValDir),
 	}
 	ac, err := res.getAhoCorasick()
@@ -41,17 +40,17 @@ func New(cfg config.Config) title_matcher.TitleMatcher {
 	return res
 }
 
-func (tm *titlemio) Close() error {
+func (tm titlemio) Close() error {
 	return tm.TitleKV.Close()
 }
 
-func (tm *titlemio) getAhoCorasick() (aho_corasick.AhoCorasick, error) {
+func (tm titlemio) getAhoCorasick() (aho_corasick.AhoCorasick, error) {
 	var err error
 	var txt []byte
 	var patterns []string
 	ac := aho_corasick.New()
 
-	path := filepath.Join(tm.AhoCorasickDir, "patterns.txt")
+	path := filepath.Join(tm.acDir, "patterns.txt")
 	txt, err = os.ReadFile(path)
 	if err == nil {
 		patterns = strings.Split(string(txt), "\n")

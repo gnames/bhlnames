@@ -7,6 +7,7 @@ import (
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/reffinder/reffindertest"
+	"github.com/gnames/bhlnames/ent/title_matcher/titlematchertest"
 	"github.com/gnames/bhlnames/io/bayesio"
 	"github.com/gnames/bhlnames/io/titlemio"
 	"github.com/gnames/gnparser"
@@ -101,17 +102,18 @@ func TestNomenRefs(t *testing.T) {
 		},
 	}
 
-	stubs := reffindertest.Stubs(t)
+	stubsRF := reffindertest.Stubs(t)
+	stubsTM := titlematchertest.Stubs(t)
 
 	cfg := config.New()
 	gnp := gnparser.New(gnparser.NewConfig())
 	rf := new(reffindertest.FakeRefFinder)
-	tm := titlemio.New(cfg)
+	tmf := new(titlematchertest.FakeTitleMatcher)
 
 	opts := []bhlnames.Option{
 		bhlnames.OptParser(gnp),
 		bhlnames.OptRefFinder(rf),
-		bhlnames.OptTitleMatcher(tm),
+		bhlnames.OptTitleMatcher(tmf),
 		bhlnames.OptNLP(bayesio.New()),
 	}
 
@@ -123,7 +125,8 @@ func TestNomenRefs(t *testing.T) {
 			input.OptNameString(v.name),
 			input.OptRefString(v.ref),
 		}
-		rf.ReferencesBHLReturns(stubs[v.name], nil)
+		rf.ReferencesBHLReturns(stubsRF[v.name], nil)
+		tmf.TitlesBHLReturns(stubsTM[v.ref], nil)
 		inp := input.New(gnp, opts...)
 		res, err := bn.NomenRefs(inp)
 		assert.Nil(t, err)

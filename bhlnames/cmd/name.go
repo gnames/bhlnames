@@ -280,7 +280,7 @@ func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 			input.OptNameString(csvVal(row, "NameString")),
 			input.OptRefString(csvVal(row, "RefString")),
 		}
-		input := input.New(bn, opts...)
+		input := input.New(bn.Parser(), opts...)
 		in <- input
 	}
 	close(in)
@@ -311,7 +311,7 @@ func processResults(f gnfmt.Format, chOut <-chan *namerefs.NameRefs,
 
 func nameString(bn bhlnames.BHLnames, name string) {
 	opts := []input.Option{input.OptNameString(name)}
-	data := input.New(bn, opts...)
+	data := input.New(bn.Parser(), opts...)
 	enc := gnfmt.GNjson{}
 	res, err := bn.NameRefs(data)
 	if err != nil {

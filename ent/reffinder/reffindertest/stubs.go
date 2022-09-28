@@ -19,7 +19,7 @@ var (
 // Stubs creates data for stubs. To create such data we use
 // testdata/test.csv file at first to generate all the references using
 // the command:
-// bhlnames name -d '\t' -j 1 testdata/test.csv > tmp.json
+// bhlnames name -d '\t' -j 1 testdata/test.csv  > tmp.json
 func Stubs(t *testing.T) map[string]*namerefs.NameRefs {
 	f, err := os.ReadFile(filepath.Join(basepath, "..", "..", "..", "testdata", "stubs_namerefs.json"))
 	assert.Nil(t, err)

@@ -40,6 +40,9 @@ func (s *score) Calculate(
 	var titleIDs map[int][]string
 	if refString != "" {
 		titleIDs, err = tm.TitlesBHL(refString)
+		// dump, _ := json.Marshal(titleIDs)
+		// fmt.Printf("{ \"ref\": \"%s\", \"titleIds\":", refString)
+		// fmt.Println(string(dump) + " }")
 		if err != nil {
 			return err
 		}

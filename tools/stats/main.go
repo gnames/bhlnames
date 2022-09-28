@@ -32,7 +32,7 @@ type stats struct {
 }
 
 type distr struct {
-	score100, score10, score1, score01, score001, score0 distData
+	score10, score1, score01, score001, score0 distData
 }
 
 type distData struct {
@@ -48,13 +48,13 @@ func main() {
 
 	gold, err := os.ReadFile(goldFile)
 	if err != nil {
-		log.Fatal().Err(err).Msg("")
+		log.Fatal().Err(err).Msg("ReadFile")
 	}
 	var nrs []*namerefs.NameRefs
 	enc := gnfmt.GNjson{Pretty: true}
 	err = enc.Decode(gold, &nrs)
 	if err != nil {
-		log.Fatal().Err(err).Msg("")
+		log.Fatal().Err(err).Msg("Decode")
 	}
 	sts := new(stats)
 	sts.namesNum = len(nrs)
@@ -74,13 +74,7 @@ func main() {
 		}
 		sc := score.New(prec)
 		sc.Calculate(nrs[i], tm, nb)
-		if nrs[i].References[0].Score.Odds >= 100 {
-			if hasNomenRef {
-				sts.distr.score100.isNomen++
-			} else {
-				sts.distr.score100.notNomen++
-			}
-		} else if nrs[i].References[0].Score.Odds >= 10 {
+		if nrs[i].References[0].Score.Odds >= 10 {
 			if hasNomenRef {
 				sts.distr.score10.isNomen++
 			} else {
@@ -122,9 +116,7 @@ func displayStats(sts *stats) {
 	fmt.Printf("Found nomens: %d\n", sts.nameNomenNum)
 	fmt.Printf("nomen/total: %0.2f%%", 100.0*float32(sts.nameNomenNum)/float32(namesTotal))
 	fmt.Print("\n\nOdds distribution\n\n")
-	tot, nom, p, odds := calcProb(sts.score100)
-	fmt.Printf("Odds > 100.0: all %3d, nomen %3d, prob %0.3f, odds %0.3f\n", tot, nom, p, odds)
-	tot, nom, p, odds = calcProb(sts.score10)
+	tot, nom, p, odds := calcProb(sts.score10)
 	fmt.Printf("Odds > 10.0:  all %3d, nomen %3d, prob %0.3f, odds %0.3f\n", tot, nom, p, odds)
 	tot, nom, p, odds = calcProb(sts.score1)
 	fmt.Printf("Odds > 1.0:   all %3d, nomen %3d, prob %0.3f, odds %0.3f\n", tot, nom, p, odds)

@@ -4,6 +4,7 @@ package reffindertest
 import (
 	"sync"
 
+	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/ent/reffinder"
@@ -20,10 +21,11 @@ type FakeRefFinder struct {
 	closeReturnsOnCall map[int]struct {
 		result1 error
 	}
-	ReferencesBHLStub        func(input.Input) (*namerefs.NameRefs, error)
+	ReferencesBHLStub        func(input.Input, config.Config) (*namerefs.NameRefs, error)
 	referencesBHLMutex       sync.RWMutex
 	referencesBHLArgsForCall []struct {
 		arg1 input.Input
+		arg2 config.Config
 	}
 	referencesBHLReturns struct {
 		result1 *namerefs.NameRefs
@@ -90,18 +92,19 @@ func (fake *FakeRefFinder) CloseReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeRefFinder) ReferencesBHL(arg1 input.Input) (*namerefs.NameRefs, error) {
+func (fake *FakeRefFinder) ReferencesBHL(arg1 input.Input, arg2 config.Config) (*namerefs.NameRefs, error) {
 	fake.referencesBHLMutex.Lock()
 	ret, specificReturn := fake.referencesBHLReturnsOnCall[len(fake.referencesBHLArgsForCall)]
 	fake.referencesBHLArgsForCall = append(fake.referencesBHLArgsForCall, struct {
 		arg1 input.Input
-	}{arg1})
+		arg2 config.Config
+	}{arg1, arg2})
 	stub := fake.ReferencesBHLStub
 	fakeReturns := fake.referencesBHLReturns
-	fake.recordInvocation("ReferencesBHL", []interface{}{arg1})
+	fake.recordInvocation("ReferencesBHL", []interface{}{arg1, arg2})
 	fake.referencesBHLMutex.Unlock()
 	if stub != nil {
-		return stub(arg1)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -115,17 +118,17 @@ func (fake *FakeRefFinder) ReferencesBHLCallCount() int {
 	return len(fake.referencesBHLArgsForCall)
 }
 
-func (fake *FakeRefFinder) ReferencesBHLCalls(stub func(input.Input) (*namerefs.NameRefs, error)) {
+func (fake *FakeRefFinder) ReferencesBHLCalls(stub func(input.Input, config.Config) (*namerefs.NameRefs, error)) {
 	fake.referencesBHLMutex.Lock()
 	defer fake.referencesBHLMutex.Unlock()
 	fake.ReferencesBHLStub = stub
 }
 
-func (fake *FakeRefFinder) ReferencesBHLArgsForCall(i int) input.Input {
+func (fake *FakeRefFinder) ReferencesBHLArgsForCall(i int) (input.Input, config.Config) {
 	fake.referencesBHLMutex.RLock()
 	defer fake.referencesBHLMutex.RUnlock()
 	argsForCall := fake.referencesBHLArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeRefFinder) ReferencesBHLReturns(result1 *namerefs.NameRefs, result2 error) {

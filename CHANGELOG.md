@@ -2,12 +2,16 @@
 
 ## Unreleased
 
+## [v0.1.0]
+
+- Add [#35]: Add RESTful API interface.
 - Add [#34]: enhance taxonomic statistics to all major taxons.
 - Add [#33]: use bhlindex dump files to import data.
 - Add [#31]: calculate taxonomic statistics for each item.
 - Add [#30]: use zerolog for logging.
 - Add [#29]: switch to BHLIndex RESTful api.
 - Add [#27]: Bayes training.
+- Fix: Restore functionality of all commands of [v0.0.9]
 
 ## [v0.0.9]
 
@@ -34,7 +38,7 @@
 - Add [#13]: refactor reference code to use interfaces.
 - Add [#12]: link nomenclatural events to BHL.
 - Add [#11]: use nomenclatural annotations in output and collection of reference
-            data.
+  data.
 - Fix [#19]: memory leak in postgres database.
 
 ## [v0.0.5]
@@ -45,7 +49,7 @@
 ## [v0.0.4]
 
 - Add [#10]: currently accepted canonical in output. Add option for
-            for a short output.
+  for a short output.
 - Add [#8]: option to return result without synonyms.
 - Add [#7]: add documentation.
 - Fix [#9]: close DB connections in the end of Refs methods.
@@ -53,9 +57,9 @@
 ## [v0.0.3]
 
 - Add [#5]: return titles, items, parts for a name or a list of names
-            in chronological order.
-            The application is usable at this poinit. So we make
-            the first binary release.
+  in chronological order.
+  The application is usable at this poinit. So we make
+  the first binary release.
 - Add [#6]: get part (paper) data out of `page_id`.
 
 ## [v0.0.2]
@@ -78,7 +82,6 @@ This document follows [changelog guidelines]
 [v0.0.3]: https://github.com/gnames/bhlnames/compare/v0.0.2...v0.0.3
 [v0.0.2]: https://github.com/gnames/bhlnames/compare/v0.0.1...v0.0.2
 [v0.0.1]: https://github.com/gnames/bhlnames/compare/v0.0.0...v0.0.1
-
 [#20]: https://github.com/gnames/bhlnames/issues/20
 [#19]: https://github.com/gnames/bhlnames/issues/19
 [#18]: https://github.com/gnames/bhlnames/issues/18
@@ -99,5 +102,4 @@ This document follows [changelog guidelines]
 [#3]: https://github.com/gnames/bhlnames/issues/3
 [#2]: https://github.com/gnames/bhlnames/issues/2
 [#1]: https://github.com/gnames/bhlnames/issues/1
-
 [changelog guidelines]: https://github.com/olivierlacan/keep-a-changelog

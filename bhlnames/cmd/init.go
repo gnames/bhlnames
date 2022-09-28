@@ -53,6 +53,7 @@ after enother. The resul will be identical to "bhlnames init".`,
 
 		builder := builderio.New(cfg)
 		bn := bhlnames.New(cfg, bhlnames.OptBuilder(builder))
+		defer bn.Close()
 
 		err = bn.Initialize()
 		if err != nil {

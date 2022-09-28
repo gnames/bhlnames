@@ -1,6 +1,7 @@
 package reffinder
 
 import (
+	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
 )
@@ -19,7 +20,10 @@ type RefFinder interface {
 	// with `parts` (a publication/article usually), we return one occurrence for
 	// every `part`, but also first occurrence of a name-string in the `item`, if
 	// it exists outside of all `parts`.
-	ReferencesBHL(data input.Input) (*namerefs.NameRefs, error)
+	ReferencesBHL(
+		inp input.Input,
+		cfg config.Config,
+	) (*namerefs.NameRefs, error)
 
 	// Close cleans up all the database, key-value store, files locks and blocks,
 	// releasing resources for the next usage of the program.

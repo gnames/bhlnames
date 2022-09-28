@@ -14,6 +14,7 @@ import (
 	"github.com/gnames/bhlnames/ent/reffinder"
 	"github.com/gnames/bhlnames/ent/score"
 	"github.com/gnames/bhlnames/ent/title_matcher"
+	"github.com/gnames/gnlib/ent/gnvers"
 	"github.com/gnames/gnparser"
 	"github.com/rs/zerolog/log"
 )
@@ -61,14 +62,14 @@ type bhlnames struct {
 }
 
 func New(cfg config.Config, opts ...Option) BHLnames {
-	bn := &bhlnames{cfg: cfg}
+	bn := bhlnames{cfg: cfg}
 	for i := range opts {
-		opts[i](bn)
+		opts[i](&bn)
 	}
-	return bn
+	return &bn
 }
 
-func (bn *bhlnames) Close() error {
+func (bn bhlnames) Close() error {
 	err := bn.RefFinder.Close()
 	if err == nil {
 		err = bn.TitleMatcher.Close()
@@ -76,7 +77,11 @@ func (bn *bhlnames) Close() error {
 	return err
 }
 
-func (bn *bhlnames) Initialize() error {
+func (bn bhlnames) Parser() gnparser.GNparser {
+	return bn.GNparser
+}
+
+func (bn bhlnames) Initialize() error {
 	var err error
 	if bn.cfg.WithRebuild {
 		bn.ResetData()
@@ -89,11 +94,11 @@ func (bn *bhlnames) Initialize() error {
 	return err
 }
 
-func (bn *bhlnames) NameRefs(data input.Input) (*namerefs.NameRefs, error) {
-	return bn.ReferencesBHL(data)
+func (bn bhlnames) NameRefs(inp input.Input) (*namerefs.NameRefs, error) {
+	return bn.ReferencesBHL(inp, bn.cfg)
 }
 
-func (bn *bhlnames) NameRefsStream(
+func (bn bhlnames) NameRefsStream(
 	chIn <-chan input.Input,
 	chOut chan<- *namerefs.NameRefs,
 ) {
@@ -107,14 +112,14 @@ func (bn *bhlnames) NameRefsStream(
 	close(chOut)
 }
 
-func (bn *bhlnames) nameRefsWorker(
+func (bn bhlnames) nameRefsWorker(
 	chIn <-chan input.Input,
 	chOut chan<- *namerefs.NameRefs,
 	wg *sync.WaitGroup,
 ) {
 	defer wg.Done()
 	for inp := range chIn {
-		nameRefs, err := bn.ReferencesBHL(inp)
+		nameRefs, err := bn.ReferencesBHL(inp, bn.cfg)
 		if err != nil {
 			err = fmt.Errorf("bhlnames.nameRefsWorker: %w", err)
 			log.Warn().Err(err)
@@ -123,10 +128,10 @@ func (bn *bhlnames) nameRefsWorker(
 	}
 }
 
-func (bn *bhlnames) NomenRefs(
+func (bn bhlnames) NomenRefs(
 	inp input.Input,
 ) (*namerefs.NameRefs, error) {
-	nrs, err := bn.ReferencesBHL(inp)
+	nrs, err := bn.ReferencesBHL(inp, bn.cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +139,7 @@ func (bn *bhlnames) NomenRefs(
 	return nrs, err
 }
 
-func (bn *bhlnames) NomenRefsStream(
+func (bn bhlnames) NomenRefsStream(
 	chIn <-chan input.Input,
 	chOut chan<- *namerefs.NameRefs,
 ) {
@@ -148,14 +153,14 @@ func (bn *bhlnames) NomenRefsStream(
 	close(chOut)
 }
 
-func (bn *bhlnames) nomenRefsWorker(
+func (bn bhlnames) nomenRefsWorker(
 	chIn <-chan input.Input,
 	chOut chan<- *namerefs.NameRefs,
 	wg *sync.WaitGroup,
 ) {
 	defer wg.Done()
-	for data := range chIn {
-		nr, err := bn.ReferencesBHL(data)
+	for inp := range chIn {
+		nr, err := bn.ReferencesBHL(inp, bn.cfg)
 		if err != nil {
 			err = fmt.Errorf("bhlnames.nomenRefsWorker: %#w", err)
 			log.Warn().Err(err)
@@ -169,7 +174,7 @@ func (bn *bhlnames) nomenRefsWorker(
 	}
 }
 
-func (bn *bhlnames) sortByScore(nr *namerefs.NameRefs) error {
+func (bn bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 	// Year has precedence over others
 	prec := map[score.ScoreType]int{
 		score.RefVolume: 0,
@@ -209,6 +214,20 @@ func (bn *bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 	return nil
 }
 
-func (bn *bhlnames) Config() config.Config {
+func (bn bhlnames) Config() config.Config {
 	return bn.cfg
+}
+
+func (bn bhlnames) ChangeConfig(opts ...config.Option) BHLnames {
+	for _, o := range opts {
+		o(&bn.cfg)
+	}
+	return bn
+}
+
+func (bn bhlnames) GetVersion() gnvers.Version {
+	return gnvers.Version{
+		Version: Version,
+		Build:   Build,
+	}
 }

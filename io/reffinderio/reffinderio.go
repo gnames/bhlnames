@@ -22,9 +22,16 @@ import (
 // pre-populated PostgreSQL database and Badger key-value store to find
 // BHL references where a scientific name-string appears.
 type reffinderio struct {
-	// Config contains general configuration of BHLnames. Some of the config
-	// settings modify behavior of algorithms to find BHL references.
-	config.Config
+	// withSynonyms is true if searches should be augmented with
+	// synonyms of a name.
+	withSynonyms bool
+
+	// sortDesc is a flag that tells to sort data in descendent order.
+	sortDesc bool
+
+	// withShortenedOutput is a flag to return output with a summary only,
+	// skipping details about found references.
+	withShortenedOutput bool
 
 	// KV contains a key-value Badger store where data about known
 	// publications is kept.
@@ -42,8 +49,7 @@ type reffinderio struct {
 
 func New(cfg config.Config) reffinder.RefFinder {
 	log.Info().Msgf("Connecting to PostgreSQL database %s at %s", cfg.DbDatabase, cfg.DbHost)
-	res := reffinderio{
-		Config: cfg,
+	res := &reffinderio{
 		KV:     db.InitKeyVal(cfg.PartDir),
 		DB:     db.NewDB(cfg),
 		GormDB: db.NewDbGorm(cfg),
@@ -51,12 +57,18 @@ func New(cfg config.Config) reffinder.RefFinder {
 	return res
 }
 
-func (rf reffinderio) ReferencesBHL(data input.Input) (*namerefs.NameRefs, error) {
+func (rf reffinderio) ReferencesBHL(
+	inp input.Input,
+	cfg config.Config) (*namerefs.NameRefs, error) {
 	var err error
-	// gets empty *namerefs.NameRefs with current_canonical
-	res := rf.emptyNameRefs(data)
+	rf.withSynonyms = cfg.WithSynonyms
+	rf.sortDesc = cfg.SortDesc
+	rf.withShortenedOutput = cfg.WithShortenedOutput
 
-	res.Canonical, err = fullCanonical(data.NameString)
+	// gets empty *namerefs.NameRefs with current_canonical
+	res := rf.emptyNameRefs(inp)
+
+	res.Canonical, err = fullCanonical(inp.NameString)
 	if err != nil {
 		return res, err
 	}
@@ -66,10 +78,10 @@ func (rf reffinderio) ReferencesBHL(data input.Input) (*namerefs.NameRefs, error
 	}
 
 	var rows []*row
-	if !rf.WithSynonyms {
-		rows = rf.nameOnlyOccurrences(res)
-	} else {
+	if rf.withSynonyms {
 		rows = rf.taxonOccurrences(res)
+	} else {
+		rows = rf.nameOnlyOccurrences(res)
 	}
 
 	res.ImagesURL = imagesUrl(res.CurrentCanonical)
@@ -94,7 +106,7 @@ func (rf reffinderio) emptyNameRefs(data input.Input) *namerefs.NameRefs {
 	res := &namerefs.NameRefs{
 		Input:        data,
 		References:   make([]*refbhl.ReferenceBHL, 0),
-		WithSynonyms: rf.WithSynonyms,
+		WithSynonyms: rf.withSynonyms,
 	}
 	return res
 }
