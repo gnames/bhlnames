@@ -11,13 +11,13 @@ require (
 	github.com/gnames/bayes v0.5.0
 	github.com/gnames/gner v0.1.4
 	github.com/gnames/gnfmt v0.3.0
-	github.com/gnames/gnlib v0.11.0
+	github.com/gnames/gnlib v0.14.0
 	github.com/gnames/gnparser v1.6.7
 	github.com/gnames/gnstats v0.2.1
 	github.com/gnames/gnsys v0.2.2
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/gorm v1.9.16
-	github.com/labstack/echo/v4 v4.7.2
+	github.com/labstack/echo/v4 v4.9.0
 	github.com/lib/pq v1.10.7
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.5.0
 	github.com/rs/zerolog v1.28.0
@@ -26,7 +26,7 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
-	golang.org/x/sync v0.0.0-20220907140024-f12130a52804
+	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 	golang.org/x/text v0.3.7
 )
 

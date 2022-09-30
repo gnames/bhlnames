@@ -1,6 +1,6 @@
 module github.com/gnames/bhlnames/tools/training
 
-go 1.18
+go 1.19
 
 require (
 	github.com/gnames/bayes v0.4.0
