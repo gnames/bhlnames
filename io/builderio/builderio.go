@@ -89,32 +89,32 @@ func (b builderio) ImportData() error {
 		err = b.extract(b.DownloadCoLFile)
 	}
 
-	// Reset Database and Import Data
-	// if err == nil {
-	// 	b.resetDB()
-	// 	err = b.importDataBHL()
-	// 	if err != nil {
-	// 		err = fmt.Errorf("importDataBHL: %w", err)
-	// 	}
-	// }
-	// if err == nil {
-	// 	err = n.ImportNames()
-	// 	if err != nil {
-	// 		err = fmt.Errorf("ImportNames: %w", err)
-	// 	}
-	// }
-	// if err == nil {
-	// 	err = n.PageFilesToIDs()
-	// 	if err != nil {
-	// 		err = fmt.Errorf("PageFilesToIDs: %w", err)
-	// 	}
-	// }
-	// if err == nil {
-	// 	err = n.ImportOccurrences()
-	// 	if err != nil {
-	// 		err = fmt.Errorf("ImportOccurrences: %w", err)
-	// 	}
-	// }
+	Reset Database and Import Data
+	if err == nil {
+		b.resetDB()
+		err = b.importDataBHL()
+		if err != nil {
+			err = fmt.Errorf("importDataBHL: %w", err)
+		}
+	}
+	if err == nil {
+		err = n.ImportNames()
+		if err != nil {
+			err = fmt.Errorf("ImportNames: %w", err)
+		}
+	}
+	if err == nil {
+		err = n.PageFilesToIDs()
+		if err != nil {
+			err = fmt.Errorf("PageFilesToIDs: %w", err)
+		}
+	}
+	if err == nil {
+		err = n.ImportOccurrences()
+		if err != nil {
+			err = fmt.Errorf("ImportOccurrences: %w", err)
+		}
+	}
 	if err == nil {
 		err = n.ImportCoLRefs()
 		if err != nil {
