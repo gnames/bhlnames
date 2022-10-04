@@ -17,10 +17,14 @@ type Config struct {
 	// names occurrences with BHL pages.
 	BHLDumpURL string
 
-	// BHLNamesURL provides URL to BHLindex RESTful API. This API provides
-	// names occurrences data. Together with data from BHL dumps it allows
+	// BHLNamesURL provides URL to BHLindex Data. This data provides names
+	// occurrences and verifications. Together with data from BHL dumps it allows
 	// to connect a name to pages in BHL.
 	BHLNamesURL string
+
+	// CoLDataURL provides a URL to the Catalogue of Life data in Darwin Core
+	// format.
+	CoLDataURL string
 
 	// DbHost provides an IP or host name where PostgreSQL is located. The
 	// database is used as the major data store for the project.
@@ -82,6 +86,10 @@ type Config struct {
 	// stored.
 	DownloadNamesFile string
 
+	// DownloadCoLFile provides the path where CoL DwCA compressed file will be
+	// stored.
+	DownloadCoLFile string
+
 	// DownloadDir is the directory where  BHLnames extracts data from
 	// BHL dump.
 	DownloadDir string
@@ -129,6 +137,12 @@ func OptBHLDumpURL(s string) Option {
 func OptBHLNamesURL(s string) Option {
 	return func(cfg *Config) {
 		cfg.BHLNamesURL = s
+	}
+}
+
+func OptCoLDataURL(s string) Option {
+	return func(cfg *Config) {
+		cfg.CoLDataURL = s
 	}
 }
 
@@ -236,6 +250,7 @@ func New(opts ...Option) Config {
 	cfg := Config{
 		BHLDumpURL:          "http://opendata.globalnames.org/dumps/bhl-data.zip",
 		BHLNamesURL:         "http://opendata.globalnames.org/dumps/bhl-col.zip",
+		CoLDataURL:          "https://api.checklistbank.org/dataset/3LR/export?format=dwca",
 		InputDir:            InputDir(),
 		Delimiter:           ',',
 		DbHost:              "0.0.0.0",
@@ -257,6 +272,7 @@ func New(opts ...Option) Config {
 
 	cfg.DownloadBHLFile = filepath.Join(cfg.InputDir, "bhl-data.zip")
 	cfg.DownloadNamesFile = filepath.Join(cfg.InputDir, "bhl-names.zip")
+	cfg.DownloadCoLFile = filepath.Join(cfg.InputDir, "col.zip")
 	cfg.DownloadDir = filepath.Join(cfg.InputDir, "Data")
 	cfg.PageDir = filepath.Join(cfg.InputDir, "page")
 	cfg.PageFileDir = filepath.Join(cfg.InputDir, "page-file")

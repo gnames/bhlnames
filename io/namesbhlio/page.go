@@ -46,12 +46,12 @@ func (n namesbhlio) PageFilesToIDs() (err error) {
 
 	err = n.loadPages(chIn)
 	if err != nil {
-		return fmt.Errorf("PageFilesToIDs: %w", err)
+		return err
 	}
 	close(chIn)
 
 	if err = eg.Wait(); err != nil {
-		return fmt.Errorf("PageFilesToIDs: %w", err)
+		return err
 	}
 	return nil
 }
@@ -65,6 +65,7 @@ func (n namesbhlio) loadPages(chIn chan<- item) error {
 	defer f.Close()
 	r := csv.NewReader(f)
 
+	// skip headers
 	_, err = r.Read()
 	if err != nil {
 		return err
@@ -78,7 +79,6 @@ func (n namesbhlio) loadPages(chIn chan<- item) error {
 			break
 		}
 		if err != nil {
-			log.Fatal().Err(err).Msg("loadPages:")
 			return err
 		}
 
@@ -104,6 +104,7 @@ func (n namesbhlio) loadPages(chIn chan<- item) error {
 }
 
 func (n namesbhlio) savePageMaps(kv *badger.DB, chIn <-chan item) error {
+	var err error
 	res := make(map[string]int)
 	var count int
 	for itm := range chIn {
@@ -121,22 +122,18 @@ func (n namesbhlio) savePageMaps(kv *badger.DB, chIn <-chan item) error {
 			}
 		}
 		if count == 500 {
-			err := savePageIDs(kv, res)
+			err = savePageIDs(kv, res)
 			if err != nil {
-				err = fmt.Errorf("savePageMaps: %w", err)
-				log.Fatal().Err(err).Msg("")
-				return err
+				return fmt.Errorf("savePageIDs: %w", err)
 			}
 			res = make(map[string]int)
 			count = 0
 		}
 	}
 
-	err := savePageIDs(kv, res)
+	err = savePageIDs(kv, res)
 	if err != nil {
-		err = fmt.Errorf("savePageMaps: %w", err)
-		log.Fatal().Err(err).Msg("")
-		return err
+		return fmt.Errorf("savePageIDs: %w", err)
 	}
 	return nil
 }
@@ -151,20 +148,16 @@ func savePageIDs(kv *badger.DB, ids map[string]int) error {
 		if err = kvTxn.Set(key, val); err == badger.ErrTxnTooBig {
 			err = kvTxn.Commit()
 			if err != nil {
-				return fmt.Errorf("savePageIDs: %w", err)
+				return err
 			}
 
 			kvTxn = kv.NewTransaction(true)
 			err = kvTxn.Set(key, val)
 			if err != nil {
-				return fmt.Errorf("savePageIDs: %w", err)
+				return err
 			}
 		}
 	}
 
-	err = kvTxn.Commit()
-	if err != nil {
-		return fmt.Errorf("savePageIDs: %w", err)
-	}
-	return nil
+	return kvTxn.Commit()
 }

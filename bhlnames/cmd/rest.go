@@ -44,10 +44,8 @@ var restCmd = &cobra.Command{
 		}
 		cfg := config.New(opts...)
 		rf := reffinderio.New(cfg)
-		defer rf.Close()
 
 		tm := titlemio.New(cfg)
-		defer tm.Close()
 
 		gnp := gnparser.New(gnparser.NewConfig())
 

@@ -35,6 +35,7 @@ func (b builderio) migrate() {
 		&db.Part{},
 		&db.NameString{},
 		&db.NameOccurrence{},
+		&db.NomenRef{},
 	)
 	err := db.Truncate(b.DB, []string{"items", "pages", "parts"})
 	if err != nil {

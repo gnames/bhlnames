@@ -13,14 +13,20 @@ import (
 )
 
 var files = map[string]struct{}{
-	"Data/doi.txt":    {},
-	"Data/item.txt":   {},
-	"Data/page.txt":   {},
-	"Data/part.txt":   {},
-	"Data/title.txt":  {},
+	// BHL data files
+	"Data/doi.txt":   {},
+	"Data/item.txt":  {},
+	"Data/page.txt":  {},
+	"Data/part.txt":  {},
+	"Data/title.txt": {},
+
+	// BHLIndex files
 	"occurrences.csv": {},
 	"names.csv":       {},
 	"pages.csv":       {},
+
+	// CoL file
+	"Taxon.tsv": {},
 }
 
 func (b builderio) extract(path string) error {

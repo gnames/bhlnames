@@ -1,6 +1,7 @@
 package namesbhlio
 
 import (
+	"bufio"
 	"database/sql"
 	"encoding/csv"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dgraph-io/badger/v2"
@@ -23,6 +25,7 @@ import (
 const (
 	occurBatchSize = 100_000
 	nameBatchSize  = 50_000
+	refsBatchSize  = 50_000
 )
 
 type namesbhlio struct {
@@ -42,6 +45,79 @@ func New(cfg config.Config, db *sql.DB, gormdb *gorm.DB) namebhl.NameBHL {
 	return res
 }
 
+func (n namesbhlio) ImportCoLRefs() error {
+	log.Info().Msg("Importing nomenclatural references from CoL.")
+	log.Info().Msg("Truncating data from nomen_refs table.")
+	err := db.Truncate(n.db, []string{"nomen_refs"})
+	if err != nil {
+		return err
+	}
+
+	g := errgroup.Group{}
+
+	chRefs := make(chan []db.NomenRef)
+
+	g.Go(func() error {
+		err = n.saveNomenRefs(chRefs)
+		if err != nil {
+			err = fmt.Errorf("saveNomenRefs: %w", err)
+		}
+		return err
+	})
+
+	err = n.loadNomenRefs(chRefs)
+	if err != nil {
+		return fmt.Errorf("loadNomenRefs: %w", err)
+	}
+	close(chRefs)
+
+	return g.Wait()
+}
+
+const (
+	colTaxonIDF = 0
+	colRefF     = 17
+)
+
+func (n namesbhlio) loadNomenRefs(chRefs chan<- []db.NomenRef) error {
+	path := filepath.Join(n.cfg.DownloadDir, "Taxon.tsv")
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	scan := bufio.NewScanner(f)
+
+	// some lines are too long for default 64k buffer
+	maxCapacity := 300_000
+	buf := make([]byte, maxCapacity)
+	scan.Buffer(buf, maxCapacity)
+
+	// skip headers
+	scan.Scan()
+
+	chunk := make([]db.NomenRef, refsBatchSize)
+	var count int
+
+	for scan.Scan() {
+		row := scan.Text()
+		fields := strings.Split(row, "\t")
+		if count == nameBatchSize {
+			chRefs <- chunk
+			chunk = make([]db.NomenRef, refsBatchSize)
+			count = 0
+		}
+		chunk[count] = db.NomenRef{
+			RecordID: fields[colTaxonIDF],
+			Ref:      fields[colRefF],
+		}
+		count++
+	}
+
+	chRefs <- chunk[0:count]
+	return scan.Err()
+}
+
 // ImportOccurrences transfers occurrences data from bhlindex's
 // occurrences.csv dump file to the database.
 func (n namesbhlio) ImportOccurrences() error {
@@ -49,7 +125,7 @@ func (n namesbhlio) ImportOccurrences() error {
 	log.Info().Msg("Truncating data from name_occurrences table.")
 	err := db.Truncate(n.db, []string{"name_occurrences"})
 	if err != nil {
-		return fmt.Errorf("ImportOccurrences: %w", err)
+		return err
 	}
 
 	g := errgroup.Group{}
@@ -62,13 +138,13 @@ func (n namesbhlio) ImportOccurrences() error {
 
 	err = n.loadOccurrences(chOccur)
 	if err != nil {
-		return fmt.Errorf("ImportOccurrences: %w", err)
+		return err
 	}
 	close(chOccur)
 
 	err = g.Wait()
 	if err != nil {
-		return fmt.Errorf("ImportOccurrences: %w", err)
+		return err
 	}
 	return nil
 }
@@ -101,14 +177,12 @@ func (n namesbhlio) loadOccurrences(chIn chan<- []db.NameOccurrence) error {
 			break
 		}
 		if err != nil {
-			log.Fatal().Err(err).Msg("loadOccurrences:")
 			return err
 		}
 		if count == occurBatchSize {
 			occurs, err = convertToOccurs(kv, chunk)
 			if err != nil {
-				log.Fatal().Err(err).Msg("loadOccurrences:")
-				return err
+				return fmt.Errorf("convertToOccurs: %w", err)
 			}
 			chIn <- occurs
 			chunk = make([][]string, occurBatchSize)
@@ -119,8 +193,7 @@ func (n namesbhlio) loadOccurrences(chIn chan<- []db.NameOccurrence) error {
 	}
 	occurs, err = convertToOccurs(kv, chunk[0:count])
 	if err != nil {
-		log.Fatal().Err(err).Msg("loadOccurrences:")
-		return err
+		return fmt.Errorf("convertToOccurs: %w", err)
 	}
 	chIn <- occurs
 	return nil
@@ -149,19 +222,16 @@ func convertToOccurs(kv *badger.DB, data [][]string) ([]db.NameOccurrence, error
 		var start, end int
 		start, err = strconv.Atoi(v[occStartF])
 		if err != nil {
-			err = fmt.Errorf("convertToOccurs: %w", err)
 			return nil, err
 		}
 		end, err = strconv.Atoi(v[occEndF])
 		if err != nil {
-			err = fmt.Errorf("convertToOccurs: %w", err)
 			return nil, err
 		}
 		var odds float64
 		if v[occOddsLog10F] != "" {
 			odds, err = strconv.ParseFloat(v[occOddsLog10F], 64)
 			if err != nil {
-				err = fmt.Errorf("convertToOccurs: %w", err)
 				return nil, err
 			}
 		}
@@ -179,7 +249,6 @@ func convertToOccurs(kv *badger.DB, data [][]string) ([]db.NameOccurrence, error
 
 	ids, err := db.GetValues(kv, keys)
 	if err != nil {
-		err = fmt.Errorf("convertToOccurs: %w", err)
 		return nil, err
 	}
 
@@ -187,7 +256,6 @@ func convertToOccurs(kv *badger.DB, data [][]string) ([]db.NameOccurrence, error
 		if bs := ids[keys[i]]; len(bs) > 0 {
 			id, err := strconv.Atoi(string(bs))
 			if err != nil {
-				err = fmt.Errorf("convertToOccurs: %w", err)
 				return nil, err
 			}
 			resPrelim[i].PageID = uint(id)
@@ -205,7 +273,7 @@ func (n namesbhlio) ImportNames() error {
 
 	err := db.Truncate(n.db, []string{"name_strings"})
 	if err != nil {
-		return fmt.Errorf("importNames: %w", err)
+		return err
 	}
 
 	chIn := make(chan [][]string)
@@ -213,22 +281,27 @@ func (n namesbhlio) ImportNames() error {
 	egDB := &errgroup.Group{}
 
 	eg.Go(func() error {
-		return n.loadNames(chIn)
+		err = n.loadNames(chIn)
+		if err != nil {
+			err = fmt.Errorf("loadNames: %w", err)
+		}
+		return err
 	})
 
 	egDB.Go(func() error {
-		return n.saveNames(chIn)
+		err = n.saveNames(chIn)
+		if err != nil {
+			err = fmt.Errorf("saveNames: %w", err)
+		}
+		return err
 	})
 
 	if err = eg.Wait(); err != nil {
-		return fmt.Errorf("importNames: %w", err)
+		return err
 	}
 	close(chIn)
 
-	if err = egDB.Wait(); err != nil {
-		return fmt.Errorf("importNames: %w", err)
-	}
-	return err
+	return egDB.Wait()
 }
 
 func (n namesbhlio) loadNames(chIn chan<- [][]string) error {
@@ -254,7 +327,6 @@ func (n namesbhlio) loadNames(chIn chan<- [][]string) error {
 			break
 		}
 		if err != nil {
-			log.Fatal().Err(err).Msg("loadNames:")
 			return err
 		}
 		if count == nameBatchSize {

@@ -70,8 +70,11 @@ func New(cfg config.Config, opts ...Option) BHLnames {
 }
 
 func (bn bhlnames) Close() error {
-	err := bn.RefFinder.Close()
-	if err == nil {
+	var err error
+	if bn.RefFinder != nil {
+		err = bn.RefFinder.Close()
+	}
+	if err == nil && bn.TitleMatcher != nil {
 		err = bn.TitleMatcher.Close()
 	}
 	return err
@@ -90,8 +93,11 @@ func (bn bhlnames) Initialize() error {
 	if err == nil {
 		err = bn.CalculateTxStats()
 	}
-	err = fmt.Errorf("Initialize: %w", err)
-	return err
+	if err != nil {
+		err = fmt.Errorf("Initialize: %w", err)
+		return err
+	}
+	return nil
 }
 
 func (bn bhlnames) NameRefs(inp input.Input) (*namerefs.NameRefs, error) {

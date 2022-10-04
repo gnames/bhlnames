@@ -66,11 +66,13 @@ func (b builderio) ResetData() {
 func (b builderio) ImportData() error {
 	n := namesbhlio.New(b.Config, b.DB, b.GormDB)
 
+	// Download and Extract
 	log.Info().Msg("Downloading database dump from BHL.")
 	err := b.download(b.DownloadBHLFile, b.BHLDumpURL)
 	if err == nil {
 		err = b.extract(b.DownloadBHLFile)
 	}
+
 	if err == nil {
 		log.Info().Msg("Downloading names data from bhlindex.")
 		err = b.download(b.DownloadNamesFile, b.BHLNamesURL)
@@ -78,18 +80,46 @@ func (b builderio) ImportData() error {
 	if err == nil {
 		err = b.extract(b.DownloadNamesFile)
 	}
+
 	if err == nil {
-		b.resetDB()
-		err = b.importDataBHL()
+		log.Info().Msg("Downloading CoL DwCA data.")
+		err = b.download(b.DownloadCoLFile, b.CoLDataURL)
 	}
 	if err == nil {
-		err = n.ImportNames()
+		err = b.extract(b.DownloadCoLFile)
 	}
+
+	// Reset Database and Import Data
+	// if err == nil {
+	// 	b.resetDB()
+	// 	err = b.importDataBHL()
+	// 	if err != nil {
+	// 		err = fmt.Errorf("importDataBHL: %w", err)
+	// 	}
+	// }
+	// if err == nil {
+	// 	err = n.ImportNames()
+	// 	if err != nil {
+	// 		err = fmt.Errorf("ImportNames: %w", err)
+	// 	}
+	// }
+	// if err == nil {
+	// 	err = n.PageFilesToIDs()
+	// 	if err != nil {
+	// 		err = fmt.Errorf("PageFilesToIDs: %w", err)
+	// 	}
+	// }
+	// if err == nil {
+	// 	err = n.ImportOccurrences()
+	// 	if err != nil {
+	// 		err = fmt.Errorf("ImportOccurrences: %w", err)
+	// 	}
+	// }
 	if err == nil {
-		err = n.PageFilesToIDs()
-	}
-	if err == nil {
-		err = n.ImportOccurrences()
+		err = n.ImportCoLRefs()
+		if err != nil {
+			err = fmt.Errorf("ImportColRefs: %w", err)
+		}
 	}
 	return err
 }

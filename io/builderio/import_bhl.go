@@ -1,7 +1,6 @@
 package builderio
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -84,10 +83,6 @@ func (b builderio) importDataBHL() error {
 	if err == nil {
 		ts := newTitleStore(b.Config, titlesMap)
 		return ts.setup()
-	}
-
-	if err != nil {
-		return fmt.Errorf("import BHL data: %w", err)
 	}
 
 	return nil

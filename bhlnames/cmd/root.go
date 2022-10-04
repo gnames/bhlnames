@@ -50,6 +50,7 @@ var (
 type fConfig struct {
 	BHLDumpURL  string
 	BHLNamesURL string
+	CoLDataURL  string
 	InputDir    string
 	DbHost      string
 	DbUser      string
@@ -159,6 +160,9 @@ func getOpts() []config.Option {
 	}
 	if cfg.BHLNamesURL != "" {
 		opts = append(opts, config.OptBHLNamesURL(cfg.BHLNamesURL))
+	}
+	if cfg.CoLDataURL != "" {
+		opts = append(opts, config.OptCoLDataURL(cfg.CoLDataURL))
 	}
 	if cfg.InputDir != "" {
 		opts = append(opts, config.OptInputDir(cfg.InputDir))

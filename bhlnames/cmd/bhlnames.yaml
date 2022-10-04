@@ -4,14 +4,19 @@
 
 ## BHL provides its data in a zip file located at the default URL shown below.
 #
-# original (most often updated, might be incompatible)
+## original (most often updated, might be incompatible)
 # BHLDumpURL: https://www.biodiversitylibrary.org/data/data.zip
 #
-# copy made at the same time as bhlindex dump (default).
+## copy made at the same time as bhlindex dump (default).
 # BHLDumpURL: http://opendata.globalnames.org/dumps/bhl-data.zip
 
 ## BHL name index data need to be downloaded and combined with BHL dump data.
 # BHLNamesURL: http://opendata.globalnames.org/dumps/bhl-col.zip
+
+## The Catalogue of Life Darwin Core Archive provides nomenclatural references
+# to scientific names.
+#
+#  CoLDataURL: https://api.checklistbank.org/dataset/3LR/export?format=dwca
 
 ## Postgresql host for assembling data from BHL and BHL name index.
 ## Change it to IP address/Host of a database server.

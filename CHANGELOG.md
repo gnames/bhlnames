@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+## [v0.1.1]
+
+- Add [#38]: nomenclatural refernces from CoL.
+
 ## [v0.1.0]
 
-- Add [#35]: Add RESTful API interface.
+- Add [#35]: RESTful API interface.
 - Add [#34]: enhance taxonomic statistics to all major taxons.
 - Add [#33]: use bhlindex dump files to import data.
 - Add [#31]: calculate taxonomic statistics for each item.

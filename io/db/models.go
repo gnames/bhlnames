@@ -236,7 +236,7 @@ type NameString struct {
 	Name string `gorm:"type:varchar(255)"`
 
 	// RecordID is the Catalogue of Life identifier of a matched taxon.
-	RecordID string `gorm:"type:varchar(100)"`
+	RecordID string `gorm:"type:varchar(100);index:record_id"`
 
 	// MatchType describes a resulting kind of a name-string match.
 	// The following match types are possible:
@@ -340,4 +340,12 @@ type NameOccurrence struct {
 	// AnnotNomen is a normalized nomenclatural annotation detected in a vicinity
 	// of the occurrence. Examples of annotations are `NO_ANNOT`, `SP_NOV` etc.
 	AnnotNomen string `gorm:"type:varchar(50);index:annot"`
+}
+
+type NomenRef struct {
+	// RecordID is the Catalogue of Life identifier of a name-string.
+	RecordID string `gorm:"type:varchar(100);primary_key;auto_increment:false"`
+
+	// Ref is a nomenclatural reference from Catalogue of Life.
+	Ref string
 }
