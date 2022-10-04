@@ -89,7 +89,7 @@ func (b builderio) ImportData() error {
 		err = b.extract(b.DownloadCoLFile)
 	}
 
-	Reset Database and Import Data
+	// Reset Database and Import Data
 	if err == nil {
 		b.resetDB()
 		err = b.importDataBHL()
