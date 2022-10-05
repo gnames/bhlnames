@@ -5,5 +5,4 @@ type NameBHL interface {
 	PageFilesToIDs() error
 	ImportNames() error
 	ImportOccurrences() error
-	ImportCoLRefs() error
 }

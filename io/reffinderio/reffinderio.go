@@ -33,15 +33,15 @@ type reffinderio struct {
 	// skipping details about found references.
 	withShortenedOutput bool
 
-	// KV contains a key-value Badger store where data about known
+	// kvDB contains a key-value Badger store where data about known
 	// publications is kept.
-	KV *badger.DB
+	kvDB *badger.DB
 
-	// DB is a PostgreSQL connection for plain SQL-queries.
-	DB *sql.DB
+	// db is a PostgreSQL connection for plain SQL-queries.
+	db *sql.DB
 
-	// GormDB is a PostgreSQL connection for ORM-queries.
-	GormDB *gorm.DB
+	// gormDB is a PostgreSQL connection for ORM-queries.
+	gormDB *gorm.DB
 
 	// AC is AhoCorasick object for matching references to BHL titles.
 	AC aho_corasick.AhoCorasick
@@ -50,9 +50,9 @@ type reffinderio struct {
 func New(cfg config.Config) reffinder.RefFinder {
 	log.Info().Msgf("Connecting to PostgreSQL database %s at %s", cfg.DbDatabase, cfg.DbHost)
 	res := &reffinderio{
-		KV:     db.InitKeyVal(cfg.PartDir),
-		DB:     db.NewDB(cfg),
-		GormDB: db.NewDbGorm(cfg),
+		kvDB:   db.InitKeyVal(cfg.PartDir),
+		db:     db.NewDB(cfg),
+		gormDB: db.NewDbGorm(cfg),
 	}
 	return res
 }
@@ -90,9 +90,9 @@ func (rf reffinderio) ReferencesBHL(
 }
 
 func (rf reffinderio) Close() error {
-	err1 := rf.DB.Close()
-	err2 := rf.GormDB.Close()
-	err3 := rf.KV.Close()
+	err1 := rf.db.Close()
+	err2 := rf.gormDB.Close()
+	err3 := rf.kvDB.Close()
 
 	for _, err := range []error{err1, err2, err3} {
 		if err != nil {

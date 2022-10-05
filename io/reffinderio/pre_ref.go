@@ -15,7 +15,7 @@ import (
 // updateOutput makes sure that every item part and title get only one unique
 // name to avoid information overload.
 func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*row) {
-	kv := l.KV
+	kv := l.kvDB
 	o.ReferenceNumber = len(raw)
 	partsMap := make(map[string]*preReference)
 	itemsMap := make(map[string]*preReference)
@@ -42,18 +42,18 @@ func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*row) {
 			id := genMapID(partID, v.matchedCanonical)
 			part := &db.Part{}
 			if ref, ok := partsMap[id]; !ok {
-				l.GormDB.Where("id = ?", partID).First(part)
+				l.gormDB.Where("id = ?", partID).First(part)
 				partsMap[id] = &preReference{item: v, part: part}
 			} else {
 				// prefer annotation
 				if ref.item.annotation == "NO_ANNOT" &&
 					v.annotation != "NO_ANNOT" {
-					l.GormDB.Where("id = ?", partID).First(part)
+					l.gormDB.Where("id = ?", partID).First(part)
 					partsMap[id] = &preReference{item: v, part: part}
 				}
 				// prefer a parsed page number
 				if ref.item.pageNum == 0 && v.pageNum > 0 {
-					l.GormDB.Where("id = ?", partID).First(part)
+					l.gormDB.Where("id = ?", partID).First(part)
 					partsMap[id] = &preReference{item: v, part: part}
 				}
 			}

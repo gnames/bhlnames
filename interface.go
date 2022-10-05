@@ -19,6 +19,7 @@ type BHLnames interface {
 	Parser() gnparser.GNparser
 
 	Initialize() error
+	InitializeCol() error
 
 	NameRefs(data input.Input) (*namerefs.NameRefs, error)
 	NameRefsStream(chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)

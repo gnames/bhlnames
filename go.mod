@@ -24,6 +24,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.11.0
 	github.com/sfgrp/lognsq v0.1.1
 	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra-cli v1.3.0
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0

@@ -1,7 +1,6 @@
 package namesbhlio
 
 import (
-	"bufio"
 	"database/sql"
 	"encoding/csv"
 	"fmt"
@@ -10,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/dgraph-io/badger/v2"
@@ -25,7 +23,6 @@ import (
 const (
 	occurBatchSize = 100_000
 	nameBatchSize  = 50_000
-	refsBatchSize  = 50_000
 )
 
 type namesbhlio struct {
@@ -43,79 +40,6 @@ func New(cfg config.Config, db *sql.DB, gormdb *gorm.DB) namebhl.NameBHL {
 	client := &http.Client{Timeout: 10 * time.Second, Transport: tr}
 	res := namesbhlio{cfg: cfg, client: client, db: db, gormDB: gormdb}
 	return res
-}
-
-func (n namesbhlio) ImportCoLRefs() error {
-	log.Info().Msg("Importing nomenclatural references from CoL.")
-	log.Info().Msg("Truncating data from nomen_refs table.")
-	err := db.Truncate(n.db, []string{"nomen_refs"})
-	if err != nil {
-		return err
-	}
-
-	g := errgroup.Group{}
-
-	chRefs := make(chan []db.NomenRef)
-
-	g.Go(func() error {
-		err = n.saveNomenRefs(chRefs)
-		if err != nil {
-			err = fmt.Errorf("saveNomenRefs: %w", err)
-		}
-		return err
-	})
-
-	err = n.loadNomenRefs(chRefs)
-	if err != nil {
-		return fmt.Errorf("loadNomenRefs: %w", err)
-	}
-	close(chRefs)
-
-	return g.Wait()
-}
-
-const (
-	colTaxonIDF = 0
-	colRefF     = 17
-)
-
-func (n namesbhlio) loadNomenRefs(chRefs chan<- []db.NomenRef) error {
-	path := filepath.Join(n.cfg.DownloadDir, "Taxon.tsv")
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	scan := bufio.NewScanner(f)
-
-	// some lines are too long for default 64k buffer
-	maxCapacity := 300_000
-	buf := make([]byte, maxCapacity)
-	scan.Buffer(buf, maxCapacity)
-
-	// skip headers
-	scan.Scan()
-
-	chunk := make([]db.NomenRef, refsBatchSize)
-	var count int
-
-	for scan.Scan() {
-		row := scan.Text()
-		fields := strings.Split(row, "\t")
-		if count == nameBatchSize {
-			chRefs <- chunk
-			chunk = make([]db.NomenRef, refsBatchSize)
-			count = 0
-		}
-		chunk[count] = db.NomenRef{
-			RecordID: fields[colTaxonIDF],
-			Ref:      fields[colRefF],
-		}
-		count++
-	}
-
-	chRefs <- chunk[0:count]
-	return scan.Err()
 }
 
 // ImportOccurrences transfers occurrences data from bhlindex's

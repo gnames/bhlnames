@@ -1,55 +1,8 @@
 package builderio
 
 import (
-	"io"
-	"net/http"
-	"os"
-
 	"github.com/gnames/bhlnames/io/db"
-	"github.com/gnames/gnsys"
-	"github.com/rs/zerolog/log"
-	progressbar "github.com/schollz/progressbar/v3"
 )
-
-// download will download a dump of BHL metadata using provided URL to a
-// local file. It's efficient because it will write as it downloads and not
-// load the whole file into memory. We pass an io.TeeReader into Copy() to
-// report progress on the download.
-func (b builderio) download(path, url string) error {
-	exists, _ := gnsys.FileExists(path)
-	if !b.WithRebuild && exists {
-		log.Info().Msgf("File %s already exists, skipping download.", path)
-		return nil
-	}
-	out, err := os.Create(path + ".tmp")
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return err
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	bar := progressbar.DefaultBytes(
-		resp.ContentLength,
-		"downloading",
-	)
-	io.Copy(io.MultiWriter(out, bar), resp.Body)
-
-	err = os.Rename(path+".tmp", path)
-	if err != nil {
-		return err
-	}
-	log.Info().Msg("Download finished")
-	return nil
-}
 
 func (b builderio) importDataBHL() error {
 	var err error

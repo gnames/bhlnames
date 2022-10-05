@@ -75,7 +75,7 @@ func (l reffinderio) occurrences(name string, field string) []*row {
 	ORDER BY title_year_start`
 	q := fmt.Sprintf(qs, field)
 
-	rows, err := l.DB.Query(q, name)
+	rows, err := l.db.Query(q, name)
 	if err != nil {
 		log.Warn().Err(err).Msg("Cannot find occurrences.")
 	}
@@ -124,7 +124,7 @@ func (l reffinderio) currentCanonical(canonical string) (string, error) {
           FROM name_strings
         WHERE matched_canonical = $1
         LIMIT 1`
-	row := l.DB.QueryRow(q, canonical)
+	row := l.db.QueryRow(q, canonical)
 	err := row.Scan(&currentCan)
 	if err == sql.ErrNoRows {
 		return "", nil

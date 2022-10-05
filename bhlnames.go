@@ -8,6 +8,7 @@ import (
 	"github.com/gnames/bayes"
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/builder"
+	"github.com/gnames/bhlnames/ent/colbuild"
 	"github.com/gnames/bhlnames/ent/input"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/ent/nlp"
@@ -20,6 +21,12 @@ import (
 )
 
 type Option func(*bhlnames)
+
+func OptColBuild(c colbuild.ColBuild) Option {
+	return func(bn *bhlnames) {
+		bn.ColBuild = c
+	}
+}
 
 func OptBuilder(b builder.Builder) Option {
 	return func(bn *bhlnames) {
@@ -56,6 +63,7 @@ type bhlnames struct {
 	cfg config.Config
 	gnparser.GNparser
 	builder.Builder
+	colbuild.ColBuild
 	reffinder.RefFinder
 	title_matcher.TitleMatcher
 	bayes.Bayes
@@ -89,15 +97,37 @@ func (bn bhlnames) Initialize() error {
 	if bn.cfg.WithRebuild {
 		bn.ResetData()
 	}
+
 	err = bn.ImportData()
-	if err == nil {
-		err = bn.CalculateTxStats()
-	}
 	if err != nil {
-		err = fmt.Errorf("Initialize: %w", err)
+		err = fmt.Errorf("ImportData: %w", err)
 		return err
 	}
-	return nil
+
+	err = bn.CalculateTxStats()
+	if err != nil {
+		err = fmt.Errorf("CalculateTxStats: %w", err)
+	}
+	return err
+}
+
+func (bn bhlnames) InitializeCol() error {
+	var err error
+	if bn.cfg.WithRebuild {
+		bn.ResetColData()
+	}
+
+	err = bn.ImportColData()
+	if err != nil {
+		err = fmt.Errorf("ImportColData: %w", err)
+		return err
+	}
+
+	err = bn.LinkColToBhl(bn.NomenRefsStream)
+	if err != nil {
+		err = fmt.Errorf("LinkColToBhl: %w", err)
+	}
+	return err
 }
 
 func (bn bhlnames) NameRefs(inp input.Input) (*namerefs.NameRefs, error) {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/builder"
+	"github.com/gnames/bhlnames/io/bhlsys"
 	"github.com/gnames/bhlnames/io/db"
 	"github.com/gnames/bhlnames/io/namesbhlio"
 	"github.com/gnames/gnsys"
@@ -68,25 +69,17 @@ func (b builderio) ImportData() error {
 
 	// Download and Extract
 	log.Info().Msg("Downloading database dump from BHL.")
-	err := b.download(b.DownloadBHLFile, b.BHLDumpURL)
+	err := bhlsys.Download(b.DownloadBHLFile, b.BHLDumpURL, b.WithRebuild)
 	if err == nil {
-		err = b.extract(b.DownloadBHLFile)
+		err = bhlsys.Extract(b.DownloadBHLFile, b.DownloadDir, b.WithRebuild)
 	}
 
 	if err == nil {
 		log.Info().Msg("Downloading names data from bhlindex.")
-		err = b.download(b.DownloadNamesFile, b.BHLNamesURL)
+		err = bhlsys.Download(b.DownloadNamesFile, b.BHLNamesURL, b.WithRebuild)
 	}
 	if err == nil {
-		err = b.extract(b.DownloadNamesFile)
-	}
-
-	if err == nil {
-		log.Info().Msg("Downloading CoL DwCA data.")
-		err = b.download(b.DownloadCoLFile, b.CoLDataURL)
-	}
-	if err == nil {
-		err = b.extract(b.DownloadCoLFile)
+		err = bhlsys.Extract(b.DownloadNamesFile, b.DownloadDir, b.WithRebuild)
 	}
 
 	// Reset Database and Import Data
@@ -113,12 +106,6 @@ func (b builderio) ImportData() error {
 		err = n.ImportOccurrences()
 		if err != nil {
 			err = fmt.Errorf("ImportOccurrences: %w", err)
-		}
-	}
-	if err == nil {
-		err = n.ImportCoLRefs()
-		if err != nil {
-			err = fmt.Errorf("ImportColRefs: %w", err)
 		}
 	}
 	return err
