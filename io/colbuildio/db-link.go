@@ -8,23 +8,53 @@ import (
 	"github.com/lib/pq"
 )
 
-const batchCOL = 10_000
+const batchCOL = 100
 
-func (c colbuildio) loadColData() ([]db.ColNomenRef, error) {
+func (c colbuildio) stats() (int, int, error) {
+	var num, numDone int
+	err := c.db.QueryRow("SELECT MAX(id) FROM col_nomen_refs").Scan(&num)
+
+	switch err {
+	case sql.ErrNoRows, nil:
+	default:
+		return num, numDone, err
+	}
+
+	err = c.db.QueryRow(`
+SELECT id
+  FROM col_nomen_refs
+    WHERE quality IS NULL
+  ORDER BY id
+  LIMIT 1
+`).Scan(&numDone)
+
+	switch err {
+	case sql.ErrNoRows:
+	case nil:
+		numDone--
+	default:
+		return num, numDone, err
+	}
+
+	return num, numDone, nil
+}
+
+func (c colbuildio) loadColData(offset int) ([]db.ColNomenRef, error) {
 	res := make([]db.ColNomenRef, 0, batchCOL)
 	q := `
-SELECT record_id, name, ref FROM col_nomen_refs
-  WHERE quality is NULL
-  LIMIT $1
+SELECT id, record_id, name, ref FROM col_nomen_refs
+  ORDER BY id
+  OFFSET $1 
+  LIMIT $2
 `
-	rows, err := c.db.Query(q, batchCOL)
+	rows, err := c.db.Query(q, offset, batchCOL)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var cnr db.ColNomenRef
-		err = rows.Scan(&cnr.RecordID, &cnr.Name, &cnr.Ref)
+		err = rows.Scan(&cnr.ID, &cnr.RecordID, &cnr.Name, &cnr.Ref)
 		if err != nil {
 			return nil, err
 		}
@@ -65,18 +95,16 @@ func (c colbuildio) updateColNomenRef(nrs *namerefs.NameRefs) error {
 	return nil
 }
 
-func (c colbuildio) saveColNomenRef(nrs *namerefs.NameRefs) error {
+func (c colbuildio) saveColNomenRef(
+	nrs *namerefs.NameRefs,
+	transaction *sql.Tx,
+) error {
 	var err error
 	var stmt *sql.Stmt
-	var transaction *sql.Tx
 	columns := []string{"record_id", "item_id", "part_id", "page_id", "odds", "quality"}
+	stmt, err = transaction.Prepare(pq.CopyIn("col_bhl_refs", columns...))
 
 	for _, ref := range nrs.References {
-		transaction, err = c.db.Begin()
-		if err != nil {
-			return err
-		}
-		stmt, err = transaction.Prepare(pq.CopyIn("col_bhl_refs", columns...))
 		if err != nil {
 			return err
 		}
@@ -86,14 +114,11 @@ func (c colbuildio) saveColNomenRef(nrs *namerefs.NameRefs) error {
 		if err != nil {
 			return err
 		}
-		err = stmt.Close()
-		if err != nil {
-			return err
-		}
-		err = transaction.Commit()
-		if err != nil {
-			return err
-		}
+	}
+
+	err = stmt.Close()
+	if err != nil {
+		return err
 	}
 	return nil
 }

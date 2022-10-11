@@ -9,6 +9,10 @@ import (
 )
 
 type ColBuild interface {
+	// DataStatus determines if downloaded and extracted files do exist,
+	// and if the tables exist and have data.
+	DataStatus() (bool, bool, error)
+
 	// ResetColData removes all downloaded and generated resources, leaving
 	// empty databases and no files.
 	ResetColData()

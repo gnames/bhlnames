@@ -1,6 +1,7 @@
 package colbuildio
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 	"strings"
@@ -10,6 +11,35 @@ import (
 	"github.com/gnames/gnparser"
 	"github.com/lib/pq"
 )
+
+func (c colbuildio) checkData() (bool, error) {
+	var err error
+	var hasTables bool
+	var str string
+	q := `
+SELECT EXISTS (
+    SELECT FROM
+        pg_tables
+    WHERE
+        schemaname = 'public' AND
+        tablename  = 'col_nomen_refs'
+    )
+`
+	err = c.db.QueryRow(q).Scan(&hasTables)
+	if !hasTables || err != nil {
+		return hasTables, err
+	}
+
+	err = c.db.QueryRow(`SELECT record_id FROM col_nomen_refs limit 1`).Scan(&str)
+	switch err {
+	case sql.ErrNoRows:
+		return false, nil
+	case nil:
+		return true, nil
+	default:
+		return false, err
+	}
+}
 
 func (c colbuildio) saveNomenRefs(chIn <-chan []db.ColNomenRef) error {
 	total := 0
@@ -78,7 +108,7 @@ func (c colbuildio) saveNomenRefs(chIn <-chan []db.ColNomenRef) error {
 			return err
 		}
 		fmt.Fprintf(os.Stderr, "\r%s", strings.Repeat(" ", 47))
-		fmt.Fprintf(os.Stderr, "\rImported %s CoL nomen refs to db", humanize.Comma(int64(total)))
+		fmt.Fprintf(os.Stderr, "\rProcessed %s CoL nomen refs", humanize.Comma(int64(total)))
 		err = transaction.Commit()
 		if err != nil {
 			return err

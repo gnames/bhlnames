@@ -113,14 +113,24 @@ func (bn bhlnames) Initialize() error {
 
 func (bn bhlnames) InitializeCol() error {
 	var err error
-	if bn.cfg.WithRebuild {
+	var hasFiles, hasData bool
+	hasFiles, hasData, err = bn.DataStatus()
+	if err != nil {
+		err = fmt.Errorf("DataStatus: %w", err)
+		return err
+	}
+
+	if bn.cfg.WithRebuild || !hasFiles {
 		bn.ResetColData()
 	}
 
-	err = bn.ImportColData()
-	if err != nil {
-		err = fmt.Errorf("ImportColData: %w", err)
-		return err
+	// do not reimport data if percentage is given
+	if bn.cfg.WithCoLRecalc || !hasData {
+		err = bn.ImportColData()
+		if err != nil {
+			err = fmt.Errorf("ImportColData: %w", err)
+			return err
+		}
 	}
 
 	err = bn.LinkColToBhl(bn.NomenRefsStream)

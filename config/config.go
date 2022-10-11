@@ -64,6 +64,11 @@ type Config struct {
 	// ignored and data is downloaded from BHLDumpURL.
 	WithRebuild bool
 
+	// WithCoLRecalc indicates that calculation of CoL nomenclatural events
+	// tables will be emptied, and CoL nomenclatural data will be reimported
+	// before linking to BHL data.
+	WithCoLRecalc bool
+
 	// SortDesc determines the order of sorting the output data. If `true`
 	// data are sorted by year from latest to earliest. If `false` then from
 	// earliest to latest.
@@ -143,6 +148,12 @@ func OptBHLNamesURL(s string) Option {
 func OptCoLDataURL(s string) Option {
 	return func(cfg *Config) {
 		cfg.CoLDataURL = s
+	}
+}
+
+func OptWithCoLRecalc(b bool) Option {
+	return func(cfg *Config) {
+		cfg.WithCoLRecalc = b
 	}
 }
 
@@ -268,6 +279,11 @@ func New(opts ...Option) Config {
 
 	for _, opt := range opts {
 		opt(&cfg)
+	}
+
+	// if we redownload CoL files, we always reimport data.
+	if cfg.WithRebuild {
+		cfg.WithCoLRecalc = true
 	}
 
 	cfg.DownloadBHLFile = filepath.Join(cfg.InputDir, "bhl-data.zip")

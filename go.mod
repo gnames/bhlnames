@@ -7,10 +7,10 @@ require (
 	github.com/dgraph-io/badger/v2 v2.2007.4
 	github.com/dustin/go-humanize v1.0.0
 	github.com/fatih/color v1.13.0
-	github.com/gnames/aho_corasick v0.1.2
+	github.com/gnames/aho_corasick v0.1.3
 	github.com/gnames/bayes v0.5.0
 	github.com/gnames/gner v0.1.4
-	github.com/gnames/gnfmt v0.3.0
+	github.com/gnames/gnfmt v0.4.1
 	github.com/gnames/gnlib v0.14.0
 	github.com/gnames/gnparser v1.6.7
 	github.com/gnames/gnstats v0.2.1

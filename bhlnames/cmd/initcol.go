@@ -23,6 +23,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/gnames/bhlnames"
 	"github.com/gnames/bhlnames/config"
@@ -46,12 +47,24 @@ and saves them to database.
 
 This command runs for several hours and is a part of initialization.`,
 	Run: func(cmd *cobra.Command, _ []string) {
-		rebuild, err := cmd.Flags().GetBool("rebuild")
+		rebuild, err := cmd.Flags().GetBool("restart")
 		if err != nil {
 			err = fmt.Errorf("initCmd: %#w", err)
 			log.Fatal().Err(err).Msg("")
 		}
-		opts = append(opts, config.OptWithRebuild(rebuild))
+
+		recalc, err := cmd.Flags().GetBool("recalc")
+		if err != nil {
+			err = fmt.Errorf("initCmd: %#w", err)
+			log.Fatal().Err(err).Msg("")
+		}
+
+		opts = append(
+			opts,
+			config.OptWithRebuild(rebuild),
+			config.OptWithCoLRecalc(recalc),
+		)
+
 		cfg := config.New(opts...)
 		cn := colbuildio.New(cfg)
 		rf := reffinderio.New(cfg)
@@ -70,6 +83,7 @@ This command runs for several hours and is a part of initialization.`,
 		bn := bhlnames.New(cfg, bnOpts...)
 		defer bn.Close()
 
+		showWarning(bn)
 		err = bn.InitializeCol()
 		if err != nil {
 			err = fmt.Errorf("InitializeCol: %w", err)
@@ -80,5 +94,20 @@ This command runs for several hours and is a part of initialization.`,
 
 func init() {
 	rootCmd.AddCommand(initcolCmd)
-	initcolCmd.Flags().BoolP("rebuild", "r", false, "Delete and rebuild files and tables for CoL data.")
+	initcolCmd.Flags().BoolP("restart", "R", false, "Delete and rebuild files and tables for CoL data.")
+	initcolCmd.Flags().BoolP("recalc", "r", false, "Keep downloads, rebuild and reimport tables")
+
+}
+
+func showWarning(bn bhlnames.BHLnames) {
+	if bn.Config().WithRebuild || bn.Config().WithCoLRecalc {
+		fmt.Println("Previously generated CoL data will be lost.")
+		fmt.Println("All other data will not be affected.")
+		fmt.Println("Do you want to proceed? (y/N)")
+		var confirm string
+		fmt.Scanln(&confirm)
+		if confirm != "y" {
+			os.Exit(0)
+		}
+	}
 }
