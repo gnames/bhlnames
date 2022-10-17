@@ -10,6 +10,7 @@ import (
 	"github.com/gnames/bhlnames/ent/builder"
 	"github.com/gnames/bhlnames/ent/colbuild"
 	"github.com/gnames/bhlnames/ent/input"
+	"github.com/gnames/bhlnames/ent/item"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/bhlnames/ent/nlp"
 	"github.com/gnames/bhlnames/ent/reffinder"
@@ -109,6 +110,16 @@ func (bn bhlnames) Initialize() error {
 		err = fmt.Errorf("CalculateTxStats: %w", err)
 	}
 	return err
+}
+
+func (bn bhlnames) TaxonItems(tx string) ([]item.TaxonItem, error) {
+	var res []item.TaxonItem
+	return res, nil
+}
+
+func (bn bhlnames) TaxonNomens(tx string) ([]*namerefs.NameRefs, error) {
+	var res []*namerefs.NameRefs
+	return res, nil
 }
 
 func (bn bhlnames) InitializeCol() error {

@@ -3,6 +3,7 @@ package bhlnames
 import (
 	"github.com/gnames/bhlnames/config"
 	"github.com/gnames/bhlnames/ent/input"
+	"github.com/gnames/bhlnames/ent/item"
 	"github.com/gnames/bhlnames/ent/namerefs"
 	"github.com/gnames/gnlib/ent/gnvers"
 	"github.com/gnames/gnparser"
@@ -22,6 +23,13 @@ type BHLnames interface {
 	// InitializeCol downloads the Catalogue of Life (CoL) data and imports
 	// the data about nomenclatural references for CoL names into its storage.
 	InitializeCol() error
+
+	// TaxonItems returns Items that are mostly about a particular taxon.
+	TaxonItems(taxon string) ([]item.TaxonItem, error)
+
+	// TaxonNomens returns references to nomenclatural events for children of
+	// a given nomen.
+	TaxonNomens(taxon string) ([]*namerefs.NameRefs, error)
 
 	// NameRefs takes a name and optionally reference, and find matching
 	// locations and references in BHL.
