@@ -31,12 +31,12 @@ import (
 var taxonCmd = &cobra.Command{
 	Use:   "taxon",
 	Short: "Finds BHL items dedicated mostly to a particular taxon.",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Long: `Takes a name of a higher taxon (genus and above) registered in
+the Catalogue of Life and finds Items from the Biodiversity Heritage Library
+where it is the most prevalent taxon.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Optionally it can also return nomenclatural events on a species level for
+the taxon's children.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		f := formatFlag(cmd)
 		nomen := nomenFlag(cmd)
@@ -47,7 +47,7 @@ to quickly create a Cobra application.`,
 		cfg := config.New(opts...)
 
 		if len(args) != 1 {
-			log.Fatal().Msg("a name of a higher taxon is needed")
+			log.Fatal().Msg("a name of a taxon higher than a genus is needed")
 		}
 
 		if nomen {
@@ -66,7 +66,7 @@ func init() {
 
 func nomenEvents(cfg config.Config, name string) {
 	_ = cfg
-	log.Info().Msgf("Finding nomenclatural events for '%s'", name)
+	log.Info().Msgf("Finding nomenclatural events for taxon '%s'", name)
 }
 
 func items(cfg config.Config, name string) {
