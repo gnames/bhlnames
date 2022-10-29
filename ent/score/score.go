@@ -15,7 +15,6 @@ import (
 )
 
 type score struct {
-	odds                                              float64
 	total, year, annot, refTitle, refVolume, refPages int
 	yearLabel, annotLabel, titleLabel, volLabel       string
 	pagesLabel, resNumLabel                           string

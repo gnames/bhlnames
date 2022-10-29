@@ -20,7 +20,6 @@ type titleStore struct {
 	cfg        config.Config
 	titles     map[int]*title
 	shortWords map[string]struct{}
-	abbrMap    map[string][]int
 }
 
 func newTitleStore(cfg config.Config, titles map[int]*title) *titleStore {

@@ -24,7 +24,6 @@ package cmd
 import (
 	_ "embed"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -207,7 +206,7 @@ func createConfig(path string) {
 		log.Fatal().Err(err).Msgf("Cannot create dir %s.", path)
 	}
 
-	err = ioutil.WriteFile(path, []byte(configText), 0644)
+	err = os.WriteFile(path, []byte(configText), 0644)
 	if err != nil {
 		err = fmt.Errorf("main: %#w", err)
 		log.Fatal().Err(err).Msgf("Cannot write to file %s", path)
