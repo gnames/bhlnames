@@ -176,13 +176,20 @@ func (bn bhlnames) nameRefsWorker(
 ) {
 	defer wg.Done()
 	for inp := range chIn {
-		nameRefs, err := bn.ReferencesBHL(inp, bn.cfg)
-		if err != nil {
-			err = fmt.Errorf("bhlnames.nameRefsWorker: %w", err)
-			log.Warn().Err(err)
-		}
-		chOut <- nameRefs
+		bn.pushNameRefs(chOut, inp)
 	}
+}
+
+func (bn bhlnames) pushNameRefs(
+	chOut chan<- *namerefs.NameRefs,
+	inp input.Input,
+) {
+	nameRefs, err := bn.ReferencesBHL(inp, bn.cfg)
+	if err != nil {
+		err = fmt.Errorf("bhlnames.nameRefsWorker: %w", err)
+		log.Warn().Err(err)
+	}
+	chOut <- nameRefs
 }
 
 func (bn bhlnames) NomenRefs(
