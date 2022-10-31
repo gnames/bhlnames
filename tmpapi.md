@@ -42,7 +42,14 @@ VI. Find possible BHL reference link for a name+reference
 
 (Ignoring nomenclature-related scoring like sp.nov. etc.)
 
+<<<<<<< Updated upstream
 VII. Find BHL links to items/parts most related to a higher taxon
+=======
+VII. Find BHL links to items/parts in the context of a taxon
+
+Context here means a taxon of a particular rank with the highest
+percentage of names for an item.
+>>>>>>> Stashed changes
 
 * taxon
 
