@@ -7,7 +7,7 @@ import (
 
 	"github.com/gnames/bayes"
 	ft "github.com/gnames/bayes/ent/feature"
-	"github.com/gnames/bhlnames/ent/namerefs"
+	"github.com/gnames/bhlnames/internal/ent/namerefs"
 	"github.com/gnames/gnfmt"
 	"github.com/rs/zerolog/log"
 )

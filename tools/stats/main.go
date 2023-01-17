@@ -5,12 +5,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gnames/bhlnames/config"
-	"github.com/gnames/bhlnames/ent/namerefs"
-	"github.com/gnames/bhlnames/ent/refbhl"
-	"github.com/gnames/bhlnames/ent/score"
-	"github.com/gnames/bhlnames/io/bayesio"
-	"github.com/gnames/bhlnames/io/titlemio"
+	"github.com/gnames/bhlnames/internal/ent/namerefs"
+	"github.com/gnames/bhlnames/internal/ent/refbhl"
+	"github.com/gnames/bhlnames/internal/ent/score"
+	"github.com/gnames/bhlnames/internal/io/bayesio"
+	"github.com/gnames/bhlnames/internal/io/titlemio"
+	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnfmt"
 	"github.com/rs/zerolog/log"
 )

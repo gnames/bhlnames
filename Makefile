@@ -26,15 +26,13 @@ deps:
 
 tools: deps
 	@echo Installing tools from tools.go
-	@cat bhlnames/tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
+	@cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
 
 build:
-	cd bhlnames; \
 	$(GOCLEAN); \
 	$(FLAGS_SHARED) GOOS=linux $(GOBUILD);
 
 release:
-	cd bhlnames; \
 	$(GOCLEAN); \
 	$(FLAGS_SHARED) GOOS=linux $(GOBUILD); \
 	tar zcvf /tmp/bhlnames-${VER}-linux.tar.gz bhlnames; \
@@ -47,7 +45,6 @@ release:
 	$(GOCLEAN);
 
 install:
-	cd bhlnames; \
 	$(FLAGS_SHARED) $(GOINSTALL);
 
 dc: build
