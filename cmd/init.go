@@ -41,7 +41,7 @@ process is finished, the program can be used for generating list of
 publications for names.
 
 To separate these two processes use "bhlnames bhl" and "bhlnames names" one
-after enother. The resul will be identical to "bhlnames init".`,
+after enother. The result will be identical to "bhlnames init".`,
 	Run: func(cmd *cobra.Command, _ []string) {
 		rebuild, err := cmd.Flags().GetBool("rebuild")
 		if err != nil {

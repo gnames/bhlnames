@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dgraph-io/badger/v2"
+	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/gnames/bhlnames/internal/ent/namebhl"
 	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/pkg/config"
@@ -44,7 +44,7 @@ func New(cfg config.Config, db *sql.DB, gormdb *gorm.DB) namebhl.NameBHL {
 
 // ImportOccurrences transfers occurrences data from bhlindex's
 // occurrences.csv dump file to the database.
-func (n namesbhlio) ImportOccurrences() error {
+func (n namesbhlio) ImportOccurrences(blf *bloom.BloomFilter) error {
 	log.Info().Msg("Importing names' occurrences.")
 	log.Info().Msg("Truncating data from name_occurrences table.")
 	err := db.Truncate(n.db, []string{"name_occurrences"})
@@ -57,7 +57,7 @@ func (n namesbhlio) ImportOccurrences() error {
 	chOccur := make(chan []db.NameOccurrence)
 
 	g.Go(func() error {
-		return n.saveOcurrences(chOccur)
+		return n.saveOcurrences(chOccur, blf)
 	})
 
 	err = n.loadOccurrences(chOccur)
@@ -74,9 +74,6 @@ func (n namesbhlio) ImportOccurrences() error {
 }
 
 func (n namesbhlio) loadOccurrences(chIn chan<- []db.NameOccurrence) error {
-	kv := db.InitKeyVal(n.cfg.PageDir)
-	defer kv.Close()
-
 	path := filepath.Join(n.cfg.DownloadDir, "occurrences.csv")
 	f, err := os.Open(path)
 	if err != nil {
@@ -104,7 +101,7 @@ func (n namesbhlio) loadOccurrences(chIn chan<- []db.NameOccurrence) error {
 			return err
 		}
 		if count == occurBatchSize {
-			occurs, err = convertToOccurs(kv, chunk)
+			occurs, err = convertToOccurs(chunk)
 			if err != nil {
 				return fmt.Errorf("convertToOccurs: %w", err)
 			}
@@ -115,7 +112,7 @@ func (n namesbhlio) loadOccurrences(chIn chan<- []db.NameOccurrence) error {
 		chunk[count] = row
 		count++
 	}
-	occurs, err = convertToOccurs(kv, chunk[0:count])
+	occurs, err = convertToOccurs(chunk[0:count])
 	if err != nil {
 		return fmt.Errorf("convertToOccurs: %w", err)
 	}
@@ -124,9 +121,9 @@ func (n namesbhlio) loadOccurrences(chIn chan<- []db.NameOccurrence) error {
 }
 
 const (
-	occItemBarcodeF          = 0
-	occPageBarcodeNumF       = 1
-	occNameIDF               = 2
+	occNameIDF               = 0
+	occPageIDF               = 1
+	occItemIDF               = 2
 	occDetectedNameF         = 3
 	occDetectedNameVerbatimF = 4
 	occOddsLog10F            = 5
@@ -136,19 +133,21 @@ const (
 	occAnnotation            = 9
 )
 
-func convertToOccurs(kv *badger.DB, data [][]string) ([]db.NameOccurrence, error) {
+func convertToOccurs(data [][]string) ([]db.NameOccurrence, error) {
 	var err error
-	resPrelim := make([]db.NameOccurrence, len(data))
 	res := make([]db.NameOccurrence, 0, len(data))
-	keys := make([]string, len(data))
 
-	for i, v := range data {
-		var start, end int
+	for _, v := range data {
+		var start, end, pageID int
 		start, err = strconv.Atoi(v[occStartF])
 		if err != nil {
 			return nil, err
 		}
 		end, err = strconv.Atoi(v[occEndF])
+		if err != nil {
+			return nil, err
+		}
+		pageID, err = strconv.Atoi(v[occPageIDF])
 		if err != nil {
 			return nil, err
 		}
@@ -159,45 +158,31 @@ func convertToOccurs(kv *badger.DB, data [][]string) ([]db.NameOccurrence, error
 				return nil, err
 			}
 		}
-
 		oc := db.NameOccurrence{
 			NameStringID: v[occNameIDF],
+			PageID:       uint(pageID),
 			OffsetStart:  uint(start),
 			OffsetEnd:    uint(end),
 			OddsLog10:    odds,
 			AnnotNomen:   v[occAnnotation],
 		}
-		keys[i] = v[occPageBarcodeNumF] + "*" + v[occItemBarcodeF]
-		resPrelim[i] = oc
+		res = append(res, oc)
 	}
 
-	ids, err := db.GetValues(kv, keys)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range keys {
-		if bs := ids[keys[i]]; len(bs) > 0 {
-			id, err := strconv.Atoi(string(bs))
-			if err != nil {
-				return nil, err
-			}
-			resPrelim[i].PageID = uint(id)
-			res = append(res, resPrelim[i])
-		}
-	}
 	return res, nil
 }
 
 // ImportNames takes batches of verified names from a bhlindex dump file
 // and saves them into database.
-func (n namesbhlio) ImportNames() error {
+func (n namesbhlio) ImportNames() (*bloom.BloomFilter, error) {
 	log.Info().Msg("Ingesting names resolved to Catalogue of Life.")
 	log.Info().Msg("Truncating data from names_strings table.")
 
+	blf := bloom.NewWithEstimates(25_000_000, 0.001)
+
 	err := db.Truncate(n.db, []string{"name_strings"})
 	if err != nil {
-		return err
+		return blf, err
 	}
 
 	chIn := make(chan [][]string)
@@ -213,7 +198,7 @@ func (n namesbhlio) ImportNames() error {
 	})
 
 	egDB.Go(func() error {
-		err = n.saveNames(chIn)
+		err = n.saveNames(chIn, blf)
 		if err != nil {
 			err = fmt.Errorf("saveNames: %w", err)
 		}
@@ -221,11 +206,14 @@ func (n namesbhlio) ImportNames() error {
 	})
 
 	if err = eg.Wait(); err != nil {
-		return err
+		return blf, err
 	}
 	close(chIn)
 
-	return egDB.Wait()
+	if err = egDB.Wait(); err != nil {
+		return blf, err
+	}
+	return blf, nil
 }
 
 func (n namesbhlio) loadNames(chIn chan<- [][]string) error {

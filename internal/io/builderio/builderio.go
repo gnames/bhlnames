@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/gnames/bhlnames/internal/ent/builder"
 	"github.com/gnames/bhlnames/internal/io/bhlsys"
 	"github.com/gnames/bhlnames/internal/io/db"
@@ -65,6 +66,7 @@ func (b builderio) ResetData() {
 }
 
 func (b builderio) ImportData() error {
+	var blf *bloom.BloomFilter
 	n := namesbhlio.New(b.Config, b.DB, b.GormDB)
 
 	// Download and Extract
@@ -91,19 +93,14 @@ func (b builderio) ImportData() error {
 		}
 	}
 	if err == nil {
-		err = n.ImportNames()
+		blf, err = n.ImportNames()
 		if err != nil {
 			err = fmt.Errorf("ImportNames: %w", err)
 		}
 	}
+
 	if err == nil {
-		err = n.PageFilesToIDs()
-		if err != nil {
-			err = fmt.Errorf("PageFilesToIDs: %w", err)
-		}
-	}
-	if err == nil {
-		err = n.ImportOccurrences()
+		err = n.ImportOccurrences(blf)
 		if err != nil {
 			err = fmt.Errorf("ImportOccurrences: %w", err)
 		}

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add [#42]: import data using new bhlindex dump format.
+- Add [#41]: refactor code to a more standard architecture.
+
 ## [v0.1.1]
 
 - Add [#38]: nomenclatural refernces from CoL.

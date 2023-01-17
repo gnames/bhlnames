@@ -5,13 +5,17 @@ import (
 	"os"
 	"strings"
 
+	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
-func (n namesbhlio) saveOcurrences(chIn <-chan []db.NameOccurrence) error {
+func (n namesbhlio) saveOcurrences(
+	chIn <-chan []db.NameOccurrence,
+	blf *bloom.BloomFilter,
+) error {
 	columns := []string{"page_id", "name_string_id", "offset_start",
 		"offset_end", "odds_log10", "annot_nomen"}
 	var count, missing int
@@ -26,6 +30,11 @@ func (n namesbhlio) saveOcurrences(chIn <-chan []db.NameOccurrence) error {
 		}
 
 		for i := range ocs {
+			// do not save occurrences for which there is no verified name saved
+			if !blf.Test([]byte(ocs[i].NameStringID)) {
+				continue
+			}
+
 			_, err = stmt.Exec(ocs[i].PageID, ocs[i].NameStringID,
 				ocs[i].OffsetStart, ocs[i].OffsetEnd, ocs[i].OddsLog10,
 				ocs[i].AnnotNomen)

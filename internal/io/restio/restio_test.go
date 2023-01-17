@@ -2,7 +2,6 @@ package restio
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"testing"
@@ -123,7 +122,6 @@ func TestNomenRefs(t *testing.T) {
 
 	respBytes, err := io.ReadAll(resp.Body)
 	assert.Nil(err)
-	fmt.Printf("NOM: %#v\n\n", string(respBytes))
 
 	var response namerefs.NameRefs
 	err = enc.Decode(respBytes, &response)

@@ -12,7 +12,8 @@ import (
 func TestDefaultConfig(t *testing.T) {
 	test := config.Config{
 		BHLDumpURL:   "http://opendata.globalnames.org/dumps/bhl-data.zip",
-		BHLNamesURL:  "http://opendata.globalnames.org/dumps/bhl-col.zip",
+		BHLNamesURL:  "http://opendata.globalnames.org/dumps/bhlindex-latest.zip",
+		CoLDataURL:   "https://api.checklistbank.org/dataset/3LR/export?format=dwca",
 		InputDir:     config.InputDir(),
 		Delimiter:    ',',
 		DbHost:       "0.0.0.0",
@@ -25,7 +26,8 @@ func TestDefaultConfig(t *testing.T) {
 		WithSynonyms: true,
 	}
 	test.DownloadBHLFile = filepath.Join(test.InputDir, "bhl-data.zip")
-	test.DownloadNamesFile = filepath.Join(test.InputDir, "bhl-names.zip")
+	test.DownloadNamesFile = filepath.Join(test.InputDir, "bhlindex-latest.zip")
+	test.DownloadCoLFile = filepath.Join(test.InputDir, "col.zip")
 	test.DownloadDir = filepath.Join(test.InputDir, "Data")
 	test.PageDir = filepath.Join(test.InputDir, "page")
 	test.PageFileDir = filepath.Join(test.InputDir, "page-file")
@@ -41,6 +43,7 @@ func TestModifiedConfig(t *testing.T) {
 	test := config.Config{
 		BHLDumpURL:          "https://example.org",
 		BHLNamesURL:         "https://example.org",
+		CoLDataURL:          "https://example.org",
 		InputDir:            "/tmp",
 		Delimiter:           '\t',
 		DbHost:              "10.0.0.10",
@@ -52,12 +55,14 @@ func TestModifiedConfig(t *testing.T) {
 		Format:              gnfmt.CompactJSON,
 		WithSynonyms:        false,
 		WithRebuild:         true,
+		WithCoLRecalc:       true,
 		SortDesc:            true,
 		WithShortenedOutput: true,
 	}
 
 	test.DownloadBHLFile = filepath.Join(test.InputDir, "bhl-data.zip")
-	test.DownloadNamesFile = filepath.Join(test.InputDir, "bhl-names.zip")
+	test.DownloadNamesFile = filepath.Join(test.InputDir, "bhlindex-latest.zip")
+	test.DownloadCoLFile = filepath.Join(test.InputDir, "col.zip")
 	test.DownloadDir = filepath.Join(test.InputDir, "Data")
 	test.PageDir = filepath.Join(test.InputDir, "page")
 	test.PageFileDir = filepath.Join(test.InputDir, "page-file")
@@ -72,6 +77,7 @@ func modConfig() config.Config {
 	opts := []config.Option{
 		config.OptBHLDumpURL("https://example.org"),
 		config.OptBHLNamesURL("https://example.org"),
+		config.OptCoLDataURL("https://example.org"),
 		config.OptInputDir("/tmp"),
 		config.OptDbHost("10.0.0.10"),
 		config.OptDbUser("john"),

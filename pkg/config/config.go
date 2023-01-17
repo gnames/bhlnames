@@ -260,7 +260,7 @@ func InputDir() string {
 func New(opts ...Option) Config {
 	cfg := Config{
 		BHLDumpURL:          "http://opendata.globalnames.org/dumps/bhl-data.zip",
-		BHLNamesURL:         "http://opendata.globalnames.org/dumps/bhl-col.zip",
+		BHLNamesURL:         "http://opendata.globalnames.org/dumps/bhlindex-latest.zip",
 		CoLDataURL:          "https://api.checklistbank.org/dataset/3LR/export?format=dwca",
 		InputDir:            InputDir(),
 		Delimiter:           ',',
@@ -287,7 +287,7 @@ func New(opts ...Option) Config {
 	}
 
 	cfg.DownloadBHLFile = filepath.Join(cfg.InputDir, "bhl-data.zip")
-	cfg.DownloadNamesFile = filepath.Join(cfg.InputDir, "bhl-names.zip")
+	cfg.DownloadNamesFile = filepath.Join(cfg.InputDir, "bhlindex-latest.zip")
 	cfg.DownloadCoLFile = filepath.Join(cfg.InputDir, "col.zip")
 	cfg.DownloadDir = filepath.Join(cfg.InputDir, "Data")
 	cfg.PageDir = filepath.Join(cfg.InputDir, "page")
