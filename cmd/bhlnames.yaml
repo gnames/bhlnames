@@ -8,7 +8,7 @@
 # BHLDumpURL: https://www.biodiversitylibrary.org/data/data.zip
 #
 ## copy made at the same time as bhlindex dump (default).
-# BHLDumpURL: http://opendata.globalnames.org/dumps/bhl-data.zip
+# BHLDumpURL: http://opendata.globalnames.org/dumps/bhlindex-latest.zip
 
 ## BHL name index data need to be downloaded and combined with BHL dump data.
 # BHLNamesURL: http://opendata.globalnames.org/dumps/bhl-col.zip
