@@ -8,8 +8,8 @@ FLAGS_WIN = $(FLAGS_SHARED) GOOS=windows
 NO_C = CGO_ENABLED=0
 
 FLAGS_SHARED = CGO_ENABLED=0 GOARCH=amd64
-FLAGS_LD = -ldflags "-X github.com/gnames/bhlnames.Build=${DATE} \
-                  -X github.com/gnames/bhlnames.Version=${VERSION}"
+FLAGS_LD = -ldflags "-X github.com/gnames/bhlnames/pkg.Build=${DATE} \
+                  -X github.com/gnames/bhlnames/pkg.Version=${VERSION}"
 GOCMD = go
 GOINSTALL = $(GOCMD) install $(FLAGS_LD)
 GOBUILD = $(GOCMD) build $(FLAGS_LD)
