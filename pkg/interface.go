@@ -39,6 +39,9 @@ type BHLnames interface {
 	// of putative locations of the nomenclatural publications in BHL.
 	NomenRefsStream(chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)
 
+	// Item returns metainformation and statistics of an item.Item.
+	Item() (item.Item, error)
+
 	// GetVersion returns the version and build timestamp of bhlnames app.
 	GetVersion() gnvers.Version
 

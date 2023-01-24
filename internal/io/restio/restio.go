@@ -3,6 +3,7 @@ package restio
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/gnames/bhlnames/internal/ent/input"
@@ -47,6 +48,7 @@ func (r restio) Run() {
 	r.POST(apiPath+"/name_refs", nameRefs(r.BHLnames, false))
 	r.POST(apiPath+"/taxon_refs", nameRefs(r.BHLnames, true))
 	r.POST(apiPath+"/nomen_refs", nomenRefs(r.BHLnames))
+	r.POST(apiPath+"/item/:id", title(r.BHLnames))
 
 	addr := fmt.Sprintf(":%d", r.Config().PortREST)
 	s := &http.Server{
@@ -119,6 +121,15 @@ func nomenRefs(bn bhlnames.BHLnames) func(echo.Context) error {
 		if err != nil {
 			log.Warn().Err(err).Msg("nomenRefs")
 		}
+		return err
+	}
+}
+
+func title(bn bhlnames.BHLnames) func(echo.Context) error {
+	var err error
+	return func(c echo.Context) error {
+		id, _ := url.QueryUnescape(c.Param("id"))
+		_ = id
 		return err
 	}
 }
