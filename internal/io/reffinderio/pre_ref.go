@@ -1,9 +1,10 @@
 package reffinderio
 
 import (
+	"cmp"
 	"fmt"
 	"net/url"
-	"sort"
+	"slices"
 	"strconv"
 
 	"github.com/dgraph-io/badger/v2"
@@ -91,7 +92,7 @@ func genSynonyms(refs []*refbhl.ReferenceBHL, current string) []string {
 	for k := range syn {
 		res = append(res, k)
 	}
-	sort.Strings(res)
+	slices.Sort(res)
 	return res
 }
 
@@ -149,12 +150,12 @@ func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceBHL {
 		}
 	}
 	if l.sortDesc {
-		sort.SliceStable(res, func(i, j int) bool {
-			return res[i].YearAggr > res[j].YearAggr
+		slices.SortStableFunc(res, func(a, b *refbhl.ReferenceBHL) int {
+			return cmp.Compare(b.YearAggr, a.YearAggr)
 		})
 	} else {
-		sort.SliceStable(res, func(i, j int) bool {
-			return res[i].YearAggr < res[j].YearAggr
+		slices.SortStableFunc(res, func(a, b *refbhl.ReferenceBHL) int {
+			return cmp.Compare(a.YearAggr, b.YearAggr)
 		})
 	}
 	return res

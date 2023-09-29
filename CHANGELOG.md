@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add: update Go to 1.21, modules, sort using `slices` package.
 - Add [#42]: import data using new bhlindex dump format.
 - Add [#41]: refactor code to a more standard architecture.
 

@@ -1,8 +1,9 @@
 package bhlnames
 
 import (
+	"cmp"
 	"fmt"
-	"sort"
+	"slices"
 	"sync"
 
 	"github.com/gnames/bayes"
@@ -11,6 +12,7 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
 	"github.com/gnames/bhlnames/internal/ent/nlp"
+	"github.com/gnames/bhlnames/internal/ent/refbhl"
 	"github.com/gnames/bhlnames/internal/ent/reffinder"
 	"github.com/gnames/bhlnames/internal/ent/score"
 	"github.com/gnames/bhlnames/internal/ent/title_matcher"
@@ -234,16 +236,16 @@ func (bn bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 	if err != nil {
 		return err
 	}
-	sort.Slice(nr.References, func(i, j int) bool {
-		refs := nr.References
-		if refs[i].Score.Odds == refs[j].Score.Odds {
-			if refs[i].YearAggr == refs[j].YearAggr {
-				return refs[i].PageID < refs[j].PageID
+	slices.SortFunc(nr.References, func(a, b *refbhl.ReferenceBHL) int {
+		if a.Score.Odds == b.Score.Odds {
+			if a.YearAggr == b.YearAggr {
+				return cmp.Compare(a.PageID, b.PageID)
 			}
-			return refs[i].YearAggr < refs[j].YearAggr
+			return cmp.Compare(a.YearAggr, b.YearAggr)
 		}
-		return refs[i].Score.Odds > refs[j].Score.Odds
+		return cmp.Compare(b.Score.Odds, a.Score.Odds)
 	})
+
 	if len(nr.References) > 0 {
 		noScoreIndex := len(nr.References)
 		for i := range nr.References {

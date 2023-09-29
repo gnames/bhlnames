@@ -1,10 +1,11 @@
 package builderio
 
 import (
+	"cmp"
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 
 	badger "github.com/dgraph-io/badger/v2"
@@ -90,8 +91,8 @@ func (ts *titleStore) save(abbrMap map[string][]int) error {
 		count += 1
 	}
 
-	sort.Slice(abbrs, func(i, j int) bool {
-		return len(abbrs[i]) > len(abbrs[j])
+	slices.SortFunc(abbrs, func(a, b string) int {
+		return cmp.Compare(len(b), len(a))
 	})
 	tmp := strings.Join(abbrs, "\n")
 	path := filepath.Join(ts.cfg.AhoCorasickDir, "patterns.txt")

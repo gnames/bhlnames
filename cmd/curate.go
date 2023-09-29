@@ -1,9 +1,10 @@
 package cmd
 
 import (
+	"cmp"
 	"fmt"
 	"os"
-	"sort"
+	"slices"
 
 	"github.com/fatih/color"
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
@@ -101,8 +102,8 @@ func getOutput(nrs []*namerefs.NameRefs, outputPath string) {
 			res = append(res, nrs[i])
 		}
 	}
-	sort.Slice(res, func(i, j int) bool {
-		return res[i].Input.NameString < res[j].Input.NameString
+	slices.SortFunc(res, func(a, b *namerefs.NameRefs) int {
+		return cmp.Compare(a.Input.NameString, b.Input.NameString)
 	})
 
 	resJSON, err := enc.Encode(res)

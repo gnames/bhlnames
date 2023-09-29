@@ -1,7 +1,8 @@
 package abbr
 
 import (
-	"sort"
+	"cmp"
+	"slices"
 	"strings"
 	"unicode"
 
@@ -37,13 +38,13 @@ func Patterns(s string, d map[string]struct{}) []string {
 		res[count] = k
 		count++
 	}
-	sort.Slice(res, func(i, j int) bool {
-		li := len(res[i])
-		lj := len(res[j])
-		if li != lj {
-			return li > lj
+	slices.SortFunc(res, func(a, b string) int {
+		la := len(a)
+		lb := len(b)
+		if la != lb {
+			return cmp.Compare(lb, la)
 		}
-		return res[i] < res[j]
+		return cmp.Compare(a, b)
 	})
 	return res
 }
