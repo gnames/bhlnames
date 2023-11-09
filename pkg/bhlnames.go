@@ -199,6 +199,10 @@ func (bn bhlnames) NomenRefsStream(
 	close(chOut)
 }
 
+func (bn bhlnames) Item(id int) {
+
+}
+
 func (bn bhlnames) nomenRefsWorker(
 	chIn <-chan input.Input,
 	chOut chan<- *namerefs.NameRefs,

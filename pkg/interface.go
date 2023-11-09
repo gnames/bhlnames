@@ -2,6 +2,7 @@ package bhlnames
 
 import (
 	"github.com/gnames/bhlnames/internal/ent/input"
+	"github.com/gnames/bhlnames/internal/ent/item"
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnlib/ent/gnvers"
