@@ -21,6 +21,7 @@ require (
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/lib/pq v1.10.9
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.7.0
+	github.com/pgvector/pgvector-go v0.1.1
 	github.com/rs/zerolog v1.31.0
 	github.com/schollz/progressbar/v3 v3.13.1
 	github.com/sfgrp/lognsq v0.1.1

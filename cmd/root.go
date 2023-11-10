@@ -154,6 +154,7 @@ func getOpts() []config.Option {
 		err = fmt.Errorf("main: %#w", err)
 		log.Fatal().Err(err).Msg("getOpts")
 	}
+	fmt.Printf("CFG1: %#v\n", cfg)
 
 	if cfg.BHLDumpURL != "" {
 		opts = append(opts, config.OptBHLDumpURL(cfg.BHLDumpURL))

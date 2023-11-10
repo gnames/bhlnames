@@ -19,10 +19,15 @@ GRANT ALL ON SCHEMA public TO %s;
 COMMENT ON SCHEMA public IS 'standard public schema'`
 	q = fmt.Sprintf(q, b.DbUser)
 	_, err := b.DB.Exec(q)
+	if err == nil {
+		q = "CREATE EXTENSION IF NOT EXISTS vector"
+		_, err = b.DB.Exec(q)
+	}
 	if err != nil {
 		err = fmt.Errorf("builderio.resetDB: %w", err)
 		log.Fatal().Err(err).Msg("Database reset failed")
 	}
+
 	log.Info().Msg("Creating tables.")
 	b.migrate()
 }
@@ -35,6 +40,8 @@ func (b builderio) migrate() {
 		&db.Part{},
 		&db.NameString{},
 		&db.NameOccurrence{},
+		// &db.TextChunk{},
+		// &db.EmbeddedChunk{},
 		&db.ColNomenRef{},
 		&db.ColBhlRefs{},
 	)

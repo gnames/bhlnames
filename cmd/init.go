@@ -50,6 +50,7 @@ after enother. The result will be identical to "bhlnames init".`,
 		}
 		opts = append(opts, config.OptWithRebuild(rebuild))
 		cfg := config.New(opts...)
+		fmt.Printf("CFG %#v\n", cfg)
 
 		builder := builderio.New(cfg)
 		bn := bhlnames.New(cfg, bhlnames.OptBuilder(builder))

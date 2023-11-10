@@ -3,40 +3,59 @@
 # uncomment them and modify the value.
 
 ## BHL provides its data in a zip file located at the default URL shown below.
+## It is possible also possible to get data using original file from.
+## https://www.biodiversitylibrary.org/data/data.zip
+## However original might happen to be not compatible.
+## The default file copy is known to work with the recent version of BHLnames. 
 #
-## original (most often updated, might be incompatible)
-# BHLDumpURL: https://www.biodiversitylibrary.org/data/data.zip
-#
-## copy made at the same time as bhlindex dump (default).
 # BHLDumpURL: http://opendata.globalnames.org/dumps/bhl-data.zip
 
 ## BHL name index data need to be downloaded and combined with BHL dump data.
+#
 # BHLNamesURL: http://opendata.globalnames.org/dumps/bhlindex-latest.zip
 
 ## The Catalogue of Life Darwin Core Archive provides nomenclatural references
-# to scientific names.
+## to scientific names.
 #
 #  CoLDataURL: https://api.checklistbank.org/dataset/3LR/export?format=dwca
 
+## LLMUrl is the URL to the RESTful LLM's API endpoint.
+#
+# LLMURL: http:0.0.0.0:8181/api/v0
+
+## BHLTextDir contains BHL textual data organized in 3 levels. First level
+## contains first 3 digits of an ItemID. Second level contains 6 digits of
+## an ItemID. The third level contains the text files of the pages.
+## This directory is used to create embeddings for LLM.
+#
+# BHLTextDir /bhl
+
 ## Postgresql host for assembling data from BHL and BHL name index.
 ## Change it to IP address/Host of a database server.
+#
 # DbHost: 0.0.0.0
 
 ## Postgresql user. Change it to username existed in Postgres service.
+#
 # DbUser: postgres
 
 ## Postgresql password. Change it to the username password.
+#
 # DbPass: postgres
 
 ## Postgresql database to keep all the aggregated data.
+#
 # DbName: bhlnames
 
 ## Number of parallel jobs to search for BHL references.
+#
 # JobsNum: 4
 
 ## PortREST port for running REST API service
+#
 # PortREST: 8888
 
 ## Path to keep downloaded data and key-value stores. By default it is located
 ## in a standard Linux location.
+#
 # InputDir: ~/.cache/bhlnames
