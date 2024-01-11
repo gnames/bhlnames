@@ -3,8 +3,8 @@ package abbr_test
 import (
 	"testing"
 
-	"github.com/gnames/bhlnames/internal/ent/abbr"
 	"github.com/gnames/bhlnames/internal/io/dictio"
+	"github.com/gnames/bhlnames/pkg/ent/abbr"
 	"github.com/stretchr/testify/assert"
 )
 

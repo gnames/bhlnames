@@ -9,10 +9,10 @@ import (
 	"strings"
 
 	badger "github.com/dgraph-io/badger/v2"
-	"github.com/gnames/bhlnames/internal/ent/abbr"
 	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/internal/io/dictio"
 	"github.com/gnames/bhlnames/pkg/config"
+	"github.com/gnames/bhlnames/pkg/ent/abbr"
 	"github.com/gnames/gnfmt"
 	"github.com/rs/zerolog/log"
 )
