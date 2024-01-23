@@ -20,11 +20,11 @@ type refRow struct {
 	itemID             int
 	titleID            int
 	pageID             int
-	pageNum            int
+	pageNum            sql.NullInt64
 	titleDOI           string
-	titleYearStart     int
+	titleYearStart     sql.NullInt32
 	titleYearEnd       sql.NullInt32
-	yearStart          int
+	yearStart          sql.NullInt32
 	yearEnd            sql.NullInt32
 	volume             string
 	titleName          string
@@ -120,8 +120,9 @@ func (l reffinderio) occurrences(name string, field string) []*refRow {
 	}
 	var res []*refRow
 	var itemID, titleID, pageID int
-	var yearStart, yearEnd, titleYearStart, titleYearEnd, pageNum,
-		kingdomPercent, pathsTotal, editDistance sql.NullInt32
+	var kingdomPercent, pathsTotal, editDistance int
+	var yearStart, yearEnd, titleYearStart, titleYearEnd sql.NullInt32
+	var pageNum sql.NullInt64
 	var nameID string
 	var titleName, context, majorKingdom, nameString, matchedCanonical,
 		matchType, vol, titleDOI, annot sql.NullString
@@ -158,24 +159,24 @@ func (l reffinderio) occurrences(name string, field string) []*refRow {
 			itemID:             itemID,
 			titleID:            titleID,
 			pageID:             pageID,
-			pageNum:            int(pageNum.Int32),
+			pageNum:            pageNum,
 			titleDOI:           titleDOI.String,
-			titleYearStart:     int(titleYearStart.Int32),
+			titleYearStart:     titleYearStart,
 			titleYearEnd:       titleYearEnd,
-			yearStart:          int(yearStart.Int32),
+			yearStart:          yearStart,
 			yearEnd:            yearEnd,
 			titleName:          titleName.String,
 			volume:             vol.String,
 			mainTaxon:          context.String,
 			mainKingdom:        majorKingdom.String,
-			mainKingdomPercent: int(kingdomPercent.Int32),
-			namesTotal:         int(pathsTotal.Int32),
+			mainKingdomPercent: kingdomPercent,
+			namesTotal:         pathsTotal,
 			nameID:             nameID,
 			name:               nameString.String,
 			annotation:         annot.String,
 			matchedCanonical:   matchedCanonical.String,
 			matchType:          matchType.String,
-			editDistance:       int(editDistance.Int32),
+			editDistance:       editDistance,
 		}
 
 		res = append(res, rec)

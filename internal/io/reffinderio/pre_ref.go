@@ -33,7 +33,7 @@ func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*refRow) {
 					itemsMap[id] = &preReference{item: v, part: &db.Part{}}
 				}
 				// prefer a parsed page number
-				if ref.item.pageNum == 0 && v.pageNum > 0 {
+				if ref.item.pageNum.Int64 == 0 && v.pageNum.Int64 > 0 {
 					itemsMap[id] = &preReference{item: v, part: &db.Part{}}
 				}
 			}
@@ -52,7 +52,7 @@ func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*refRow) {
 					partsMap[id] = &preReference{item: v, part: part}
 				}
 				// prefer a parsed page number
-				if ref.item.pageNum == 0 && v.pageNum > 0 {
+				if ref.item.pageNum.Int64 == 0 && v.pageNum.Int64 > 0 {
 					l.gormDB.Where("id = ?", partID).First(part)
 					partsMap[id] = &preReference{item: v, part: part}
 				}
@@ -112,6 +112,9 @@ func getURL(pageID int) string {
 func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceBHL {
 	res := make([]*refbhl.ReferenceBHL, len(prs))
 	for i, v := range prs {
+		if v.part == nil {
+			v.part = &db.Part{}
+		}
 		yr, tp := getYearAggr(v)
 		res[i] = &refbhl.ReferenceBHL{
 			YearAggr:           yr,
@@ -124,7 +127,7 @@ func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceBHL {
 			EditDistance:       v.item.editDistance,
 			AnnotNomen:         v.item.annotation,
 			PageID:             v.item.pageID,
-			PageNum:            v.item.pageNum,
+			PageNum:            int(v.item.pageNum.Int64),
 			PartID:             int(v.part.ID),
 			ItemID:             v.item.itemID,
 			TitleID:            v.item.titleID,
@@ -136,9 +139,9 @@ func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceBHL {
 			ItemKingdomPercent: v.item.mainKingdomPercent,
 			StatNamesNum:       v.item.namesTotal,
 			ItemMainTaxon:      v.item.mainTaxon,
-			TitleYearStart:     v.item.titleYearStart,
+			TitleYearStart:     int(v.item.titleYearStart.Int32),
 			TitleYearEnd:       int(v.item.titleYearEnd.Int32),
-			ItemYearStart:      v.item.yearStart,
+			ItemYearStart:      int(v.item.yearStart.Int32),
 			ItemYearEnd:        int(v.item.yearEnd.Int32),
 		}
 	}
@@ -155,6 +158,9 @@ func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceBHL {
 }
 
 func getPartPages(pr *preReference) string {
+	if pr.part == nil {
+		return ""
+	}
 	start := int(pr.part.PageNumStart.Int32)
 	end := int(pr.part.PageNumEnd.Int32)
 	if start == 0 {
@@ -171,8 +177,8 @@ func getYearAggr(pr *preReference) (int, string) {
 	if pr.part != nil {
 		part = int(pr.part.Year.Int32)
 	}
-	item = pr.item.yearStart
-	title = pr.item.titleYearStart
+	item = int(pr.item.yearStart.Int32)
+	title = int(pr.item.titleYearStart.Int32)
 	if part > 0 {
 		return part, "Part"
 	}
