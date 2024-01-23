@@ -1,0 +1,228 @@
+basePath: /api/v1
+definitions:
+  gnvers.Version:
+    properties:
+      build:
+        type: string
+      version:
+        type: string
+    type: object
+  output.OddsDetails:
+    additionalProperties:
+      type: number
+    type: object
+  refbhl.ReferenceBHL:
+    properties:
+      annotNomen:
+        description: AnnotNomen is a nomenclatural annotation located near the matchted
+          name.
+        type: string
+      doiPart:
+        description: PartDOI provides DOI for a part (usually a paper/publication).
+        type: string
+      doiTitle:
+        description: TitleDOI provides DOI for a book or journal
+        type: string
+      editDistance:
+        description: |-
+          EditDistance is the number of differences (edit events)
+          between Name and MatchName according to Levenshtein algorithm.
+        type: integer
+      isNomenRef:
+        description: Score is the oval score of matching of the reference with a name-string
+          or
+        type: boolean
+      itemId:
+        description: ItemID is the BHL database ID for Item (volume usually).
+        type: integer
+      itemKingdom:
+        description: ItemKingdom a consensus kingdom for names from the Item (journal
+          volume).
+        type: string
+      itemKingdomPercent:
+        description: |-
+          ItemKingdomPercent, is the percentage showing how how many names belong to
+          the consensus Kingdom.
+        type: integer
+      itemMainTaxon:
+        description: |-
+          ItemMainTaxon provides a clade that contains a majority of scientific names
+          mentioned in the Item.
+        type: string
+      itemYearEnd:
+        description: ItemYearEnd is the year when an Item ended.
+        type: integer
+      itemYearStart:
+        description: |-
+          ItemYearStart is the year when an Item started to be published (most
+          items will have only ItemYearStart).
+        type: integer
+      matchName:
+        description: MatchedName is a scientific name match from the reference's text.
+        type: string
+      name:
+        description: Name is a scientific name from the query.
+        type: string
+      pageId:
+        description: PageID is the BHL database ID for the page where the name was
+          found.
+        type: integer
+      pageNum:
+        description: PageNum is the page number from the publisher.
+        type: integer
+      partId:
+        description: PartID is the BHL database ID for the Part (usually a scientific
+          paper).
+        type: integer
+      partName:
+        description: PartName is the publication title.
+        type: string
+      partPages:
+        description: PartPages are the start and end pages of a publication.
+        type: string
+      score:
+        allOf:
+        - $ref: '#/definitions/refbhl.Score'
+        description: a reference-string.
+      statNamesNum:
+        description: StatNamesNum is the number of names in the Item.
+        type: integer
+      titleId:
+        description: TitleID is the BHL database ID for the Title (book or journal).
+        type: integer
+      titleName:
+        description: TitleName is the name of a title (a book or a journal).
+        type: string
+      titleYearEnd:
+        description: TitleYearEnd is the year when a journal stopped being published.
+        type: integer
+      titleYearStart:
+        description: |-
+          TitleYearStart is the year when book is published, or when a journal was
+          published first time.
+        type: integer
+      url:
+        description: URL is the URL of the reference in BHL.
+        type: string
+      volume:
+        description: Volume is the information about a volume in a journal.
+        type: string
+      yearAggr:
+        description: |-
+          YearAggr is the the most precise available year information for the
+          reference. It can come from reference year (part), year of a Volume
+          (item) or from title (usually book or journal).
+        type: integer
+      yearType:
+        description: YearType indicates what got inserted as an YearAggr.
+        type: string
+    type: object
+  refbhl.Score:
+    properties:
+      annot:
+        description: |-
+          Annot is a score important for nomenclatural events and provides match
+          for nomenclatural annotations.
+        type: integer
+      labels:
+        additionalProperties:
+          type: string
+        description: Labels provide types for each match
+        type: object
+      odds:
+        description: Odds is total naive bayes odds ofr the score.
+        type: number
+      oddsDetail:
+        $ref: '#/definitions/output.OddsDetails'
+      pages:
+        description: RefPages is a score from matching pages in reference and a page
+          in BHL.
+        type: integer
+      title:
+        description: RefTitle is the score of matching references titleName.
+        type: integer
+      total:
+        description: Total is a simple sum of all available individual score.
+        type: integer
+      volume:
+        description: RefVolume is a score from matching volume from reference and
+          BHL Volume.
+        type: integer
+      year:
+        description: |-
+          Year is a score of a quality of a year match in a reference-string or
+          name-string.
+        type: integer
+    type: object
+host: localhost:8888
+info:
+  contact:
+    email: dmozzherin@gmail.com
+    name: Dmitry Mozzherin
+    url: https://github.com/dimus
+  description: 'This API serves the BHLnames app. It locates relevant sections in
+    the Biodiversity Heritage Library that correspond provided names, references or
+    pages. \n\nCode repository: https://github.com/gnames/bhlnames. \n\nAccess the
+    API on the production server: https://bhlnames.globalnames.org/api/v1.'
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: BHLnames API
+  version: "1.0"
+paths:
+  /:
+    get:
+      description: Gives information where to find docs.
+      operationId: get-info
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: API documentation URL
+          schema:
+            type: string
+      summary: Information about the API documentation
+  /ping:
+    get:
+      description: Checks if the API is online and returns a simple response if it
+        is.
+      operationId: get-ping
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: API status response
+          schema:
+            type: string
+      summary: Check API status
+  /references/{page-id}:
+    get:
+      description: Retrieves the BHL reference metadata by pageID.
+      operationId: get-refs
+      parameters:
+      - description: Page ID of a reference.
+        in: path
+        name: page-id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful response with data about the reference
+          schema:
+            $ref: '#/definitions/refbhl.ReferenceBHL'
+      summary: Get BHL reference metadata by pageID
+  /version:
+    get:
+      description: Retrieves the current version of the BHLnames application.
+      operationId: get-version
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful response with version information
+          schema:
+            $ref: '#/definitions/gnvers.Version'
+      summary: Get BHLnames version
+swagger: "2.0"

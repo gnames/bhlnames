@@ -3,7 +3,6 @@ package reffinderio
 import (
 	"cmp"
 	"fmt"
-	"net/url"
 	"slices"
 	"strconv"
 
@@ -15,14 +14,14 @@ import (
 
 // updateOutput makes sure that every item part and title get only one unique
 // name to avoid information overload.
-func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*row) {
+func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*refRow) {
 	kv := l.kvDB
 	o.ReferenceNumber = len(raw)
 	partsMap := make(map[string]*preReference)
 	itemsMap := make(map[string]*preReference)
 	var preRefs []*preReference
 	for _, v := range raw {
-		partID := checkPart(kv, v.pageID)
+		partID := findPart(kv, v.pageID)
 		if partID == 0 {
 			// find the first name in the Item
 			id := genMapID(v.itemID, v.matchedCanonical)
@@ -99,14 +98,8 @@ func genSynonyms(refs []*refbhl.ReferenceBHL, current string) []string {
 // checks if a page ID is included into any parts. All pageIDs that correspond
 // to a particular `part` are saved to key-value store. So if a pageID is not
 // found in the store, it means it is not associated with any `parts`. In such case we return 0.
-func checkPart(kv *badger.DB, pageID int) int {
+func findPart(kv *badger.DB, pageID int) int {
 	return db.GetValue(kv, strconv.Itoa(pageID))
-}
-
-func getImagesUrl(name string) string {
-	q := url.PathEscape(name)
-	url := "https://www.google.com/search?tbm=isch&q=%s"
-	return fmt.Sprintf(url, q)
 }
 
 func getURL(pageID int) string {
@@ -144,9 +137,9 @@ func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceBHL {
 			StatNamesNum:       v.item.namesTotal,
 			ItemMainTaxon:      v.item.mainTaxon,
 			TitleYearStart:     v.item.titleYearStart,
-			TitleYearEnd:       v.item.titleYearEnd,
+			TitleYearEnd:       int(v.item.titleYearEnd.Int32),
 			ItemYearStart:      v.item.yearStart,
-			ItemYearEnd:        v.item.yearEnd,
+			ItemYearEnd:        int(v.item.yearEnd.Int32),
 		}
 	}
 	if l.sortDesc {

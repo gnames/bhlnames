@@ -1,0 +1,285 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This API serves the BHLnames app. It locates relevant sections in the Biodiversity Heritage Library that correspond provided names, references or pages. \\n\\nCode repository: https://github.com/gnames/bhlnames. \\n\\nAccess the API on the production server: https://bhlnames.globalnames.org/api/v1.",
+        "title": "BHLnames API",
+        "contact": {
+            "name": "Dmitry Mozzherin",
+            "url": "https://github.com/dimus",
+            "email": "dmozzherin@gmail.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8888",
+    "basePath": "/api/v1",
+    "paths": {
+        "/": {
+            "get": {
+                "description": "Gives information where to find docs.",
+                "produces": [
+                    "text/plain"
+                ],
+                "summary": "Information about the API documentation",
+                "operationId": "get-info",
+                "responses": {
+                    "200": {
+                        "description": "API documentation URL",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/ping": {
+            "get": {
+                "description": "Checks if the API is online and returns a simple response if it is.",
+                "produces": [
+                    "text/plain"
+                ],
+                "summary": "Check API status",
+                "operationId": "get-ping",
+                "responses": {
+                    "200": {
+                        "description": "API status response",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/references/{page-id}": {
+            "get": {
+                "description": "Retrieves the BHL reference metadata by pageID.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get BHL reference metadata by pageID",
+                "operationId": "get-refs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page ID of a reference.",
+                        "name": "page-id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response with data about the reference",
+                        "schema": {
+                            "$ref": "#/definitions/refbhl.ReferenceBHL"
+                        }
+                    }
+                }
+            }
+        },
+        "/version": {
+            "get": {
+                "description": "Retrieves the current version of the BHLnames application.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get BHLnames version",
+                "operationId": "get-version",
+                "responses": {
+                    "200": {
+                        "description": "Successful response with version information",
+                        "schema": {
+                            "$ref": "#/definitions/gnvers.Version"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "gnvers.Version": {
+            "type": "object",
+            "properties": {
+                "build": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "output.OddsDetails": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "number"
+            }
+        },
+        "refbhl.ReferenceBHL": {
+            "type": "object",
+            "properties": {
+                "annotNomen": {
+                    "description": "AnnotNomen is a nomenclatural annotation located near the matchted name.",
+                    "type": "string"
+                },
+                "doiPart": {
+                    "description": "PartDOI provides DOI for a part (usually a paper/publication).",
+                    "type": "string"
+                },
+                "doiTitle": {
+                    "description": "TitleDOI provides DOI for a book or journal",
+                    "type": "string"
+                },
+                "editDistance": {
+                    "description": "EditDistance is the number of differences (edit events)\nbetween Name and MatchName according to Levenshtein algorithm.",
+                    "type": "integer"
+                },
+                "isNomenRef": {
+                    "description": "Score is the oval score of matching of the reference with a name-string or",
+                    "type": "boolean"
+                },
+                "itemId": {
+                    "description": "ItemID is the BHL database ID for Item (volume usually).",
+                    "type": "integer"
+                },
+                "itemKingdom": {
+                    "description": "ItemKingdom a consensus kingdom for names from the Item (journal volume).",
+                    "type": "string"
+                },
+                "itemKingdomPercent": {
+                    "description": "ItemKingdomPercent, is the percentage showing how how many names belong to\nthe consensus Kingdom.",
+                    "type": "integer"
+                },
+                "itemMainTaxon": {
+                    "description": "ItemMainTaxon provides a clade that contains a majority of scientific names\nmentioned in the Item.",
+                    "type": "string"
+                },
+                "itemYearEnd": {
+                    "description": "ItemYearEnd is the year when an Item ended.",
+                    "type": "integer"
+                },
+                "itemYearStart": {
+                    "description": "ItemYearStart is the year when an Item started to be published (most\nitems will have only ItemYearStart).",
+                    "type": "integer"
+                },
+                "matchName": {
+                    "description": "MatchedName is a scientific name match from the reference's text.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name is a scientific name from the query.",
+                    "type": "string"
+                },
+                "pageId": {
+                    "description": "PageID is the BHL database ID for the page where the name was found.",
+                    "type": "integer"
+                },
+                "pageNum": {
+                    "description": "PageNum is the page number from the publisher.",
+                    "type": "integer"
+                },
+                "partId": {
+                    "description": "PartID is the BHL database ID for the Part (usually a scientific paper).",
+                    "type": "integer"
+                },
+                "partName": {
+                    "description": "PartName is the publication title.",
+                    "type": "string"
+                },
+                "partPages": {
+                    "description": "PartPages are the start and end pages of a publication.",
+                    "type": "string"
+                },
+                "score": {
+                    "description": "a reference-string.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/refbhl.Score"
+                        }
+                    ]
+                },
+                "statNamesNum": {
+                    "description": "StatNamesNum is the number of names in the Item.",
+                    "type": "integer"
+                },
+                "titleId": {
+                    "description": "TitleID is the BHL database ID for the Title (book or journal).",
+                    "type": "integer"
+                },
+                "titleName": {
+                    "description": "TitleName is the name of a title (a book or a journal).",
+                    "type": "string"
+                },
+                "titleYearEnd": {
+                    "description": "TitleYearEnd is the year when a journal stopped being published.",
+                    "type": "integer"
+                },
+                "titleYearStart": {
+                    "description": "TitleYearStart is the year when book is published, or when a journal was\npublished first time.",
+                    "type": "integer"
+                },
+                "url": {
+                    "description": "URL is the URL of the reference in BHL.",
+                    "type": "string"
+                },
+                "volume": {
+                    "description": "Volume is the information about a volume in a journal.",
+                    "type": "string"
+                },
+                "yearAggr": {
+                    "description": "YearAggr is the the most precise available year information for the\nreference. It can come from reference year (part), year of a Volume\n(item) or from title (usually book or journal).",
+                    "type": "integer"
+                },
+                "yearType": {
+                    "description": "YearType indicates what got inserted as an YearAggr.",
+                    "type": "string"
+                }
+            }
+        },
+        "refbhl.Score": {
+            "type": "object",
+            "properties": {
+                "annot": {
+                    "description": "Annot is a score important for nomenclatural events and provides match\nfor nomenclatural annotations.",
+                    "type": "integer"
+                },
+                "labels": {
+                    "description": "Labels provide types for each match",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "odds": {
+                    "description": "Odds is total naive bayes odds ofr the score.",
+                    "type": "number"
+                },
+                "oddsDetail": {
+                    "$ref": "#/definitions/output.OddsDetails"
+                },
+                "pages": {
+                    "description": "RefPages is a score from matching pages in reference and a page in BHL.",
+                    "type": "integer"
+                },
+                "title": {
+                    "description": "RefTitle is the score of matching references titleName.",
+                    "type": "integer"
+                },
+                "total": {
+                    "description": "Total is a simple sum of all available individual score.",
+                    "type": "integer"
+                },
+                "volume": {
+                    "description": "RefVolume is a score from matching volume from reference and BHL Volume.",
+                    "type": "integer"
+                },
+                "year": {
+                    "description": "Year is a score of a quality of a year match in a reference-string or\nname-string.",
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

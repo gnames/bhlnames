@@ -4,8 +4,8 @@ import (
 	"cmp"
 	"slices"
 
-	"github.com/gnames/bhlnames/internal/ent/abbr"
 	"github.com/gnames/bhlnames/internal/io/db"
+	"github.com/gnames/bhlnames/pkg/ent/abbr"
 	"github.com/gnames/gnfmt"
 )
 

@@ -14,6 +14,7 @@ const (
 	combNov
 )
 
+// NewAnnot coverts annotation string to annotation type (if possible).
 func NewAnnot(annot string) annotation {
 	annotations := map[string]annotation{
 		"NO_ANNOT":  noAnnot,
@@ -27,6 +28,7 @@ func NewAnnot(annot string) annotation {
 	return noAnnot
 }
 
+// String returns string representation of annotation type.
 func (a annotation) String() string {
 	switch int(a) {
 	case 1:
@@ -38,7 +40,6 @@ func (a annotation) String() string {
 	default:
 		return "NO_ANNOT"
 	}
-
 }
 
 // NO_ANNOT = 3???

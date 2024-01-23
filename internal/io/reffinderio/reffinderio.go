@@ -56,6 +56,14 @@ func New(cfg config.Config) reffinder.RefFinder {
 	}
 	return res
 }
+func (rf reffinderio) RefByPageID(pageID int) (*refbhl.ReferenceBHL, error) {
+	var ref *refbhl.ReferenceBHL
+	ref, err := rf.refByPageID(pageID)
+	if err != nil {
+		return ref, err
+	}
+	return ref, err
+}
 
 func (rf reffinderio) ReferencesBHL(
 	inp input.Input,
@@ -77,7 +85,7 @@ func (rf reffinderio) ReferencesBHL(
 		return res, err
 	}
 
-	var rows []*row
+	var rows []*refRow
 	if rf.withSynonyms {
 		rows = rf.taxonOccurrences(res)
 	} else {

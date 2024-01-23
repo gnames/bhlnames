@@ -2,28 +2,30 @@ package reffinderio
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
+	"github.com/gnames/bhlnames/internal/ent/refbhl"
 	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/rs/zerolog/log"
 )
 
 type preReference struct {
-	item *row
+	item *refRow
 	part *db.Part
 }
 
-type row struct {
+type refRow struct {
 	itemID             int
 	titleID            int
 	pageID             int
 	pageNum            int
 	titleDOI           string
 	titleYearStart     int
-	titleYearEnd       int
+	titleYearEnd       sql.NullInt32
 	yearStart          int
-	yearEnd            int
+	yearEnd            sql.NullInt32
 	volume             string
 	titleName          string
 	mainTaxon          string
@@ -38,22 +40,85 @@ type row struct {
 	editDistance       int
 }
 
-func (l reffinderio) nameOnlyOccurrences(nameRefs *namerefs.NameRefs) []*row {
+func (rf reffinderio) refByPageID(pageID int) (*refbhl.ReferenceBHL, error) {
+	qs := `SELECT
+  itm.id, itm.title_id, pg.id, pg.page_num,
+  itm.title_year_start, itm.title_year_end, itm.year_start, itm.year_end,
+  itm.title_name, itm.vol, itm.title_doi, ist.main_taxon, ist.main_kingdom,
+  ist.main_kingdom_percent, ist.names_total
+	FROM pages pg
+	  JOIN items itm ON itm.id = pg.item_id
+      JOIN item_stats ist ON itm.id = ist.id
+	WHERE pg.id = $1
+	ORDER BY title_year_start`
+
+	r := rf.db.QueryRow(qs, pageID)
+
+	var rr refRow
+	err := r.Scan(&rr.itemID, &rr.titleID, &rr.pageID, &rr.pageNum,
+		&rr.titleYearStart, &rr.titleYearEnd, &rr.yearStart,
+		&rr.yearEnd, &rr.titleName, &rr.volume, &rr.titleDOI,
+		&rr.mainTaxon, &rr.mainKingdom, &rr.mainKingdomPercent,
+		&rr.namesTotal,
+	)
+	if err != nil {
+		err = fmt.Errorf("reffinderio.refByPageID: %w", err)
+		log.Warn().Err(err).Msg("")
+		return nil, err
+	}
+
+	preRes := preReference{item: &rr}
+
+	partID := findPart(rf.kvDB, pageID)
+	if partID > 0 {
+
+		part, err := rf.partByID(partID)
+		if err != nil {
+			err = fmt.Errorf("reffinderio.refByPageID: %w", err)
+			log.Warn().Err(err).Msg("")
+			return nil, err
+		}
+		preRes.part = part
+	}
+	res := rf.genReferences([]*preReference{&preRes})
+	if len(res) == 0 {
+		return nil, errors.New("reffinderio.refByPageID: no references found")
+	}
+	return res[0], nil
+}
+
+func (rf reffinderio) partByID(partID int) (*db.Part, error) {
+	var res db.Part
+	q := `SELECT
+  id, title, doi, page_num_start, page_num_end, year
+	FROM parts
+	WHERE id = $1`
+	row := rf.db.QueryRow(q, partID)
+	err := row.Scan(&res.ID, &res.Title, &res.DOI, &res.PageNumStart,
+		&res.PageNumEnd, &res.Year)
+	if err != nil {
+		err = fmt.Errorf("reffinderio.partByID: %w", err)
+		log.Warn().Err(err).Msg("")
+	}
+	return &res, nil
+}
+
+func (l reffinderio) nameOnlyOccurrences(nameRefs *namerefs.NameRefs) []*refRow {
 	return l.occurrences(nameRefs.Canonical, "matched_canonical")
 }
 
-func (l reffinderio) taxonOccurrences(nameRefs *namerefs.NameRefs) []*row {
+func (l reffinderio) taxonOccurrences(nameRefs *namerefs.NameRefs) []*refRow {
 	return l.occurrences(nameRefs.CurrentCanonical, "current_canonical")
 }
 
-func (l reffinderio) occurrences(name string, field string) []*row {
+func (l reffinderio) occurrences(name string, field string) []*refRow {
 	switch field {
 	case "matched_canonical", "current_canonical":
 	default:
 		log.Warn().Msgf("Unregistered field: %s", field)
 		return nil
 	}
-	var res []*row
+	var res []*refRow
 	var itemID, titleID, pageID int
 	var yearStart, yearEnd, titleYearStart, titleYearEnd, pageNum,
 		kingdomPercent, pathsTotal, editDistance sql.NullInt32
@@ -89,16 +154,16 @@ func (l reffinderio) occurrences(name string, field string) []*row {
 			err = fmt.Errorf("reffinderio.occurrences: %w", err)
 			log.Fatal().Err(err).Msg("")
 		}
-		rec := &row{
+		rec := &refRow{
 			itemID:             itemID,
 			titleID:            titleID,
 			pageID:             pageID,
 			pageNum:            int(pageNum.Int32),
 			titleDOI:           titleDOI.String,
 			titleYearStart:     int(titleYearStart.Int32),
-			titleYearEnd:       int(titleYearEnd.Int32),
+			titleYearEnd:       titleYearEnd,
 			yearStart:          int(yearStart.Int32),
-			yearEnd:            int(yearEnd.Int32),
+			yearEnd:            yearEnd,
 			titleName:          titleName.String,
 			volume:             vol.String,
 			mainTaxon:          context.String,

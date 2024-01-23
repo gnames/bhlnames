@@ -28,11 +28,11 @@ tools: deps
 	@echo Installing tools from tools.go
 	@cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
 
-build:
+build: openapi
 	$(GOCLEAN); \
 	$(FLAGS_SHARED) GOOS=linux $(GOBUILD);
 
-release:
+release: openapi
 	$(GOCLEAN); \
 	$(FLAGS_SHARED) GOOS=linux $(GOBUILD); \
 	tar zcvf /tmp/bhlnames-${VER}-linux.tar.gz bhlnames; \
@@ -44,8 +44,13 @@ release:
 	zip -9 /tmp/bhlnames-$(VER)-win-64.zip bhlnames.exe; \
 	$(GOCLEAN);
 
-install:
+install: openapi
 	$(FLAGS_SHARED) $(GOINSTALL);
+	
+## OpenAPI generation
+openapi: ## Generate documentation for OpenAPI
+	swag init -g restio.go -d ./internal/io/restio  --parseDependency --parseInternal
 
 dc: build
 	docker-compose build; \
+
