@@ -56,8 +56,8 @@ func New(cfg config.Config) reffinder.RefFinder {
 	}
 	return res
 }
-func (rf reffinderio) RefByPageID(pageID int) (*refbhl.ReferenceBHL, error) {
-	var ref *refbhl.ReferenceBHL
+func (rf reffinderio) RefByPageID(pageID int) (*refbhl.ReferenceNameBHL, error) {
+	var ref *refbhl.ReferenceNameBHL
 	ref, err := rf.refByPageID(pageID)
 	if err != nil {
 		return ref, err
@@ -113,7 +113,7 @@ func (rf reffinderio) Close() error {
 func (rf reffinderio) emptyNameRefs(data input.Input) *namerefs.NameRefs {
 	res := &namerefs.NameRefs{
 		Input:        data,
-		References:   make([]*refbhl.ReferenceBHL, 0),
+		References:   make([]*refbhl.ReferenceNameBHL, 0),
 		WithSynonyms: rf.withSynonyms,
 	}
 	return res

@@ -63,7 +63,7 @@ func (a annotation) String() string {
 // f:sp v:ssp = 1
 // f:gen v:gen = 0
 
-func getAnnotScore(ref *refbhl.ReferenceBHL) (int, string) {
+func getAnnotScore(ref *refbhl.ReferenceNameBHL) (int, string) {
 	annot := NewAnnot(ref.AnnotNomen)
 	cardName, cardMatchName := cardinality(ref)
 	if cardName == 0 || cardMatchName == 0 {
@@ -122,10 +122,10 @@ func annotLabel(score int) (int, string) {
 	}
 }
 
-func cardinality(ref *refbhl.ReferenceBHL) (int32, int32) {
+func cardinality(ref *refbhl.ReferenceNameBHL) (int32, int32) {
 	cfg := gnparser.NewConfig()
 	gnp := gnparser.New(cfg)
 	n := gnp.ParseName(ref.Name)
-	mn := gnp.ParseName(ref.MatchName)
+	mn := gnp.ParseName(ref.MatchedName)
 	return int32(n.Cardinality), int32(mn.Cardinality)
 }

@@ -124,7 +124,7 @@ func ver(bn bhlnames.BHLnames) func(echo.Context) error {
 // @ID get-refs
 // @Produce json
 // @Param page-id path integer true "Page ID of a reference."
-// @Success 200 {object} refbhl.ReferenceBHL "Successful response with data about the reference"
+// @Success 200 {object} refbhl.ReferenceNameBHL "Successful response with data about the reference"
 // @Router /references/{page-id} [get]
 func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 	return func(c echo.Context) error {

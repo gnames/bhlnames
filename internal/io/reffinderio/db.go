@@ -40,7 +40,7 @@ type refRow struct {
 	editDistance       int
 }
 
-func (rf reffinderio) refByPageID(pageID int) (*refbhl.ReferenceBHL, error) {
+func (rf reffinderio) refByPageID(pageID int) (*refbhl.ReferenceNameBHL, error) {
 	qs := `SELECT
   itm.id, itm.title_id, pg.id, pg.page_num,
   itm.title_year_start, itm.title_year_end, itm.year_start, itm.year_end,

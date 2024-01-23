@@ -40,10 +40,12 @@ func TestAnnotScore(t *testing.T) {
 	}
 
 	for _, v := range tests {
-		testRef := refbhl.ReferenceBHL{
-			Name:       v.name,
-			MatchName:  v.matchName,
-			AnnotNomen: v.annotation.String(),
+		testRef := refbhl.ReferenceNameBHL{
+			NameData: refbhl.NameData{
+				Name:        v.name,
+				MatchedName: v.matchName,
+				AnnotNomen:  v.annotation.String(),
+			},
 		}
 		score, _ := getAnnotScore(&testRef)
 		assert.Equal(t, score, v.score, v.msg)

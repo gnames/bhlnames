@@ -10,7 +10,15 @@ import (
 func TestYearNear(t *testing.T) {
 	// yearNear does not check for validness of the year, it is done in
 	// YearScore function.
-	years := [][]int{{2001, 2000}, {2000, 2001}, {2000, 2000}, {2000, 2002}, {2000, 2003}, {-1, -1}, {3000, 3001}}
+	years := [][]int{
+		{2001, 2000},
+		{2000, 2001},
+		{2000, 2000},
+		{2000, 2002},
+		{2000, 2003},
+		{-1, -1},
+		{3000, 3001},
+	}
 	scores := []int{2, 2, 3, 1, 1, 0, 0}
 	for i, v := range years {
 		score := yearNear(v[0], v[1])
@@ -94,19 +102,27 @@ func TestYearScore(t *testing.T) {
 	}
 
 	for _, d := range dataArray {
-		testRef := refbhl.ReferenceBHL{
-			YearType:       d.refType,
-			YearAggr:       d.refYears[0],
-			ItemYearStart:  d.refYears[1],
-			ItemYearEnd:    d.refYears[2],
-			TitleYearStart: d.refYears[3],
-			TitleYearEnd:   d.refYears[4],
+		testRef := refbhl.ReferenceNameBHL{
+			Reference: refbhl.Reference{
+				YearType:       d.refType,
+				YearAggr:       d.refYears[0],
+				ItemYearStart:  d.refYears[1],
+				ItemYearEnd:    d.refYears[2],
+				TitleYearStart: d.refYears[3],
+				TitleYearEnd:   d.refYears[4],
+			},
 		}
 
 		result, _ := getYearScore(d.year, &testRef)
 
 		if result != d.score {
-			t.Errorf("Wrong score for YearScore(%d, %#v) %d %d\n\n", d.year, testRef, result, d.score)
+			t.Errorf(
+				"Wrong score for YearScore(%d, %#v) %d %d\n\n",
+				d.year,
+				testRef,
+				result,
+				d.score,
+			)
 		}
 	}
 }

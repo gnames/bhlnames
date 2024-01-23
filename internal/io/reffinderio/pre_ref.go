@@ -80,11 +80,11 @@ func genMapID(id int, name string) string {
 
 // genSynonyms collects unique name-strings from references and saves all
 // of them except the currently accepted name into slice of strings.
-func genSynonyms(refs []*refbhl.ReferenceBHL, current string) []string {
+func genSynonyms(refs []*refbhl.ReferenceNameBHL, current string) []string {
 	syn := make(map[string]struct{})
 	for _, v := range refs {
-		if v.MatchName != current {
-			syn[v.MatchName] = struct{}{}
+		if v.MatchedName != current {
+			syn[v.MatchedName] = struct{}{}
 		}
 	}
 	res := make([]string, 0, len(syn))
@@ -109,48 +109,56 @@ func getURL(pageID int) string {
 	return fmt.Sprintf("https://www.biodiversitylibrary.org/page/%d", pageID)
 }
 
-func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceBHL {
-	res := make([]*refbhl.ReferenceBHL, len(prs))
+func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceNameBHL {
+	res := make([]*refbhl.ReferenceNameBHL, len(prs))
 	for i, v := range prs {
 		if v.part == nil {
 			v.part = &db.Part{}
 		}
 		yr, tp := getYearAggr(v)
-		res[i] = &refbhl.ReferenceBHL{
-			YearAggr:           yr,
-			YearType:           tp,
-			URL:                getURL(v.item.pageID),
-			TitleDOI:           v.item.titleDOI,
-			PartDOI:            v.part.DOI,
-			Name:               v.item.name,
-			MatchName:          v.item.matchedCanonical,
-			EditDistance:       v.item.editDistance,
-			AnnotNomen:         v.item.annotation,
-			PageID:             v.item.pageID,
-			PageNum:            int(v.item.pageNum.Int64),
-			PartID:             int(v.part.ID),
-			ItemID:             v.item.itemID,
-			TitleID:            v.item.titleID,
-			TitleName:          v.item.titleName,
-			Volume:             v.item.volume,
-			PartPages:          getPartPages(v),
-			PartName:           v.part.Title,
-			ItemKingdom:        v.item.mainKingdom,
-			ItemKingdomPercent: v.item.mainKingdomPercent,
-			StatNamesNum:       v.item.namesTotal,
-			ItemMainTaxon:      v.item.mainTaxon,
-			TitleYearStart:     int(v.item.titleYearStart.Int32),
-			TitleYearEnd:       int(v.item.titleYearEnd.Int32),
-			ItemYearStart:      int(v.item.yearStart.Int32),
-			ItemYearEnd:        int(v.item.yearEnd.Int32),
+		res[i] = &refbhl.ReferenceNameBHL{
+			NameData: refbhl.NameData{
+				Name:         v.item.name,
+				MatchedName:  v.item.matchedCanonical,
+				AnnotNomen:   v.item.annotation,
+				EditDistance: v.item.editDistance,
+			},
+			Reference: refbhl.Reference{
+				YearAggr:       yr,
+				YearType:       tp,
+				ItemID:         v.item.itemID,
+				URL:            getURL(v.item.pageID),
+				TitleID:        v.item.titleID,
+				TitleName:      v.item.titleName,
+				Volume:         v.item.volume,
+				TitleDOI:       v.item.titleDOI,
+				PageID:         v.item.pageID,
+				PageNum:        int(v.item.pageNum.Int64),
+				TitleYearStart: int(v.item.titleYearStart.Int32),
+				TitleYearEnd:   int(v.item.titleYearEnd.Int32),
+				ItemYearStart:  int(v.item.yearStart.Int32),
+				ItemYearEnd:    int(v.item.yearEnd.Int32),
+				Part: &refbhl.Part{
+					DOI:   v.part.DOI,
+					ID:    int(v.part.ID),
+					Pages: getPartPages(v),
+					Name:  v.part.Title,
+				},
+				ItemStats: refbhl.ItemStats{
+					ItemKingdom:        v.item.mainKingdom,
+					ItemKingdomPercent: v.item.mainKingdomPercent,
+					UniqNamesNum:       v.item.namesTotal,
+					ItemMainTaxon:      v.item.mainTaxon,
+				},
+			},
 		}
 	}
 	if l.sortDesc {
-		slices.SortStableFunc(res, func(a, b *refbhl.ReferenceBHL) int {
+		slices.SortStableFunc(res, func(a, b *refbhl.ReferenceNameBHL) int {
 			return cmp.Compare(b.YearAggr, a.YearAggr)
 		})
 	} else {
-		slices.SortStableFunc(res, func(a, b *refbhl.ReferenceBHL) int {
+		slices.SortStableFunc(res, func(a, b *refbhl.ReferenceNameBHL) int {
 			return cmp.Compare(a.YearAggr, b.YearAggr)
 		})
 	}

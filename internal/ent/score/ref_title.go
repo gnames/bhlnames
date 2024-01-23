@@ -6,7 +6,7 @@ import (
 
 func getRefTitleScore(
 	titleIDs map[int][]string,
-	ref *refbhl.ReferenceBHL,
+	ref *refbhl.ReferenceNameBHL,
 ) (int, string) {
 	var score int
 	// matched abbreviations are sorted by their length

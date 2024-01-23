@@ -10,7 +10,7 @@ import (
 var maxYearScore int = 3
 
 // getYearScore
-func getYearScore(yearInput int, ref *refbhl.ReferenceBHL) (int, string) {
+func getYearScore(yearInput int, ref *refbhl.ReferenceNameBHL) (int, string) {
 	var score int
 	yearPart, itemYearStart, itemYearEnd, titleYearStart, titleYearEnd := getRefYears(ref)
 
@@ -88,7 +88,7 @@ func yearBetween(year, yearMin, yearMax int) int {
 	return yearNear(year, yearMax)
 }
 
-func getRefYears(ref *refbhl.ReferenceBHL) (int, int, int, int, int) {
+func getRefYears(ref *refbhl.ReferenceNameBHL) (int, int, int, int, int) {
 	var yearPart int
 	if ref.YearType == "Part" {
 		yearPart = ref.YearAggr

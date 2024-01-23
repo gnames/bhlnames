@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	testURL = "http://0.0.0.0:8888/api/v0"
+	testURL = "http://0.0.0.0:8888/api/v1"
 	enc     = gnfmt.GNjson{}
 )
 
@@ -68,7 +68,7 @@ func TestNameRefs(t *testing.T) {
 	assert.Greater(response.ReferenceNumber, 0)
 	assert.Greater(len(response.References), 0)
 	for _, v := range response.References {
-		assert.Equal("Achenium lusitanicum", v.MatchName)
+		assert.Equal("Achenium lusitanicum", v.MatchedName)
 	}
 }
 
@@ -98,7 +98,7 @@ func TestTaxonRefs(t *testing.T) {
 	assert.Greater(len(response.References), 0)
 	matchedNames := make(map[string]struct{})
 	for _, v := range response.References {
-		matchedNames[v.MatchName] = struct{}{}
+		matchedNames[v.MatchedName] = struct{}{}
 	}
 	assert.Greater(len(matchedNames), 1)
 }
@@ -107,7 +107,9 @@ func TestNomenRefs(t *testing.T) {
 	assert := assert.New(t)
 	opts := []input.Option{
 		input.OptNameString("Amphioplus lucidus Koehler, 1922"),
-		input.OptRefString("Koehler, R. Ophiurans of the Philippine Seas and adjacent waters. Smithsonian Institution United States National Museum Bulletin. 100(5): 1-486. (1922)."),
+		input.OptRefString(
+			"Koehler, R. Ophiurans of the Philippine Seas and adjacent waters. Smithsonian Institution United States National Museum Bulletin. 100(5): 1-486. (1922).",
+		),
 	}
 
 	gnp := gnparser.New(gnparser.NewConfig())

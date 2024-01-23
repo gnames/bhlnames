@@ -150,7 +150,7 @@ func (bn bhlnames) InitializeCol() error {
 }
 
 // RefByPageID returns a reference metadata for a given pageID.
-func (bn bhlnames) RefByPageID(pageID int) (*refbhl.ReferenceBHL, error) {
+func (bn bhlnames) RefByPageID(pageID int) (*refbhl.ReferenceNameBHL, error) {
 	return bn.RefFinder.RefByPageID(pageID)
 }
 
@@ -252,7 +252,7 @@ func (bn bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 	if err != nil {
 		return err
 	}
-	slices.SortFunc(nr.References, func(a, b *refbhl.ReferenceBHL) int {
+	slices.SortFunc(nr.References, func(a, b *refbhl.ReferenceNameBHL) int {
 		if a.Score.Odds == b.Score.Odds {
 			if a.YearAggr == b.YearAggr {
 				return cmp.Compare(a.PageID, b.PageID)

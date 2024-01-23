@@ -33,9 +33,13 @@ func TestPageScore(t *testing.T) {
 	}
 
 	for _, d := range tests {
-		testRef := refbhl.ReferenceBHL{
-			PageNum:   d.pageNum,
-			PartPages: d.partPages,
+		testRef := refbhl.ReferenceNameBHL{
+			Reference: refbhl.Reference{
+				PageNum: d.pageNum,
+				Part: &refbhl.Part{
+					Pages: d.partPages,
+				},
+			},
 		}
 
 		score, _ := getPageScore(d.pageStart, d.pageEnd, &testRef)

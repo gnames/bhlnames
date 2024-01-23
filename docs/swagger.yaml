@@ -11,118 +11,195 @@ definitions:
     additionalProperties:
       type: number
     type: object
-  refbhl.ReferenceBHL:
+  refbhl.ItemStats:
+    description: ItemStats provides insights about a Reference's Item. This data can
+      be used to infer the prevalent taxonomic groups within the Item.
     properties:
-      annotNomen:
-        description: AnnotNomen is a nomenclatural annotation located near the matchted
-          name.
-        type: string
-      doiPart:
-        description: PartDOI provides DOI for a part (usually a paper/publication).
-        type: string
-      doiTitle:
-        description: TitleDOI provides DOI for a book or journal
-        type: string
-      editDistance:
-        description: |-
-          EditDistance is the number of differences (edit events)
-          between Name and MatchName according to Levenshtein algorithm.
-        type: integer
-      isNomenRef:
-        description: Score is the oval score of matching of the reference with a name-string
-          or
-        type: boolean
-      itemId:
-        description: ItemID is the BHL database ID for Item (volume usually).
-        type: integer
       itemKingdom:
         description: ItemKingdom a consensus kingdom for names from the Item (journal
           volume).
+        example: Animalia
         type: string
       itemKingdomPercent:
         description: |-
-          ItemKingdomPercent, is the percentage showing how how many names belong to
-          the consensus Kingdom.
+          ItemKingdomPercent indicates the percentage of names that belong
+          to the consensus Kingdom.
+        example: 81
         type: integer
       itemMainTaxon:
         description: |-
           ItemMainTaxon provides a clade that contains a majority of scientific names
           mentioned in the Item.
+        example: Arthropoda
         type: string
-      itemYearEnd:
-        description: ItemYearEnd is the year when an Item ended.
+      statNamesNum:
+        description: UniqNamesNum is the number of unique names in the Item.
+        example: 1234
         type: integer
-      itemYearStart:
+    type: object
+  refbhl.NameData:
+    description: NameData contains details about a scientific name provided in the
+      search.
+    properties:
+      annotNomen:
+        description: AnnotNomen is a nomenclatural annotation located near the matchted
+          name.
+        example: sp. nov.
+        type: string
+      editDistance:
         description: |-
-          ItemYearStart is the year when an Item started to be published (most
-          items will have only ItemYearStart).
+          EditDistance is the number of differences (edit events)
+          between Name and MatchName according to Levenshtein algorithm.
+        example: 0
         type: integer
       matchName:
         description: MatchedName is a scientific name match from the reference's text.
+        example: Pardosa moesta Banks, 1892
         type: string
       name:
         description: Name is a scientific name from the query.
+        example: Pardosa moesta
         type: string
-      pageId:
-        description: PageID is the BHL database ID for the page where the name was
-          found.
-        type: integer
-      pageNum:
-        description: PageNum is the page number from the publisher.
-        type: integer
+    type: object
+  refbhl.Part:
+    description: Part represents a distinct entity, usually a scientific paper,
+    properties:
+      doiPart:
+        description: DOI provides DOI for a part (usually a paper/publication).
+        example: 10.1234/5678
+        type: string
       partId:
-        description: PartID is the BHL database ID for the Part (usually a scientific
+        description: ID is the BHL database ID for the Part (usually a scientific
           paper).
+        example: 12345
         type: integer
       partName:
-        description: PartName is the publication title.
+        description: Name is the publication title.
+        example: The choanal papillae of the Cheloniidae
         type: string
       partPages:
-        description: PartPages are the start and end pages of a publication.
+        description: Pages are the start and end pages of a publication.
+        example: 123-145
         type: string
-      score:
-        allOf:
-        - $ref: '#/definitions/refbhl.Score'
-        description: a reference-string.
-      statNamesNum:
-        description: StatNamesNum is the number of names in the Item.
+    type: object
+  refbhl.Reference:
+    description: Reference represents a BHL reference that matched the query. This
+      could be a book, a journal, or a scientific paper.
+    properties:
+      doiTitle:
+        description: TitleDOI provides DOI for a book or journal
+        example: 10.1234/5678
+        type: string
+      itemId:
+        description: ItemID is the BHL database ID for Item (usually a volume).
+        example: 12345
         type: integer
+      itemStats:
+        allOf:
+        - $ref: '#/definitions/refbhl.ItemStats'
+        description: |-
+          ItemStats provides insights about the Reference Item.
+          From this data it is possible to infer what kind of
+          taxonomic groups are prevalent in the text.
+      itemYearEnd:
+        description: ItemYearEnd is the year when an Item ceased publication.
+        example: 1893
+        type: integer
+      itemYearStart:
+        description: |-
+          ItemYearStart is the year when an Item began publication (most
+          items will have only ItemYearStart).
+        example: 1892
+        type: integer
+      pageId:
+        description: |-
+          PageID is the BHL database ID for the page where the name was found.
+          It is provided by BHL.
+        example: 12345
+        type: integer
+      pageNum:
+        description: PageNum is the page number provided by the hard copy of the publication.
+        example: 123
+        type: integer
+      part:
+        allOf:
+        - $ref: '#/definitions/refbhl.Part'
+        description: |-
+          Part corresponds to a scientific paper, or other
+          distinct entity in an Item.
       titleId:
         description: TitleID is the BHL database ID for the Title (book or journal).
+        example: 12345
         type: integer
       titleName:
         description: TitleName is the name of a title (a book or a journal).
+        example: Bulletin of the American Museum of Natural History
         type: string
       titleYearEnd:
-        description: TitleYearEnd is the year when a journal stopped being published.
+        description: TitleYearEnd is the year when the journal ceased publication.
+        example: 1922
         type: integer
       titleYearStart:
         description: |-
-          TitleYearStart is the year when book is published, or when a journal was
-          published first time.
+          TitleYearStart is the year the when book is published,
+          or when the journal was first published.
+        example: 1890
         type: integer
       url:
         description: URL is the URL of the reference in BHL.
+        example: https://www.biodiversitylibrary.org/page/12345
         type: string
       volume:
         description: Volume is the information about a volume in a journal.
+        example: vol. 12
         type: string
       yearAggr:
         description: |-
-          YearAggr is the the most precise available year information for the
-          reference. It can come from reference year (part), year of a Volume
-          (item) or from title (usually book or journal).
+          YearAggr is the most precise year information available for the
+          reference. This could be from the reference year (part),
+          the year of a Volume (item), or from the title (usually a book
+          or journal).
+        example: 1892
         type: integer
       yearType:
-        description: YearType indicates what got inserted as an YearAggr.
+        description: YearType indicates the source of the YearAggr value.
+        example: part
         type: string
     type: object
+  refbhl.ReferenceNameBHL:
+    description: ReferenceNameBHL represents a BHL entity that includes a matched
+      scientific name and the reference where this name was discovered.
+    properties:
+      isNomenRef:
+        description: |-
+          IsNomenRef states is the reference likely contains
+          a nomenclatural event for the name.
+        example: true
+        type: boolean
+      name:
+        allOf:
+        - $ref: '#/definitions/refbhl.NameData'
+        description: NameData contains detailed information about the scientific name.
+      reference:
+        allOf:
+        - $ref: '#/definitions/refbhl.Reference'
+        description: Reference is the BHL reference where the name was detected.
+      score:
+        allOf:
+        - $ref: '#/definitions/refbhl.Score'
+        description: |-
+          Score is the overall score of the match between the reference and
+          a name-string or a reference-string.
+    type: object
   refbhl.Score:
+    description: Score provides a qualitative estimation of a match quality to a name-string,
+      a nomen, or a reference-string.
     properties:
       annot:
         description: |-
           Annot is a score important for nomenclatural events and provides match
           for nomenclatural annotations.
+        example: 3
         type: integer
       labels:
         additionalProperties:
@@ -130,28 +207,37 @@ definitions:
         description: Labels provide types for each match
         type: object
       odds:
-        description: Odds is total naive bayes odds ofr the score.
+        description: Odds is total Naive Bayes odds for the score.
+        example: 0.1234
         type: number
       oddsDetail:
-        $ref: '#/definitions/output.OddsDetails'
+        allOf:
+        - $ref: '#/definitions/output.OddsDetails'
+        description: OddsDetail provides details of the odds calculation.
       pages:
-        description: RefPages is a score from matching pages in reference and a page
-          in BHL.
+        description: |-
+          RefPages is a score derived from matching pages in a reference
+          and a page in BHL.
+        example: 3
         type: integer
       title:
-        description: RefTitle is the score of matching references titleName.
+        description: RefTitle is the score of matching reference's titleName.
         type: integer
       total:
-        description: Total is a simple sum of all available individual score.
+        description: Total is a simple sum of all available individual scores.
+        example: 15
         type: integer
       volume:
-        description: RefVolume is a score from matching volume from reference and
-          BHL Volume.
+        description: |-
+          RefVolume is a score derived from matching volume from
+          reference and BHL Volume.
+        example: 3
         type: integer
       year:
         description: |-
-          Year is a score of a quality of a year match in a reference-string or
-          name-string.
+          Year is a score representing the quality of a year match
+          in a reference-string or the name-string.
+        example: 3
         type: integer
     type: object
 host: localhost:8888
@@ -211,7 +297,7 @@ paths:
         "200":
           description: Successful response with data about the reference
           schema:
-            $ref: '#/definitions/refbhl.ReferenceBHL'
+            $ref: '#/definitions/refbhl.ReferenceNameBHL'
       summary: Get BHL reference metadata by pageID
   /version:
     get:
