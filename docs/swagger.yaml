@@ -7,6 +7,84 @@ definitions:
       version:
         type: string
     type: object
+  input.Input:
+    properties:
+      id:
+        type: string
+      name:
+        $ref: '#/definitions/input.Name'
+      reference:
+        $ref: '#/definitions/input.Reference'
+    type: object
+  input.Name:
+    properties:
+      authors:
+        type: string
+      canonical:
+        type: string
+      nameString:
+        type: string
+      year:
+        type: integer
+    type: object
+  input.Reference:
+    properties:
+      authors:
+        type: string
+      journal:
+        type: string
+      pageEnd:
+        type: integer
+      pageStart:
+        type: integer
+      refString:
+        type: string
+      volume:
+        type: integer
+      yearEnd:
+        type: integer
+      yearStart:
+        type: integer
+    type: object
+  namerefs.NameRefs:
+    properties:
+      canonical:
+        description: Canonical is a full canonical form of the input name-string.
+        type: string
+      currentCanonical:
+        description: |-
+          CurrentCanonical is a full canonical form of a currently accepted
+          name for the taxon of the input name-string.
+        type: string
+      error:
+        description: Error in the kk
+      imagesURL:
+        description: ImagesURL provides URL that contains images of the taxon.
+        type: string
+      input:
+        allOf:
+        - $ref: '#/definitions/input.Input'
+        description: Input of a name and/or reference
+      references:
+        description: References is a list of all unique BHL references to the name
+          occurence.
+        items:
+          $ref: '#/definitions/refbhl.ReferenceNameBHL'
+        type: array
+      refsNum:
+        description: ReferenceNumber is the number of references found for the name-string.
+        type: integer
+      synonyms:
+        description: Synonyms is a list of synonyms for the name-string.
+        items:
+          type: string
+        type: array
+      withSynonyms:
+        description: |-
+          WithSynonyms sets an option of returning references for synonyms of a name
+          as well.
+        type: boolean
+    type: object
   output.OddsDetails:
     additionalProperties:
       type: number
@@ -240,7 +318,7 @@ definitions:
         example: 3
         type: integer
     type: object
-host: bhlnames.globalnames.org
+host: localhost:8888
 info:
   contact:
     email: dmozzherin@gmail.com
@@ -268,6 +346,35 @@ paths:
           schema:
             type: string
       summary: Information about the API documentation
+  /name_refs:
+    post:
+      description: |-
+        Finds BHL references for a name, does not include
+        references of synonyms.
+      operationId: post-name-refs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Matched references for the provided name
+          schema:
+            $ref: '#/definitions/namerefs.NameRefs'
+      summary: Finds BHL references for a name
+  /nomen_refs:
+    post:
+      description: |-
+        Takes an input.Input with a name and nomenclatural reference
+        and returns back the putative nomenclatural event
+        reference from BHL.
+      operationId: post-nomen-refs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Matched references for the provided name
+          schema:
+            $ref: '#/definitions/namerefs.NameRefs'
+      summary: Finds in BHL the nomenclatural event references for a name.
   /ping:
     get:
       description: Checks if the API is online and returns a simple response if it
@@ -299,6 +406,20 @@ paths:
           schema:
             $ref: '#/definitions/refbhl.ReferenceNameBHL'
       summary: Get BHL reference metadata by pageID
+  /taxon_refs:
+    post:
+      description: |-
+        Finds BHL references for a taxon, does include
+        references of synonyms.
+      operationId: post-taxon-refs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Matched references for the provided name
+          schema:
+            $ref: '#/definitions/namerefs.NameRefs'
+      summary: Finds BHL references for a taxon (includes references of synonyms)
   /version:
     get:
       description: Retrieves the current version of the BHLnames application.
