@@ -16,7 +16,7 @@ func New() nlp.NLP {
 	return bayesio{}
 }
 
-func (b bayesio) Load() bayes.Bayes {
+func (b bayesio) LoadPretrainedWeights() bayes.Bayes {
 	nb := bayes.New()
 	nb.Load(bayesData)
 	return nb

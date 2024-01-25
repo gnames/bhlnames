@@ -56,7 +56,7 @@ func OptParser(gnp gnparser.GNparser) Option {
 
 func OptNLP(n nlp.NLP) Option {
 	return func(bn *bhlnames) {
-		bayesWithData := n.Load()
+		bayesWithData := n.LoadPretrainedWeights()
 		bn.Bayes = bayesWithData
 	}
 }
@@ -71,6 +71,7 @@ type bhlnames struct {
 	bayes.Bayes
 }
 
+// New creates an instance of BHLnames.
 func New(cfg config.Config, opts ...Option) BHLnames {
 	bn := bhlnames{cfg: cfg}
 	for i := range opts {
@@ -79,6 +80,7 @@ func New(cfg config.Config, opts ...Option) BHLnames {
 	return &bn
 }
 
+// Close Terminates connections to databases and key-value stores.
 func (bn bhlnames) Close() error {
 	var err error
 	if bn.RefFinder != nil {
@@ -90,10 +92,13 @@ func (bn bhlnames) Close() error {
 	return err
 }
 
+// Parser returns an instance of the Global Names Parser. It is used
+// to parse scientific names.
 func (bn bhlnames) Parser() gnparser.GNparser {
 	return bn.GNparser
 }
 
+// Initialize downloads BHL's metadata and imports it into the storage.
 func (bn bhlnames) Initialize() error {
 	var err error
 	if bn.cfg.WithRebuild {
@@ -113,6 +118,8 @@ func (bn bhlnames) Initialize() error {
 	return err
 }
 
+// InitializeCol downloads the Catalogue of Life (CoL) data and imports
+// the data about nomenclatural references for CoL names into the storage.
 func (bn bhlnames) InitializeCol() error {
 	var err error
 	var hasFiles, hasData bool
@@ -142,10 +149,19 @@ func (bn bhlnames) InitializeCol() error {
 	return err
 }
 
+// RefByPageID returns a reference metadata for a given pageID.
+func (bn bhlnames) RefByPageID(pageID int) (*refbhl.ReferenceNameBHL, error) {
+	return bn.RefFinder.RefByPageID(pageID)
+}
+
+// NameRefs takes a name and optionally reference, and find matching
+// locations and references in BHL.
 func (bn bhlnames) NameRefs(inp input.Input) (*namerefs.NameRefs, error) {
 	return bn.ReferencesBHL(inp, bn.cfg)
 }
 
+// NameRefsStream takes a stream of names/references and returns back
+// a stream of matched locations in BHL.
 func (bn bhlnames) NameRefsStream(
 	chIn <-chan input.Input,
 	chOut chan<- *namerefs.NameRefs,
@@ -236,7 +252,7 @@ func (bn bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 	if err != nil {
 		return err
 	}
-	slices.SortFunc(nr.References, func(a, b *refbhl.ReferenceBHL) int {
+	slices.SortFunc(nr.References, func(a, b *refbhl.ReferenceNameBHL) int {
 		if a.Score.Odds == b.Score.Odds {
 			if a.YearAggr == b.YearAggr {
 				return cmp.Compare(a.PageID, b.PageID)

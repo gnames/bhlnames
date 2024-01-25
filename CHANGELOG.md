@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [v0.2.0]
+
+- Add [#47]: method and API to find Reference by PageID
 - Add: update Go to 1.21, modules, sort using `slices` package.
 - Add [#42]: import data using new bhlindex dump format.
 - Add [#41]: refactor code to a more standard architecture.

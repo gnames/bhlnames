@@ -77,7 +77,7 @@ func (c colbuildio) updateColNomenRef(nrs *namerefs.NameRefs) error {
 	if len(nrs.References) > 0 {
 		ref := nrs.References[0]
 		pageID = ref.PageID
-		partID = ref.PartID
+		partID = ref.ID
 		itemID = ref.ItemID
 		refsNum = len(nrs.References)
 		odds = ref.Score.Odds
@@ -109,7 +109,7 @@ func (c colbuildio) saveColNomenRef(
 			return err
 		}
 
-		_, err = stmt.Exec(nrs.Input.ID, ref.ItemID, ref.PartID, ref.PageID,
+		_, err = stmt.Exec(nrs.Input.ID, ref.ItemID, ref.ID, ref.PageID,
 			ref.Score.Odds, calcQuality(ref.Score.Odds))
 		if err != nil {
 			return err

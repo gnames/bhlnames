@@ -3,6 +3,7 @@ package bhlnames
 import (
 	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
+	"github.com/gnames/bhlnames/internal/ent/refbhl"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnlib/ent/gnvers"
 	"github.com/gnames/gnparser"
@@ -23,6 +24,9 @@ type BHLnames interface {
 	// the data about nomenclatural references for CoL names into its storage.
 	InitializeCol() error
 
+	// RefByPageID returns a reference for a given pageID.
+	RefByPageID(pageID int) (*refbhl.ReferenceNameBHL, error)
+
 	// NameRefs takes a name and optionally reference, and find matching
 	// locations and references in BHL.
 	NameRefs(data input.Input) (*namerefs.NameRefs, error)
@@ -39,7 +43,13 @@ type BHLnames interface {
 	// of putative locations of the nomenclatural publications in BHL.
 	NomenRefsStream(chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)
 
-	// GetVersion returns the version and build timestamp of bhlnames app.
+	// GetVersion returns back the version of BHLnames
+	// @Summary Get BHLnames version
+	// @Description Retrieves the current version of the BHLnames application.
+	// @ID get-version
+	// @Produce json
+	// @Success 200 {object} gnvers.Version "Successful response with version information"
+	// @Router /version [get]
 	GetVersion() gnvers.Version
 
 	// Config returns configuration data of bhlnames.

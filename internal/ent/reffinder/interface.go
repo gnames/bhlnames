@@ -3,6 +3,7 @@ package reffinder
 import (
 	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
+	"github.com/gnames/bhlnames/internal/ent/refbhl"
 	"github.com/gnames/bhlnames/pkg/config"
 )
 
@@ -24,6 +25,9 @@ type RefFinder interface {
 		inp input.Input,
 		cfg config.Config,
 	) (*namerefs.NameRefs, error)
+
+	// RefByPageID returns a reference for a given pageID.
+	RefByPageID(pageID int) (*refbhl.ReferenceNameBHL, error)
 
 	// Close cleans up all the database, key-value store, files locks and blocks,
 	// releasing resources for the next usage of the program.

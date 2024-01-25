@@ -16,7 +16,7 @@
 ## The Catalogue of Life Darwin Core Archive provides nomenclatural references
 # to scientific names.
 #
-#  CoLDataURL: https://api.checklistbank.org/dataset/3LR/export?format=dwca
+#  CoLDataURL:  https://api.checklistbank.org/dataset/281951/export.zip?extended=true&format=DwCA
 
 ## Postgresql host for assembling data from BHL and BHL name index.
 ## Change it to IP address/Host of a database server.

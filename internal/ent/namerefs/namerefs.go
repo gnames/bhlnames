@@ -27,7 +27,7 @@ type NameRefs struct {
 	ReferenceNumber int `json:"refsNum"`
 
 	// References is a list of all unique BHL references to the name occurence.
-	References []*refbhl.ReferenceBHL `json:"references,omitempty"`
+	References []*refbhl.ReferenceNameBHL `json:"references,omitempty"`
 
 	// Error in the kk
 	Error error

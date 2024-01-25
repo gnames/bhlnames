@@ -7,7 +7,7 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/refbhl"
 )
 
-func getVolumeScore(volume int, ref *refbhl.ReferenceBHL) (int, string) {
+func getVolumeScore(volume int, ref *refbhl.ReferenceNameBHL) (int, string) {
 
 	volString := strconv.Itoa(volume)
 	index := strings.Index(ref.Volume, volString)

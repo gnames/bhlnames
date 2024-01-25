@@ -27,8 +27,10 @@ func TestVolumeScore(t *testing.T) {
 	}
 
 	for _, d := range tests {
-		testRef := refbhl.ReferenceBHL{
-			Volume: d.volumeBhl,
+		testRef := refbhl.ReferenceNameBHL{
+			Reference: refbhl.Reference{
+				Volume: d.volumeBhl,
+			},
 		}
 
 		score, _ := getVolumeScore(d.volume, &testRef)

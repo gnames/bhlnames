@@ -1,10 +1,12 @@
-FROM alpine:3.13
+FROM alpine:3.18
 
 LABEL maintainer="Dmitry Mozzherin"
 
+ENV LAST_FULL_REBUILD 2024-01-22
+
 WORKDIR /bin
 
-COPY ./bhlnames/bhlnames /bin
+COPY ./bhlnames /bin
 
 ENTRYPOINT [ "bhlnames" ]
 

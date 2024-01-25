@@ -6,10 +6,18 @@ import (
 )
 
 var pagePatterns = []*regexp.Regexp{
-	regexp.MustCompile(`[\d]+[\s]*\:[\s]*([\d]+)[\s]*[\-]{0,2}[\s]*([\d]*)`),       // matches 12: 188-189
-	regexp.MustCompile(`[\d]+[\s]*\(.+\)[\s]*\:[\s]*([\d]+)[\-]{0,2}[\s]*([\d]*)`), //matches 12(issue): 188-189
-	regexp.MustCompile(`([\d]+)[\s]*[\-]{0,2}[\s]*([\d]*)[pp]{1,2}`),               // matches 12pp, 12p
-	regexp.MustCompile(`[Ppg][.]*[\s]*([\d]+)`),                                    // matches Pg. 20, P. 20, P.20, P20
+	regexp.MustCompile(
+		`[\d]+[\s]*\:[\s]*([\d]+)[\s]*[\-]{0,2}[\s]*([\d]*)`,
+	), // matches 12: 188-189
+	regexp.MustCompile(
+		`[\d]+[\s]*\(.+\)[\s]*\:[\s]*([\d]+)[\-]{0,2}[\s]*([\d]*)`,
+	), //matches 12(issue): 188-189
+	regexp.MustCompile(
+		`([\d]+)[\s]*[\-]{0,2}[\s]*([\d]*)[pp]{1,2}`,
+	), // matches 12pp, 12p
+	regexp.MustCompile(
+		`[Ppg][.]*[\s]*([\d]+)`,
+	), // matches Pg. 20, P. 20, P.20, P20
 }
 
 var volumePatterns = []*regexp.Regexp{

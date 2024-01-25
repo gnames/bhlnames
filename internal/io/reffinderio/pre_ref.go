@@ -3,7 +3,6 @@ package reffinderio
 import (
 	"cmp"
 	"fmt"
-	"net/url"
 	"slices"
 	"strconv"
 
@@ -15,14 +14,14 @@ import (
 
 // updateOutput makes sure that every item part and title get only one unique
 // name to avoid information overload.
-func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*row) {
+func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*refRow) {
 	kv := l.kvDB
 	o.ReferenceNumber = len(raw)
 	partsMap := make(map[string]*preReference)
 	itemsMap := make(map[string]*preReference)
 	var preRefs []*preReference
 	for _, v := range raw {
-		partID := checkPart(kv, v.pageID)
+		partID := findPart(kv, v.pageID)
 		if partID == 0 {
 			// find the first name in the Item
 			id := genMapID(v.itemID, v.matchedCanonical)
@@ -34,7 +33,7 @@ func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*row) {
 					itemsMap[id] = &preReference{item: v, part: &db.Part{}}
 				}
 				// prefer a parsed page number
-				if ref.item.pageNum == 0 && v.pageNum > 0 {
+				if ref.item.pageNum.Int64 == 0 && v.pageNum.Int64 > 0 {
 					itemsMap[id] = &preReference{item: v, part: &db.Part{}}
 				}
 			}
@@ -53,7 +52,7 @@ func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*row) {
 					partsMap[id] = &preReference{item: v, part: part}
 				}
 				// prefer a parsed page number
-				if ref.item.pageNum == 0 && v.pageNum > 0 {
+				if ref.item.pageNum.Int64 == 0 && v.pageNum.Int64 > 0 {
 					l.gormDB.Where("id = ?", partID).First(part)
 					partsMap[id] = &preReference{item: v, part: part}
 				}
@@ -81,11 +80,11 @@ func genMapID(id int, name string) string {
 
 // genSynonyms collects unique name-strings from references and saves all
 // of them except the currently accepted name into slice of strings.
-func genSynonyms(refs []*refbhl.ReferenceBHL, current string) []string {
+func genSynonyms(refs []*refbhl.ReferenceNameBHL, current string) []string {
 	syn := make(map[string]struct{})
 	for _, v := range refs {
-		if v.MatchName != current {
-			syn[v.MatchName] = struct{}{}
+		if v.MatchedName != current {
+			syn[v.MatchedName] = struct{}{}
 		}
 	}
 	res := make([]string, 0, len(syn))
@@ -99,14 +98,8 @@ func genSynonyms(refs []*refbhl.ReferenceBHL, current string) []string {
 // checks if a page ID is included into any parts. All pageIDs that correspond
 // to a particular `part` are saved to key-value store. So if a pageID is not
 // found in the store, it means it is not associated with any `parts`. In such case we return 0.
-func checkPart(kv *badger.DB, pageID int) int {
+func findPart(kv *badger.DB, pageID int) int {
 	return db.GetValue(kv, strconv.Itoa(pageID))
-}
-
-func getImagesUrl(name string) string {
-	q := url.PathEscape(name)
-	url := "https://www.google.com/search?tbm=isch&q=%s"
-	return fmt.Sprintf(url, q)
 }
 
 func getURL(pageID int) string {
@@ -116,45 +109,56 @@ func getURL(pageID int) string {
 	return fmt.Sprintf("https://www.biodiversitylibrary.org/page/%d", pageID)
 }
 
-func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceBHL {
-	res := make([]*refbhl.ReferenceBHL, len(prs))
+func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceNameBHL {
+	res := make([]*refbhl.ReferenceNameBHL, len(prs))
 	for i, v := range prs {
+		if v.part == nil {
+			v.part = &db.Part{}
+		}
 		yr, tp := getYearAggr(v)
-		res[i] = &refbhl.ReferenceBHL{
-			YearAggr:           yr,
-			YearType:           tp,
-			URL:                getURL(v.item.pageID),
-			TitleDOI:           v.item.titleDOI,
-			PartDOI:            v.part.DOI,
-			Name:               v.item.name,
-			MatchName:          v.item.matchedCanonical,
-			EditDistance:       v.item.editDistance,
-			AnnotNomen:         v.item.annotation,
-			PageID:             v.item.pageID,
-			PageNum:            v.item.pageNum,
-			PartID:             int(v.part.ID),
-			ItemID:             v.item.itemID,
-			TitleID:            v.item.titleID,
-			TitleName:          v.item.titleName,
-			Volume:             v.item.volume,
-			PartPages:          getPartPages(v),
-			PartName:           v.part.Title,
-			ItemKingdom:        v.item.mainKingdom,
-			ItemKingdomPercent: v.item.mainKingdomPercent,
-			StatNamesNum:       v.item.namesTotal,
-			ItemMainTaxon:      v.item.mainTaxon,
-			TitleYearStart:     v.item.titleYearStart,
-			TitleYearEnd:       v.item.titleYearEnd,
-			ItemYearStart:      v.item.yearStart,
-			ItemYearEnd:        v.item.yearEnd,
+		res[i] = &refbhl.ReferenceNameBHL{
+			NameData: refbhl.NameData{
+				Name:         v.item.name,
+				MatchedName:  v.item.matchedCanonical,
+				AnnotNomen:   v.item.annotation,
+				EditDistance: v.item.editDistance,
+			},
+			Reference: refbhl.Reference{
+				YearAggr:       yr,
+				YearType:       tp,
+				ItemID:         v.item.itemID,
+				URL:            getURL(v.item.pageID),
+				TitleID:        v.item.titleID,
+				TitleName:      v.item.titleName,
+				Volume:         v.item.volume,
+				TitleDOI:       v.item.titleDOI,
+				PageID:         v.item.pageID,
+				PageNum:        int(v.item.pageNum.Int64),
+				TitleYearStart: int(v.item.titleYearStart.Int32),
+				TitleYearEnd:   int(v.item.titleYearEnd.Int32),
+				ItemYearStart:  int(v.item.yearStart.Int32),
+				ItemYearEnd:    int(v.item.yearEnd.Int32),
+				Part: &refbhl.Part{
+					DOI:   v.part.DOI,
+					ID:    int(v.part.ID),
+					Pages: getPartPages(v),
+					Name:  v.part.Title,
+				},
+				ItemStats: refbhl.ItemStats{
+					ItemKingdom:        v.item.mainKingdom,
+					ItemKingdomPercent: v.item.mainKingdomPercent,
+					UniqNamesNum:       v.item.namesTotal,
+					ItemMainTaxon:      v.item.mainTaxon,
+				},
+			},
 		}
 	}
 	if l.sortDesc {
-		slices.SortStableFunc(res, func(a, b *refbhl.ReferenceBHL) int {
+		slices.SortStableFunc(res, func(a, b *refbhl.ReferenceNameBHL) int {
 			return cmp.Compare(b.YearAggr, a.YearAggr)
 		})
 	} else {
-		slices.SortStableFunc(res, func(a, b *refbhl.ReferenceBHL) int {
+		slices.SortStableFunc(res, func(a, b *refbhl.ReferenceNameBHL) int {
 			return cmp.Compare(a.YearAggr, b.YearAggr)
 		})
 	}
@@ -162,6 +166,9 @@ func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceBHL {
 }
 
 func getPartPages(pr *preReference) string {
+	if pr.part == nil {
+		return ""
+	}
 	start := int(pr.part.PageNumStart.Int32)
 	end := int(pr.part.PageNumEnd.Int32)
 	if start == 0 {
@@ -178,8 +185,8 @@ func getYearAggr(pr *preReference) (int, string) {
 	if pr.part != nil {
 		part = int(pr.part.Year.Int32)
 	}
-	item = pr.item.yearStart
-	title = pr.item.titleYearStart
+	item = int(pr.item.yearStart.Int32)
+	title = int(pr.item.titleYearStart.Int32)
 	if part > 0 {
 		return part, "Part"
 	}

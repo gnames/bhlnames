@@ -1,38 +1,64 @@
+PROJ_NAME = bhlnames
+
 VERSION = $(shell git describe --tags)
 VER = $(shell git describe --tags --abbrev=0)
 DATE = $(shell date -u '+%Y-%m-%d_%H:%M:%S%Z')
 
+NO_C = CGO_ENABLED=0
 FLAGS_LINUX = $(FLAGS_SHARED) GOOS=linux
 FLAGS_MAC = $(FLAGS_SHARED) GOOS=darwin
 FLAGS_WIN = $(FLAGS_SHARED) GOOS=windows
-NO_C = CGO_ENABLED=0
 
+FLAGS_LD = -ldflags "-X github.com/gnames/$(PROJ_NAME)/pkg.Build=${DATE} \
+                  -X github.com/gnames/$(PROJ_NAME)/pkg.Version=${VERSION}"
+FLAGS_REL = -trimpath -ldflags "-s -w -X github.com/gnames/$(PROJ_NAME)/pkg.Build=$(DATE)"
 FLAGS_SHARED = CGO_ENABLED=0 GOARCH=amd64
-FLAGS_LD = -ldflags "-X github.com/gnames/bhlnames/pkg.Build=${DATE} \
-                  -X github.com/gnames/bhlnames/pkg.Version=${VERSION}"
+
+RELEASE_DIR = /tmp
+TEST_OPTS = -v -shuffle=on -race -coverprofile=coverage.txt -covermode=atomic
+
 GOCMD = go
-GOINSTALL = $(GOCMD) install $(FLAGS_LD)
+GOTEST = $(GOCMD) test
+GOVET = $(GOCMD) vet
 GOBUILD = $(GOCMD) build $(FLAGS_LD)
+GORELEASE = $(GOCMD) build $(FLAGS_REL)
+GOINSTALL = $(GOCMD) install $(FLAGS_LD)
 GOCLEAN = $(GOCMD) clean
 GOGET = $(GOCMD) get
 
+.PHONY: help build test deps tools release install openapi
+
 all: install
 
-test: deps install
-	go test -shuffle=on -race -coverprofile=coverage.txt -covermode=atomic ./...
+## Test:
+test: ## Run the tests of the project
+	$(GOTEST) $(TEST_OPTS) ./...
 
-deps:
+## Dependencies
+deps: ## Download dependencies
 	$(GOCMD) mod download;
 
-tools: deps
+## Tools
+tools: deps ## Install tools
 	@echo Installing tools from tools.go
 	@cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
 
-build:
-	$(GOCLEAN); \
-	$(FLAGS_SHARED) GOOS=linux $(GOBUILD);
+## Build:
+build: openapi ## Build binary
+	$(NO_C) $(GOCMD) build \
+		-o $(PROJ_NAME) \
+		$(FLAGS_LD) \
+		.
 
-release:
+## Build Release
+buildrel: openapi ## Build binary without debug info and with hardcoded version
+	$(NO_C) $(GOCMD) build \
+		-o $(PROJ_NAME) \
+		$(FLAGS_REL) \
+		.
+
+## Release
+release: openapi dockerhub ## Build and package binaries for release
 	$(GOCLEAN); \
 	$(FLAGS_SHARED) GOOS=linux $(GOBUILD); \
 	tar zcvf /tmp/bhlnames-${VER}-linux.tar.gz bhlnames; \
@@ -44,8 +70,39 @@ release:
 	zip -9 /tmp/bhlnames-$(VER)-win-64.zip bhlnames.exe; \
 	$(GOCLEAN);
 
-install:
+## Install
+install: openapi ## Build and install binary
 	$(FLAGS_SHARED) $(GOINSTALL);
+	
+## OpenAPI generation
+openapi: ## Generate documentation for OpenAPI
+	swag init -g restio.go -d ./internal/io/restio  --parseDependency --parseInternal
 
+## Build docker image
 dc: build
 	docker-compose build; \
+
+docker: buildrel
+	docker buildx build -t gnames/$(PROJ_NAME):latest -t gnames/$(PROJ_NAME):$(VERSION) .; \
+	$(GOCLEAN);
+
+dockerhub: docker
+	docker push gnames/$(PROJ_NAME); \
+	docker push gnames/$(PROJ_NAME):$(VERSION)
+
+## Help:
+help: ## Show this help
+	@echo ''
+	@echo 'Usage:'
+	@echo '  $(YELLOW)make${RESET} $(GREEN)<target>$(RESET)'
+	@echo ''
+	@echo 'Targets:'
+	@awk 'BEGIN {FS = ":.*?## "} { \
+		if (/^[0-9a-zA-Z_-]+:.*?##.*$$/) \
+		  {printf "    $(YELLOW)%-20s$(GREEN)%s$(RESET)\n", $$1, $$2} \
+		else if (/^## .*$$/) {printf "  $(CYAN)%s$(RESET)\n", substr($$1,4)} \
+		}' $(MAKEFILE_LIST)
+
+## Version
+version: ## Display current version
+	@echo $(VERSION)
