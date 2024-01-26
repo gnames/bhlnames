@@ -130,8 +130,9 @@ func ver(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Summary Get BHL reference metadata by pageID
 // @Description Retrieves the BHL reference metadata by pageID.
 // @ID get-refs
+// @Accept plain
 // @Produce json
-// @Param page_id path int true "Page ID of a reference." example(6589171)
+// @Param page_id path string true "Page ID of a reference." example(6589171)
 // @Success 200 {object} refbhl.ReferenceNameBHL "Successful response with data about the reference"
 // @Router /references/{page_id} [get]
 func refs(bn bhlnames.BHLnames) func(echo.Context) error {
@@ -157,8 +158,9 @@ func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Description Finds BHL references for a name, does not include
 // @Description references of synonyms.
 // @ID post-name-refs
+// @Param input body input.Input true "Input data"
+// @Accept json
 // @Produce json
-// @Param input body {object} input.Input true "Input data"
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
 // @Router /name_refs [post]
 func nameRefs(bn bhlnames.BHLnames) func(echo.Context) error {
@@ -171,6 +173,8 @@ func nameRefs(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Description Finds BHL references for a taxon, does include
 // @Description references of synonyms.
 // @ID post-taxon-refs
+// @Param input body input.Input true "Input data"
+// @Accept json
 // @Produce json
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
 // @Router /taxon_refs [post]
@@ -206,10 +210,10 @@ func refsCommon(bn bhlnames.BHLnames, withSynonyms bool) func(echo.Context) erro
 // nomenRefs takes an input.Input with a name and nomenclatural reference
 // and returns back the putative nomenclatural event reference from BHL.
 // @Summary Finds in BHL the nomenclatural event references for a name.
-// @Description Takes an input.Input with a name and nomenclatural reference
-// @Description and returns back the putative nomenclatural event
-// @Description reference from BHL.
+// @Description Takes an input.Input with a name and nomenclatural reference and returns back the putative nomenclatural event reference from BHL.
 // @ID post-nomen-refs
+// @Param input body input.Input true "Input data"
+// @Accept json
 // @Produce json
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
 // @Router /nomen_refs [post]

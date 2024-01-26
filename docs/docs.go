@@ -44,11 +44,25 @@ const docTemplate = `{
         "/name_refs": {
             "post": {
                 "description": "Finds BHL references for a name, does not include\nreferences of synonyms.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "summary": "Finds BHL references for a name",
                 "operationId": "post-name-refs",
+                "parameters": [
+                    {
+                        "description": "Input data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/input.Input"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Matched references for the provided name",
@@ -61,12 +75,26 @@ const docTemplate = `{
         },
         "/nomen_refs": {
             "post": {
-                "description": "Takes an input.Input with a name and nomenclatural reference\nand returns back the putative nomenclatural event\nreference from BHL.",
+                "description": "Takes an input.Input with a name and nomenclatural reference and returns back the putative nomenclatural event reference from BHL.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "summary": "Finds in BHL the nomenclatural event references for a name.",
                 "operationId": "post-nomen-refs",
+                "parameters": [
+                    {
+                        "description": "Input data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/input.Input"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Matched references for the provided name",
@@ -98,6 +126,9 @@ const docTemplate = `{
         "/references/{page_id}": {
             "get": {
                 "description": "Retrieves the BHL reference metadata by pageID.",
+                "consumes": [
+                    "text/plain"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -105,8 +136,8 @@ const docTemplate = `{
                 "operationId": "get-refs",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "example": 6589171,
+                        "type": "string",
+                        "example": "6589171",
                         "description": "Page ID of a reference.",
                         "name": "page_id",
                         "in": "path",
@@ -126,11 +157,25 @@ const docTemplate = `{
         "/taxon_refs": {
             "post": {
                 "description": "Finds BHL references for a taxon, does include\nreferences of synonyms.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "summary": "Finds BHL references for a taxon (includes references of synonyms)",
                 "operationId": "post-taxon-refs",
+                "parameters": [
+                    {
+                        "description": "Input data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/input.Input"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Matched references for the provided name",

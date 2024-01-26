@@ -397,10 +397,19 @@ paths:
       summary: Information about the API documentation
   /name_refs:
     post:
+      consumes:
+      - application/json
       description: |-
         Finds BHL references for a name, does not include
         references of synonyms.
       operationId: post-name-refs
+      parameters:
+      - description: Input data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/input.Input'
       produces:
       - application/json
       responses:
@@ -411,11 +420,18 @@ paths:
       summary: Finds BHL references for a name
   /nomen_refs:
     post:
-      description: |-
-        Takes an input.Input with a name and nomenclatural reference
-        and returns back the putative nomenclatural event
-        reference from BHL.
+      consumes:
+      - application/json
+      description: Takes an input.Input with a name and nomenclatural reference and
+        returns back the putative nomenclatural event reference from BHL.
       operationId: post-nomen-refs
+      parameters:
+      - description: Input data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/input.Input'
       produces:
       - application/json
       responses:
@@ -439,15 +455,17 @@ paths:
       summary: Check API status
   /references/{page_id}:
     get:
+      consumes:
+      - text/plain
       description: Retrieves the BHL reference metadata by pageID.
       operationId: get-refs
       parameters:
       - description: Page ID of a reference.
-        example: 6589171
+        example: "6589171"
         in: path
         name: page_id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -458,10 +476,19 @@ paths:
       summary: Get BHL reference metadata by pageID
   /taxon_refs:
     post:
+      consumes:
+      - application/json
       description: |-
         Finds BHL references for a taxon, does include
         references of synonyms.
       operationId: post-taxon-refs
+      parameters:
+      - description: Input data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/input.Input'
       produces:
       - application/json
       responses:
