@@ -4,6 +4,8 @@ LABEL maintainer="Dmitry Mozzherin"
 
 ENV LAST_FULL_REBUILD 2024-01-22
 
+RUN mkdir /cache
+
 WORKDIR /bin
 
 COPY ./bhlnames /bin
