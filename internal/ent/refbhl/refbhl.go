@@ -10,7 +10,7 @@ type ReferenceNameBHL struct {
 	Reference `json:"reference"`
 
 	// NameData contains detailed information about the scientific name.
-	NameData `json:"name"`
+	*NameData `json:"name,omitempty"`
 
 	// IsNomenRef states is the reference likely contains
 	// a nomenclatural event for the name.
@@ -110,16 +110,19 @@ type Reference struct {
 // within an Item.
 type Part struct {
 	// ID is the BHL database ID for the Part (usually a scientific paper).
-	ID int `json:"partId,omitempty" example:"12345"`
+	ID int `json:"id,omitempty" example:"39371"`
 
 	// Pages are the start and end pages of a publication.
-	Pages string `json:"partPages,omitempty" example:"123-145"`
+	Pages string `json:"pages,omitempty" example:"925-928"`
+
+	// Year is the year of publication for a part.
+	Year int `json:"year,omitempty" example:"1886"`
 
 	// Name is the publication title.
-	Name string `json:"partName,omitempty" example:"The choanal papillae of the Cheloniidae"`
+	Name string `json:"name,omitempty" example:"On a remarkable bacterium (Streptococcus) from wheat-ensilage"`
 
 	// DOI provides DOI for a part (usually a paper/publication).
-	DOI string `json:"doiPart,omitempty" example:"10.1234/5678"`
+	DOI string `json:"doi,omitempty" example:"10.1234/5678"`
 }
 
 // @Description ItemStats provides insights about a Reference's Item.
@@ -134,7 +137,7 @@ type ItemStats struct {
 	ItemKingdomPercent int `json:"itemKingdomPercent" example:"81"`
 
 	// UniqNamesNum is the number of unique names in the Item.
-	UniqNamesNum int `json:"statNamesNum" example:"1234"`
+	UniqNamesNum int `json:"uniqNamesNum" example:"1234"`
 
 	// ItemMainTaxon provides a clade that contains a majority of scientific names
 	// mentioned in the Item.
@@ -162,7 +165,7 @@ type Score struct {
 	Year int `json:"year" example:"3"`
 
 	// RefTitle is the score of matching reference's titleName.
-	RefTitle int `json:"title"	example:"3"`
+	RefTitle int `json:"title" example:"3"`
 
 	// RefVolume is a score derived from matching volume from
 	// reference and BHL Volume.

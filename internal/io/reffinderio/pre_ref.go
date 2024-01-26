@@ -117,7 +117,7 @@ func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceNameB
 		}
 		yr, tp := getYearAggr(v)
 		res[i] = &refbhl.ReferenceNameBHL{
-			NameData: refbhl.NameData{
+			NameData: &refbhl.NameData{
 				Name:         v.item.name,
 				MatchedName:  v.item.matchedCanonical,
 				AnnotNomen:   v.item.annotation,
@@ -143,6 +143,7 @@ func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceNameB
 					ID:    int(v.part.ID),
 					Pages: getPartPages(v),
 					Name:  v.part.Title,
+					Year:  int(v.part.Year.Int32),
 				},
 				ItemStats: refbhl.ItemStats{
 					ItemKingdom:        v.item.mainKingdom,

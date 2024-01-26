@@ -41,7 +41,7 @@ func TestAnnotScore(t *testing.T) {
 
 	for _, v := range tests {
 		testRef := refbhl.ReferenceNameBHL{
-			NameData: refbhl.NameData{
+			NameData: &refbhl.NameData{
 				Name:        v.name,
 				MatchedName: v.matchName,
 				AnnotNomen:  v.annotation.String(),

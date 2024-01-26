@@ -38,12 +38,16 @@ func New(bn bhlnames.BHLnames) rest.REST {
 
 // @title BHLnames API
 // @version 1.0
-// @description This API serves the BHLnames app. It locates relevant sections in the Biodiversity Heritage Library that correspond provided names, references or pages. \n\nCode repository: https://github.com/gnames/bhlnames. \n\nAccess the API on the production server: https://bhlnames.globalnames.org/api/v1.
+// @description This API serves the BHLnames app. It locates relevant sections in the Biodiversity Heritage Library that correspond provided names, references or pages.
+// @description
+// @description Code repository: https://github.com/gnames/bhlnames.
+// @description
+// @description Access the API on the production server: https://bhlnames.globalnames.org/api/v1.
 
 // @contact.name Dmitry Mozzherin
 // @contact.url https://github.com/dimus
-
 // @contact.email dmozzherin@gmail.com
+
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
@@ -54,6 +58,9 @@ func New(bn bhlnames.BHLnames) rest.REST {
 // @host bhlnames.globalnames.org
 // @host localhost:8888
 // @BasePath /api/v1
+
+// @externalDocs.description  OpenAPI
+// @externalDocs.url          https://swagger.io/resources/open-api/
 func (r restio) Run() {
 	log.Info().Msgf("Starting the HTTP API server on port %d.", r.Config().PortREST)
 
@@ -70,7 +77,7 @@ func (r restio) Run() {
 	r.POST(apiPath+"/name_refs", nameRefs(r.BHLnames))
 	r.POST(apiPath+"/taxon_refs", taxonRefs(r.BHLnames))
 	r.POST(apiPath+"/nomen_refs", nomenRefs(r.BHLnames))
-	r.GET(apiPath+"/references/:page-id", refs(r.BHLnames))
+	r.GET(apiPath+"/references/:page_id", refs(r.BHLnames))
 
 	addr := fmt.Sprintf(":%d", r.Config().PortREST)
 	s := &http.Server{
@@ -124,12 +131,12 @@ func ver(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Description Retrieves the BHL reference metadata by pageID.
 // @ID get-refs
 // @Produce json
-// @Param page-id path integer true "Page ID of a reference."
+// @Param page_id path int true "Page ID of a reference." example(6589171)
 // @Success 200 {object} refbhl.ReferenceNameBHL "Successful response with data about the reference"
-// @Router /references/{page-id} [get]
+// @Router /references/{page_id} [get]
 func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 	return func(c echo.Context) error {
-		pageIDStr := c.Param("page-id")
+		pageIDStr := c.Param("page_id")
 		log.Print(pageIDStr)
 		pageID, err := strconv.Atoi(pageIDStr)
 		if err != nil {
@@ -151,6 +158,7 @@ func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Description references of synonyms.
 // @ID post-name-refs
 // @Produce json
+// @Param input body {object} input.Input true "Input data"
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
 // @Router /name_refs [post]
 func nameRefs(bn bhlnames.BHLnames) func(echo.Context) error {

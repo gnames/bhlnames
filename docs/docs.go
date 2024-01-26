@@ -95,7 +95,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/references/{page-id}": {
+        "/references/{page_id}": {
             "get": {
                 "description": "Retrieves the BHL reference metadata by pageID.",
                 "produces": [
@@ -106,8 +106,9 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 6589171,
                         "description": "Page ID of a reference.",
-                        "name": "page-id",
+                        "name": "page_id",
                         "in": "path",
                         "required": true
                     }
@@ -172,61 +173,87 @@ const docTemplate = `{
             }
         },
         "input.Input": {
+            "description": "Input is used to pass data to the BHLnames API. It contains infromation about a name and a reference where the name was mentioned. Reference can point to a name usage or a nomenclatural event.",
             "type": "object",
             "properties": {
                 "id": {
+                    "description": "ID is a unique identifier for the Input. It is optional and helps\nto find Input data on the client side.",
                     "type": "string"
                 },
                 "name": {
-                    "$ref": "#/definitions/input.Name"
+                    "description": "Name provides data about a scientific name. Information can be\nprovided by a name-string or be split into separate fields.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/input.Name"
+                        }
+                    ]
                 },
                 "reference": {
-                    "$ref": "#/definitions/input.Reference"
+                    "description": "Reference provides data about a reference where the name was\nmentioned. Information can be provided by a reference-string or\nbe split into separate fields.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/input.Reference"
+                        }
+                    ]
                 }
             }
         },
         "input.Name": {
+            "description": "Name provides data about a scientific name.",
             "type": "object",
             "properties": {
                 "authors": {
+                    "description": "NameAuthors is the authorship of a name.",
                     "type": "string"
                 },
                 "canonical": {
+                    "description": "Canonical is the canonical form of a name, meaning the name without\nauthorship or a year.",
                     "type": "string"
                 },
                 "nameString": {
+                    "description": "NameString is a scientific name as a string. It might be enough to\nprovide only NameString without provided other fields.",
                     "type": "string"
                 },
                 "year": {
+                    "description": "NameYear is the year of publication for a name.",
                     "type": "integer"
                 }
             }
         },
         "input.Reference": {
+            "description": "Reference provides data about a reference where the name was mentioned.",
             "type": "object",
             "properties": {
                 "authors": {
+                    "description": "RefAuthors is the authorship of a reference.",
                     "type": "string"
                 },
                 "journal": {
+                    "description": "Journal is the title of the journal where the reference was\npublished.",
                     "type": "string"
                 },
                 "pageEnd": {
+                    "description": "PageEnd is the last page of the reference.",
                     "type": "integer"
                 },
                 "pageStart": {
+                    "description": "PageStart is the first page of the reference.",
                     "type": "integer"
                 },
                 "refString": {
+                    "description": "RefString is a reference as a string. It might be enough to\nprovide only RefString without provided other fields.",
                     "type": "string"
                 },
                 "volume": {
+                    "description": "Volume is the volume of the journal where the reference was\npublished.",
                     "type": "integer"
                 },
                 "yearEnd": {
+                    "description": "RefYear is the year of publication for a reference.",
                     "type": "integer"
                 },
                 "yearStart": {
+                    "description": "RefYear is the year of publication for a reference.",
                     "type": "integer"
                 }
             }
@@ -306,7 +333,7 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Arthropoda"
                 },
-                "statNamesNum": {
+                "uniqNamesNum": {
                     "description": "UniqNamesNum is the number of unique names in the Item.",
                     "type": "integer",
                     "example": 1234
@@ -343,25 +370,30 @@ const docTemplate = `{
             "description": "Part represents a distinct entity, usually a scientific paper,",
             "type": "object",
             "properties": {
-                "doiPart": {
+                "doi": {
                     "description": "DOI provides DOI for a part (usually a paper/publication).",
                     "type": "string",
                     "example": "10.1234/5678"
                 },
-                "partId": {
+                "id": {
                     "description": "ID is the BHL database ID for the Part (usually a scientific paper).",
                     "type": "integer",
-                    "example": 12345
+                    "example": 39371
                 },
-                "partName": {
+                "name": {
                     "description": "Name is the publication title.",
                     "type": "string",
-                    "example": "The choanal papillae of the Cheloniidae"
+                    "example": "On a remarkable bacterium (Streptococcus) from wheat-ensilage"
                 },
-                "partPages": {
+                "pages": {
                     "description": "Pages are the start and end pages of a publication.",
                     "type": "string",
-                    "example": "123-145"
+                    "example": "925-928"
+                },
+                "year": {
+                    "description": "Year is the year of publication for a part.",
+                    "type": "integer",
+                    "example": 1886
                 }
             }
         },
@@ -528,7 +560,8 @@ const docTemplate = `{
                 },
                 "title": {
                     "description": "RefTitle is the score of matching reference's titleName.",
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 3
                 },
                 "total": {
                     "description": "Total is a simple sum of all available individual scores.",
@@ -547,6 +580,10 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "externalDocs": {
+        "description": "OpenAPI",
+        "url": "https://swagger.io/resources/open-api/"
     }
 }`
 
@@ -557,7 +594,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "BHLnames API",
-	Description:      "This API serves the BHLnames app. It locates relevant sections in the Biodiversity Heritage Library that correspond provided names, references or pages. \\n\\nCode repository: https://github.com/gnames/bhlnames. \\n\\nAccess the API on the production server: https://bhlnames.globalnames.org/api/v1.",
+	Description:      "This API serves the BHLnames app. It locates relevant sections in the Biodiversity Heritage Library that correspond provided names, references or pages.\n\nCode repository: https://github.com/gnames/bhlnames.\n\nAccess the API on the production server: https://bhlnames.globalnames.org/api/v1.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

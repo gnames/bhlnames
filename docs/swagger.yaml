@@ -8,42 +8,81 @@ definitions:
         type: string
     type: object
   input.Input:
+    description: Input is used to pass data to the BHLnames API. It contains infromation
+      about a name and a reference where the name was mentioned. Reference can point
+      to a name usage or a nomenclatural event.
     properties:
       id:
+        description: |-
+          ID is a unique identifier for the Input. It is optional and helps
+          to find Input data on the client side.
         type: string
       name:
-        $ref: '#/definitions/input.Name'
+        allOf:
+        - $ref: '#/definitions/input.Name'
+        description: |-
+          Name provides data about a scientific name. Information can be
+          provided by a name-string or be split into separate fields.
       reference:
-        $ref: '#/definitions/input.Reference'
+        allOf:
+        - $ref: '#/definitions/input.Reference'
+        description: |-
+          Reference provides data about a reference where the name was
+          mentioned. Information can be provided by a reference-string or
+          be split into separate fields.
     type: object
   input.Name:
+    description: Name provides data about a scientific name.
     properties:
       authors:
+        description: NameAuthors is the authorship of a name.
         type: string
       canonical:
+        description: |-
+          Canonical is the canonical form of a name, meaning the name without
+          authorship or a year.
         type: string
       nameString:
+        description: |-
+          NameString is a scientific name as a string. It might be enough to
+          provide only NameString without provided other fields.
         type: string
       year:
+        description: NameYear is the year of publication for a name.
         type: integer
     type: object
   input.Reference:
+    description: Reference provides data about a reference where the name was mentioned.
     properties:
       authors:
+        description: RefAuthors is the authorship of a reference.
         type: string
       journal:
+        description: |-
+          Journal is the title of the journal where the reference was
+          published.
         type: string
       pageEnd:
+        description: PageEnd is the last page of the reference.
         type: integer
       pageStart:
+        description: PageStart is the first page of the reference.
         type: integer
       refString:
+        description: |-
+          RefString is a reference as a string. It might be enough to
+          provide only RefString without provided other fields.
         type: string
       volume:
+        description: |-
+          Volume is the volume of the journal where the reference was
+          published.
         type: integer
       yearEnd:
+        description: RefYear is the year of publication for a reference.
         type: integer
       yearStart:
+        description: RefYear is the year of publication for a reference.
         type: integer
     type: object
   namerefs.NameRefs:
@@ -110,7 +149,7 @@ definitions:
           mentioned in the Item.
         example: Arthropoda
         type: string
-      statNamesNum:
+      uniqNamesNum:
         description: UniqNamesNum is the number of unique names in the Item.
         example: 1234
         type: integer
@@ -142,23 +181,27 @@ definitions:
   refbhl.Part:
     description: Part represents a distinct entity, usually a scientific paper,
     properties:
-      doiPart:
+      doi:
         description: DOI provides DOI for a part (usually a paper/publication).
         example: 10.1234/5678
         type: string
-      partId:
+      id:
         description: ID is the BHL database ID for the Part (usually a scientific
           paper).
-        example: 12345
+        example: 39371
         type: integer
-      partName:
+      name:
         description: Name is the publication title.
-        example: The choanal papillae of the Cheloniidae
+        example: On a remarkable bacterium (Streptococcus) from wheat-ensilage
         type: string
-      partPages:
+      pages:
         description: Pages are the start and end pages of a publication.
-        example: 123-145
+        example: 925-928
         type: string
+      year:
+        description: Year is the year of publication for a part.
+        example: 1886
+        type: integer
     type: object
   refbhl.Reference:
     description: Reference represents a BHL reference that matched the query. This
@@ -300,6 +343,7 @@ definitions:
         type: integer
       title:
         description: RefTitle is the score of matching reference's titleName.
+        example: 3
         type: integer
       total:
         description: Total is a simple sum of all available individual scores.
@@ -318,16 +362,21 @@ definitions:
         example: 3
         type: integer
     type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
 host: localhost:8888
 info:
   contact:
     email: dmozzherin@gmail.com
     name: Dmitry Mozzherin
     url: https://github.com/dimus
-  description: 'This API serves the BHLnames app. It locates relevant sections in
-    the Biodiversity Heritage Library that correspond provided names, references or
-    pages. \n\nCode repository: https://github.com/gnames/bhlnames. \n\nAccess the
-    API on the production server: https://bhlnames.globalnames.org/api/v1.'
+  description: |-
+    This API serves the BHLnames app. It locates relevant sections in the Biodiversity Heritage Library that correspond provided names, references or pages.
+
+    Code repository: https://github.com/gnames/bhlnames.
+
+    Access the API on the production server: https://bhlnames.globalnames.org/api/v1.
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -388,14 +437,15 @@ paths:
           schema:
             type: string
       summary: Check API status
-  /references/{page-id}:
+  /references/{page_id}:
     get:
       description: Retrieves the BHL reference metadata by pageID.
       operationId: get-refs
       parameters:
       - description: Page ID of a reference.
+        example: 6589171
         in: path
-        name: page-id
+        name: page_id
         required: true
         type: integer
       produces:
