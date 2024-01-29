@@ -11,8 +11,8 @@ require (
 	github.com/gnames/aho_corasick v0.1.4
 	github.com/gnames/bayes v0.5.0
 	github.com/gnames/gner v0.1.5
-	github.com/gnames/gnfmt v0.4.2
-	github.com/gnames/gnlib v0.20.0
+	github.com/gnames/gnfmt v0.4.3
+	github.com/gnames/gnlib v0.32.0
 	github.com/gnames/gnparser v1.7.5
 	github.com/gnames/gnstats v0.2.1
 	github.com/gnames/gnsys v0.2.2

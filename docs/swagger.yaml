@@ -1,10 +1,18 @@
 basePath: /api/v1
 definitions:
   gnvers.Version:
+    description: Version provides information about the version of an application.
     properties:
       build:
+        description: |-
+          Build contains the timestamp or other details
+          indicating when the app was compiled.
+        example: 2023-08-03_18:58:38UTC
         type: string
       version:
+        description: Version specifies the version of the app, usually in the v0.0.0
+          format.
+        example: v1.0.2
         type: string
     type: object
   input.Input:
@@ -365,7 +373,7 @@ definitions:
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: localhost:8888
+host: bhlnames.globalnames.org
 info:
   contact:
     email: dmozzherin@gmail.com

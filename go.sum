@@ -162,10 +162,10 @@ github.com/gnames/bayes v0.5.0/go.mod h1:Gf15XCxyjQQvYk4+9pIFYjuKXdOb0uxhKHpf4m2
 github.com/gnames/gner v0.1.5 h1:1WsljZBOdNOkYVcaY2x7QREd9OVIJ+1YSndWi9pGA1A=
 github.com/gnames/gner v0.1.5/go.mod h1:GXQJ07xu31O9ufuUBhVE1JKrhc0YUBneNm3CBr82koc=
 github.com/gnames/gnfmt v0.1.0/go.mod h1:WG9c3CoiVrGc1SDsxLk7zjmv2B4UIzI00m4K5Khc/d0=
-github.com/gnames/gnfmt v0.4.2 h1:mAda9zUxwaYawu9bYrFD3m3/2Oz8TEahhrJjFFpwln0=
-github.com/gnames/gnfmt v0.4.2/go.mod h1:W/3MKRRQMhiwb0kKXTMqpMbjt3zW+mSztHXoxkJmC5k=
-github.com/gnames/gnlib v0.20.0 h1:ClDvI/D3eEglYP8+3/lIEkXBtEQqrdc5v2CtyPNYync=
-github.com/gnames/gnlib v0.20.0/go.mod h1:Tz3QsaUzL97cUPqO/QQ7wVGJYmEP7IlYq0jpZtRn3M0=
+github.com/gnames/gnfmt v0.4.3 h1:TUbqT+2KsC7qdo2lUICw9vOx2tBDF80ehvBrLZaMMR0=
+github.com/gnames/gnfmt v0.4.3/go.mod h1:Nnxb1w0jh+8cit4gVkfSKqH2lA2chImkvSiDvAFhJes=
+github.com/gnames/gnlib v0.32.0 h1:4YtiOWxkdxrwgBhwE9/jdUTHmQ7qu8zsQmJ5gq3ccrE=
+github.com/gnames/gnlib v0.32.0/go.mod h1:NpOFjiabjkMM/S/C8semOLlMwH5qc/hqyIGBg5Ty+vA=
 github.com/gnames/gnparser v1.7.5 h1:SPMThLCnWXylrlu64lHN+8IurgznDBVxp80FV5phyXg=
 github.com/gnames/gnparser v1.7.5/go.mod h1:wpamBRAIxYGBbAwnhgUTeH6qMRomiRNSb5WrreDtE/4=
 github.com/gnames/gnstats v0.2.1 h1:JAzDwcws6L9xTsHD9uMr1OaUNh9vN+Ghnn2CFRd3Ilo=
@@ -380,8 +380,9 @@ github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e/go.mod h1:C1wdFJiN
 github.com/mailru/easyjson v0.7.6/go.mod h1:xzfreul335JAWq5oZzymOObrkdz5UnU4kGfJJLY9Nlc=
 github.com/mailru/easyjson v0.7.7 h1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=
 github.com/mailru/easyjson v0.7.7/go.mod h1:xzfreul335JAWq5oZzymOObrkdz5UnU4kGfJJLY9Nlc=
-github.com/matryer/is v1.4.0 h1:sosSmIWwkYITGrxZ25ULNDeKiMNzFSr4V/eqBQP0PeE=
 github.com/matryer/is v1.4.0/go.mod h1:8I/i5uYgLzgsgEloJE1U6xx5HkBQpAZvepWuujKwMRU=
+github.com/matryer/is v1.4.1 h1:55ehd8zaGABKLXQUe2awZ99BD/PTc2ls+KV/dXphgEQ=
+github.com/matryer/is v1.4.1/go.mod h1:8I/i5uYgLzgsgEloJE1U6xx5HkBQpAZvepWuujKwMRU=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-colorable v0.1.4/go.mod h1:U0ppj6V5qS13XJ6of8GYAs25YV2eR4EVcfRqFIhoBtE=
 github.com/mattn/go-colorable v0.1.6/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=

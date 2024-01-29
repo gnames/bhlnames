@@ -150,7 +150,7 @@ func (bn bhlnames) InitializeCol() error {
 }
 
 // RefByPageID returns a reference metadata for a given pageID.
-func (bn bhlnames) RefByPageID(pageID int) (*refbhl.ReferenceNameBHL, error) {
+func (bn bhlnames) RefByPageID(pageID int) (*refbhl.Reference, error) {
 	return bn.RefFinder.RefByPageID(pageID)
 }
 

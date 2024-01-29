@@ -27,7 +27,7 @@ type RefFinder interface {
 	) (*namerefs.NameRefs, error)
 
 	// RefByPageID returns a reference for a given pageID.
-	RefByPageID(pageID int) (*refbhl.ReferenceNameBHL, error)
+	RefByPageID(pageID int) (*refbhl.Reference, error)
 
 	// Close cleans up all the database, key-value store, files locks and blocks,
 	// releasing resources for the next usage of the program.

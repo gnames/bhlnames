@@ -40,7 +40,7 @@ type refRow struct {
 	editDistance       int
 }
 
-func (rf reffinderio) refByPageID(pageID int) (*refbhl.ReferenceNameBHL, error) {
+func (rf reffinderio) refByPageID(pageID int) (*refbhl.Reference, error) {
 	qs := `SELECT
   itm.id, itm.title_id, pg.id, pg.page_num,
   itm.title_year_start, itm.title_year_end, itm.year_start, itm.year_end,
@@ -84,7 +84,7 @@ func (rf reffinderio) refByPageID(pageID int) (*refbhl.ReferenceNameBHL, error) 
 	if len(res) == 0 {
 		return nil, errors.New("reffinderio.refByPageID: no references found")
 	}
-	return res[0], nil
+	return &res[0].Reference, nil
 }
 
 func (rf reffinderio) partByID(partID int) (*db.Part, error) {

@@ -56,8 +56,8 @@ func New(cfg config.Config) reffinder.RefFinder {
 	}
 	return res
 }
-func (rf reffinderio) RefByPageID(pageID int) (*refbhl.ReferenceNameBHL, error) {
-	var ref *refbhl.ReferenceNameBHL
+func (rf reffinderio) RefByPageID(pageID int) (*refbhl.Reference, error) {
+	var ref *refbhl.Reference
 	ref, err := rf.refByPageID(pageID)
 	if err != nil {
 		return ref, err

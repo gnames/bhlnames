@@ -207,13 +207,18 @@ const docTemplate = `{
     },
     "definitions": {
         "gnvers.Version": {
+            "description": "Version provides information about the version of an application.",
             "type": "object",
             "properties": {
                 "build": {
-                    "type": "string"
+                    "description": "Build contains the timestamp or other details\nindicating when the app was compiled.",
+                    "type": "string",
+                    "example": "2023-08-03_18:58:38UTC"
                 },
                 "version": {
-                    "type": "string"
+                    "description": "Version specifies the version of the app, usually in the v0.0.0 format.",
+                    "type": "string",
+                    "example": "v1.0.2"
                 }
             }
         },
@@ -635,7 +640,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8888",
+	Host:             "bhlnames.globalnames.org",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "BHLnames API",

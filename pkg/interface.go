@@ -25,7 +25,7 @@ type BHLnames interface {
 	InitializeCol() error
 
 	// RefByPageID returns a reference for a given pageID.
-	RefByPageID(pageID int) (*refbhl.ReferenceNameBHL, error)
+	RefByPageID(pageID int) (*refbhl.Reference, error)
 
 	// NameRefs takes a name and optionally reference, and find matching
 	// locations and references in BHL.

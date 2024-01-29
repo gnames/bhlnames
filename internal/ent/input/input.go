@@ -15,7 +15,7 @@ import (
 type Input struct {
 	// ID is a unique identifier for the Input. It is optional and helps
 	// to find Input data on the client side.
-	ID string `json:"id"`
+	ID string `json:"id" example:"a1b2c3d4"`
 
 	// Name provides data about a scientific name. Information can be
 	// provided by a name-string or be split into separate fields.
@@ -31,17 +31,17 @@ type Input struct {
 type Name struct {
 	// NameString is a scientific name as a string. It might be enough to
 	// provide only NameString without provided other fields.
-	NameString string `json:"nameString,omitempty"`
+	NameString string `json:"nameString,omitempty" example:"Canis lupus Linnaeus, 1758"`
 
 	// Canonical is the canonical form of a name, meaning the name without
 	// authorship or a year.
-	Canonical string `json:"canonical,omitempty"`
+	Canonical string `json:"canonical,omitempty" example:"Canis lupus"`
 
 	// NameAuthors is the authorship of a name.
-	NameAuthors string `json:"authors,omitempty"`
+	NameAuthors string `json:"authors,omitempty" example:"Linnaeus"`
 
 	// NameYear is the year of publication for a name.
-	NameYear int `json:"year,omitempty"`
+	NameYear int `json:"year,omitempty" example:"1758"`
 }
 
 // @Description Reference provides data about a reference where the name was
@@ -49,20 +49,20 @@ type Name struct {
 type Reference struct {
 	// RefString is a reference as a string. It might be enough to
 	// provide only RefString without provided other fields.
-	RefString string `json:"refString,omitempty"`
+	RefString string `json:"refString,omitempty" example:"Linnaeus, C. 1758. Systema naturae per regna tria naturae, secundum classes, ordines, genera, species, cum characteribus, differentiis, synonymis, locis. Tomus I. Editio decima, reformata. Holmiae: impensis direct. Laurentii Salvii. i–ii, 1–824 pp."`
 
 	// RefYear is the year of publication for a reference.
-	RefYearStart int `json:"yearStart,omitempty"`
+	RefYearStart int `json:"yearStart,omitempty" example:"1758"`
 
 	// RefYear is the year of publication for a reference.
-	RefYearEnd int `json:"yearEnd,omitempty"`
+	RefYearEnd int `json:"yearEnd,omitempty" example:"1758"`
 
 	// RefAuthors is the authorship of a reference.
-	RefAuthors string `json:"authors,omitempty"`
+	RefAuthors string `json:"authors,omitempty" example:"Linnaeus"`
 
 	// Journal is the title of the journal where the reference was
 	// published.
-	Journal string `json:"journal,omitempty"`
+	Journal string `json:"journal,omitempty" example:"Systema naturae per regna tria naturae, secundum classes, ordines, genera, species, cum characteribus, differentiis, synonymis, locis."`
 
 	// Volume is the volume of the journal where the reference was
 	// published.
