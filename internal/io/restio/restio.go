@@ -52,11 +52,11 @@ func New(bn bhlnames.BHLnames) rest.REST {
 // @license.url https://opensource.org/licenses/MIT
 
 // Server Definitions
-// @Server https://bhlquest.globalnames.org Description for production server
 // @Server http://localhost:8888 Description for local server
+// @Server https://bhlquest.globalnames.org Description for production server
 
-// @host bhlnames.globalnames.org
 // @host localhost:8888
+// @host bhlnames.globalnames.org
 // @BasePath /api/v1
 
 // @externalDocs.description  OpenAPI
@@ -98,7 +98,7 @@ func (r restio) Run() {
 func info(c echo.Context) error {
 	return c.String(http.StatusOK,
 		`The REST API is described at
-https://apidoc.globalnames.org/bhlames`)
+https://bhlnames.globalnames.org/apidoc/index.html`)
 }
 
 // ping checks if the API is online
