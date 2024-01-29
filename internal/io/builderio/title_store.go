@@ -32,7 +32,7 @@ func (b *builderio) dbTitlesMap() (map[int]*title, error) {
 	rows, err = b.DB.Query(`
 SELECT
 	title_id, title_name, title_year_start, title_year_end,
-	title_language, title_doi
+	title_lang, title_doi
 FROM items
 `)
 	if err != nil {
