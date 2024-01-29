@@ -31,6 +31,12 @@ func New(cfg config.Config) builder.Builder {
 	return res
 }
 
+// Close closes all resources used by the Builder.
+func (b builderio) Close() {
+	b.DB.Close()
+	b.GormDB.Close()
+}
+
 func (b builderio) touchDirs() {
 	dirs := []string{
 		b.InputDir,
@@ -51,6 +57,12 @@ func (b builderio) touchDirs() {
 			}
 		}
 	}
+}
+
+func (b builderio) PrepareData() error {
+	var err error
+	log.Info().Msg("Preparing data for bhlnames service.")
+	return err
 }
 
 func (b builderio) ResetData() {

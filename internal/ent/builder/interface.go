@@ -16,4 +16,7 @@ type Builder interface {
 
 	// CalculateTxStats calculates taxonomic statistics for each Item.
 	CalculateTxStats() error
+
+	// Close closes all resources used by the Builder.
+	Close()
 }

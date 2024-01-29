@@ -18,13 +18,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-*/
-package cmd
+*/package cmd
 
 import (
 	_ "embed"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -102,7 +100,8 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/bhlnames.yaml)")
+	rootCmd.PersistentFlags().
+		StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/bhlnames.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -207,7 +206,7 @@ func createConfig(path string) {
 		log.Fatal().Err(err).Msgf("Cannot create dir %s.", path)
 	}
 
-	err = ioutil.WriteFile(path, []byte(configText), 0644)
+	err = os.WriteFile(path, []byte(configText), 0644)
 	if err != nil {
 		err = fmt.Errorf("main: %#w", err)
 		log.Fatal().Err(err).Msgf("Cannot write to file %s", path)

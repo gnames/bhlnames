@@ -23,6 +23,7 @@ package cmd
 
 import (
 	"github.com/gnames/bhlnames/internal/io/bayesio"
+	"github.com/gnames/bhlnames/internal/io/builderio"
 	"github.com/gnames/bhlnames/internal/io/reffinderio"
 	"github.com/gnames/bhlnames/internal/io/restio"
 	"github.com/gnames/bhlnames/internal/io/titlemio"
@@ -43,6 +44,11 @@ var restCmd = &cobra.Command{
 			opts = append(opts, config.OptPortREST(p))
 		}
 		cfg := config.New(opts...)
+
+		// init directories
+		bld := builderio.New(cfg)
+		bld.Close()
+
 		rf := reffinderio.New(cfg)
 
 		tm := titlemio.New(cfg)

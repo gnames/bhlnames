@@ -31,6 +31,9 @@ var files = map[string]struct{}{
 	"Taxon.tsv": {},
 }
 
+// Extract will extract files from a BHL data dump file into a directory.
+// If rebuild is true, it will overwrite existing files, if false it will
+// skip existing files.
 func Extract(path, dlDir string, rebuild bool) error {
 	exists, _ := gnsys.FileExists(path)
 	if !exists {
