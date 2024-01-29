@@ -47,6 +47,10 @@ var restCmd = &cobra.Command{
 
 		// init directories
 		bld := builderio.New(cfg)
+		err := bld.PrepareData()
+		if err != nil {
+			log.Fatal().Err(err).Msg("PrepareData")
+		}
 		bld.Close()
 
 		rf := reffinderio.New(cfg)

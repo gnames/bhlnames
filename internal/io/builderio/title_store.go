@@ -2,6 +2,7 @@ package builderio
 
 import (
 	"cmp"
+	"database/sql"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -22,6 +23,32 @@ type titleStore struct {
 	titles     map[int]*title
 	shortWords map[string]struct{}
 	abbrMap    map[string][]int
+}
+
+func (b *builderio) dbTitlesMap() (map[int]*title, error) {
+	res := make(map[int]*title)
+	var err error
+	var rows *sql.Rows
+	rows, err = b.DB.Query(`
+SELECT
+	title_id, title_name, title_year_start, title_year_end,
+	title_language, title_doi
+FROM items
+`)
+	if err != nil {
+		return res, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		t := title{}
+		err = rows.Scan(&t.ID, &t.Name, &t.YearStart, &t.YearEnd, &t.Language, &t.DOI)
+		if err != nil {
+			return res, err
+		}
+		res[t.ID] = &t
+	}
+	return res, rows.Err()
 }
 
 func newTitleStore(cfg config.Config, titles map[int]*title) *titleStore {

@@ -3,6 +3,7 @@ package builderio
 import (
 	"database/sql"
 	"fmt"
+	"path/filepath"
 
 	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/gnames/bhlnames/internal/ent/builder"
@@ -61,8 +62,26 @@ func (b builderio) touchDirs() {
 
 func (b builderio) PrepareData() error {
 	var err error
+	exists, err := gnsys.FileExists(filepath.Join(b.AhoCorKeyValDir, "patterns.txt"))
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+
 	log.Info().Msg("Preparing data for bhlnames service.")
-	return err
+	titlesMap, err := b.dbTitlesMap()
+	if err != nil {
+		return err
+	}
+	ts := newTitleStore(b.Config, titlesMap)
+	err = ts.setup()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (b builderio) ResetData() {
