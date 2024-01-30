@@ -74,9 +74,12 @@ func (r restio) Run() {
 	r.GET(apiPath, info)
 	r.GET(apiPath+"/ping", ping)
 	r.GET(apiPath+"/version", ver(r.BHLnames))
-	r.POST(apiPath+"/name_refs", nameRefs(r.BHLnames))
-	r.POST(apiPath+"/taxon_refs", taxonRefs(r.BHLnames))
-	r.POST(apiPath+"/nomen_refs", nomenRefs(r.BHLnames))
+	r.POST(apiPath+"/name_refs", nameRefsPost(r.BHLnames))
+	r.POST(apiPath+"/taxon_refs", taxonRefsPost(r.BHLnames))
+	r.POST(apiPath+"/nomen_refs", nomenRefsPost(r.BHLnames))
+	// r.GET(apiPath+"/name_refs", nameRefsGet(r.BHLnames))
+	// r.GET(apiPath+"/taxon_refs", taxonRefsGet(r.BHLnames))
+	// r.GET(apiPath+"/nomen_refs", nomenRefsGet(r.BHLnames))
 	r.GET(apiPath+"/references/:page_id", refs(r.BHLnames))
 
 	addr := fmt.Sprintf(":%d", r.Config().PortREST)
@@ -152,7 +155,7 @@ func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 	}
 }
 
-// nameRefs takes an input.Input with a name, optionally reference and returns
+// nameRefsGet takes an name string, optionally reference and returns
 // best matched reference to provided data.
 // @Summary Finds BHL references for a name
 // @Description Finds BHL references for a name, does not include
@@ -163,11 +166,26 @@ func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Produce json
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
 // @Router /name_refs [post]
-func nameRefs(bn bhlnames.BHLnames) func(echo.Context) error {
+func nameRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 	return refsCommon(bn, false)
 }
 
-// taxonRefs takes an input.Input with a name, optionally reference and returns
+// nameRefsPost takes an input.Input with a name, optionally reference and returns
+// best matched reference to provided data.
+// @Summary Finds BHL references for a name
+// @Description Finds BHL references for a name, does not include
+// @Description references of synonyms.
+// @ID post-name-refs
+// @Param input body input.Input true "Input data"
+// @Accept json
+// @Produce json
+// @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
+// @Router /name_refs [post]
+func nameRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
+	return refsCommon(bn, false)
+}
+
+// taxonRefsPost takes an input.Input with a name, optionally reference and returns
 // best matched reference to provided data.
 // @Summary Finds BHL references for a taxon (includes references of synonyms)
 // @Description Finds BHL references for a taxon, does include
@@ -178,7 +196,7 @@ func nameRefs(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Produce json
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
 // @Router /taxon_refs [post]
-func taxonRefs(bn bhlnames.BHLnames) func(echo.Context) error {
+func taxonRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
 	return refsCommon(bn, true)
 }
 
@@ -207,7 +225,7 @@ func refsCommon(bn bhlnames.BHLnames, withSynonyms bool) func(echo.Context) erro
 	}
 }
 
-// nomenRefs takes an input.Input with a name and nomenclatural reference
+// nomenRefsPost takes an input.Input with a name and nomenclatural reference
 // and returns back the putative nomenclatural event reference from BHL.
 // @Summary Finds in BHL the nomenclatural event references for a name.
 // @Description Takes an input.Input with a name and nomenclatural reference and returns back the putative nomenclatural event reference from BHL.
@@ -217,7 +235,7 @@ func refsCommon(bn bhlnames.BHLnames, withSynonyms bool) func(echo.Context) erro
 // @Produce json
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
 // @Router /nomen_refs [post]
-func nomenRefs(bn bhlnames.BHLnames) func(echo.Context) error {
+func nomenRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
 	enc := gnfmt.GNjson{}
 	var err error
 	var res *namerefs.NameRefs

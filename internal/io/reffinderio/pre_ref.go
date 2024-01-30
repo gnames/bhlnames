@@ -146,10 +146,10 @@ func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceNameB
 					Year:  int(v.part.Year.Int32),
 				},
 				ItemStats: refbhl.ItemStats{
-					ItemKingdom:        v.item.mainKingdom,
-					ItemKingdomPercent: v.item.mainKingdomPercent,
+					MainKingdom:        v.item.mainKingdom,
+					MainKingdomPercent: v.item.mainKingdomPercent,
 					UniqNamesNum:       v.item.namesTotal,
-					ItemMainTaxon:      v.item.mainTaxon,
+					MainTaxon:      v.item.mainTaxon,
 				},
 			},
 		}

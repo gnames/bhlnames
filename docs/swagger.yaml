@@ -24,6 +24,7 @@ definitions:
         description: |-
           ID is a unique identifier for the Input. It is optional and helps
           to find Input data on the client side.
+        example: a1b2c3d4
         type: string
       name:
         allOf:
@@ -44,19 +45,23 @@ definitions:
     properties:
       authors:
         description: NameAuthors is the authorship of a name.
+        example: Linnaeus
         type: string
       canonical:
         description: |-
           Canonical is the canonical form of a name, meaning the name without
           authorship or a year.
+        example: Canis lupus
         type: string
       nameString:
         description: |-
           NameString is a scientific name as a string. It might be enough to
           provide only NameString without provided other fields.
+        example: Canis lupus Linnaeus, 1758
         type: string
       year:
         description: NameYear is the year of publication for a name.
+        example: 1758
         type: integer
     type: object
   input.Reference:
@@ -64,33 +69,45 @@ definitions:
     properties:
       authors:
         description: RefAuthors is the authorship of a reference.
+        example: Linnaeus
         type: string
       journal:
         description: |-
           Journal is the title of the journal where the reference was
           published.
+        example: Systema naturae per regna tria naturae, secundum classes, ordines,
+          genera, species, cum characteribus, differentiis, synonymis, locis.
         type: string
       pageEnd:
         description: PageEnd is the last page of the reference.
+        example: 24
         type: integer
       pageStart:
         description: PageStart is the first page of the reference.
+        example: 24
         type: integer
       refString:
         description: |-
           RefString is a reference as a string. It might be enough to
           provide only RefString without provided other fields.
+        example: 'Linnaeus, C. 1758. Systema naturae per regna tria naturae, secundum
+          classes, ordines, genera, species, cum characteribus, differentiis, synonymis,
+          locis. Tomus I. Editio decima, reformata. Holmiae: impensis direct. Laurentii
+          Salvii. i–ii, 1–824 pp.'
         type: string
       volume:
         description: |-
           Volume is the volume of the journal where the reference was
           published.
+        example: 1
         type: integer
       yearEnd:
         description: RefYear is the year of publication for a reference.
+        example: 1758
         type: integer
       yearStart:
         description: RefYear is the year of publication for a reference.
+        example: 1758
         type: integer
     type: object
   namerefs.NameRefs:
@@ -140,20 +157,69 @@ definitions:
     description: ItemStats provides insights about a Reference's Item. This data can
       be used to infer the prevalent taxonomic groups within the Item.
     properties:
-      itemKingdom:
-        description: ItemKingdom a consensus kingdom for names from the Item (journal
-          volume).
+      mainClass:
+        description: MainClass is the most prevalent class in the Item.
+        example: Insecta
+        type: string
+      mainClassPercent:
+        description: |-
+          MainClassPercent indicates the percentage of names that belong
+          to the most prevalent class.
+        example: 44
+        type: integer
+      mainFamily:
+        description: MainFamily is the most prevalent family in the Item.
+        example: Buprestidae
+        type: string
+      mainFamilyPercent:
+        description: |-
+          MainFamilyPercent indicates the percentage of names that belong
+          to the most prevalent family.
+        example: 13
+        type: integer
+      mainGenus:
+        description: MainGenus is the most prevalent genus in the Item.
+        example: Agrilus
+        type: string
+      mainGenusPercent:
+        description: |-
+          MainGenusPercent indicates the percentage of names that belong
+          to the most prevalent genus.
+        example: 5
+        type: integer
+      mainKingdom:
+        description: MainKingdom is the most prevalent kingdom in the Item.
         example: Animalia
         type: string
-      itemKingdomPercent:
+      mainKingdomPercent:
         description: |-
-          ItemKingdomPercent indicates the percentage of names that belong
-          to the consensus Kingdom.
-        example: 81
+          MainKingdomPercent indicates the percentage of names that belong
+          to the most prevalent kingdom.
+        example: 79
         type: integer
-      itemMainTaxon:
+      mainOrder:
+        description: MainOrder is the most prevalent order in the Item.
+        example: Coleoptera
+        type: string
+      mainOrderPercent:
         description: |-
-          ItemMainTaxon provides a clade that contains a majority of scientific names
+          MainOrderPercent indicates the percentage of names that belong
+          to the most prevalent order.
+        example: 14
+        type: integer
+      mainPhylum:
+        description: MainPhylum is the most prevalent phylum in the Item.
+        example: Arthropoda
+        type: string
+      mainPhylumPercent:
+        description: |-
+          MainPhylumPercent indicates the percentage of names that belong
+          to the most prevalent phylum.
+        example: 45
+        type: integer
+      mainTaxon:
+        description: |-
+          MainTaxon provides a clade that contains a majority of scientific names
           mentioned in the Item.
         example: Arthropoda
         type: string

@@ -120,7 +120,7 @@ func (l reffinderio) occurrences(name string, field string) []*refRow {
 	}
 	var res []*refRow
 	var itemID, titleID, pageID int
-	var kingdomPercent, pathsTotal, editDistance int
+	var kingdomPercent, pathsTotal, editDistance sql.NullInt16
 	var yearStart, yearEnd, titleYearStart, titleYearEnd sql.NullInt32
 	var pageNum sql.NullInt64
 	var nameID string
@@ -169,14 +169,14 @@ func (l reffinderio) occurrences(name string, field string) []*refRow {
 			volume:             vol.String,
 			mainTaxon:          context.String,
 			mainKingdom:        majorKingdom.String,
-			mainKingdomPercent: kingdomPercent,
-			namesTotal:         pathsTotal,
+			mainKingdomPercent: int(kingdomPercent.Int16),
+			namesTotal:         int(pathsTotal.Int16),
 			nameID:             nameID,
 			name:               nameString.String,
 			annotation:         annot.String,
 			matchedCanonical:   matchedCanonical.String,
 			matchType:          matchType.String,
-			editDistance:       editDistance,
+			editDistance:       int(editDistance.Int16),
 		}
 
 		res = append(res, rec)

@@ -222,7 +222,8 @@
             "properties": {
                 "id": {
                     "description": "ID is a unique identifier for the Input. It is optional and helps\nto find Input data on the client side.",
-                    "type": "string"
+                    "type": "string",
+                    "example": "a1b2c3d4"
                 },
                 "name": {
                     "description": "Name provides data about a scientific name. Information can be\nprovided by a name-string or be split into separate fields.",
@@ -248,19 +249,23 @@
             "properties": {
                 "authors": {
                     "description": "NameAuthors is the authorship of a name.",
-                    "type": "string"
+                    "type": "string",
+                    "example": "Linnaeus"
                 },
                 "canonical": {
                     "description": "Canonical is the canonical form of a name, meaning the name without\nauthorship or a year.",
-                    "type": "string"
+                    "type": "string",
+                    "example": "Canis lupus"
                 },
                 "nameString": {
                     "description": "NameString is a scientific name as a string. It might be enough to\nprovide only NameString without provided other fields.",
-                    "type": "string"
+                    "type": "string",
+                    "example": "Canis lupus Linnaeus, 1758"
                 },
                 "year": {
                     "description": "NameYear is the year of publication for a name.",
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1758
                 }
             }
         },
@@ -270,35 +275,43 @@
             "properties": {
                 "authors": {
                     "description": "RefAuthors is the authorship of a reference.",
-                    "type": "string"
+                    "type": "string",
+                    "example": "Linnaeus"
                 },
                 "journal": {
                     "description": "Journal is the title of the journal where the reference was\npublished.",
-                    "type": "string"
+                    "type": "string",
+                    "example": "Systema naturae per regna tria naturae, secundum classes, ordines, genera, species, cum characteribus, differentiis, synonymis, locis."
                 },
                 "pageEnd": {
                     "description": "PageEnd is the last page of the reference.",
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 24
                 },
                 "pageStart": {
                     "description": "PageStart is the first page of the reference.",
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 24
                 },
                 "refString": {
                     "description": "RefString is a reference as a string. It might be enough to\nprovide only RefString without provided other fields.",
-                    "type": "string"
+                    "type": "string",
+                    "example": "Linnaeus, C. 1758. Systema naturae per regna tria naturae, secundum classes, ordines, genera, species, cum characteribus, differentiis, synonymis, locis. Tomus I. Editio decima, reformata. Holmiae: impensis direct. Laurentii Salvii. i–ii, 1–824 pp."
                 },
                 "volume": {
                     "description": "Volume is the volume of the journal where the reference was\npublished.",
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "yearEnd": {
                     "description": "RefYear is the year of publication for a reference.",
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1758
                 },
                 "yearStart": {
                     "description": "RefYear is the year of publication for a reference.",
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1758
                 }
             }
         },
@@ -362,18 +375,68 @@
             "description": "ItemStats provides insights about a Reference's Item. This data can be used to infer the prevalent taxonomic groups within the Item.",
             "type": "object",
             "properties": {
-                "itemKingdom": {
-                    "description": "ItemKingdom a consensus kingdom for names from the Item (journal volume).",
+                "mainClass": {
+                    "description": "MainClass is the most prevalent class in the Item.",
+                    "type": "string",
+                    "example": "Insecta"
+                },
+                "mainClassPercent": {
+                    "description": "MainClassPercent indicates the percentage of names that belong\nto the most prevalent class.",
+                    "type": "integer",
+                    "example": 44
+                },
+                "mainFamily": {
+                    "description": "MainFamily is the most prevalent family in the Item.",
+                    "type": "string",
+                    "example": "Buprestidae"
+                },
+                "mainFamilyPercent": {
+                    "description": "MainFamilyPercent indicates the percentage of names that belong\nto the most prevalent family.",
+                    "type": "integer",
+                    "example": 13
+                },
+                "mainGenus": {
+                    "description": "MainGenus is the most prevalent genus in the Item.",
+                    "type": "string",
+                    "example": "Agrilus"
+                },
+                "mainGenusPercent": {
+                    "description": "MainGenusPercent indicates the percentage of names that belong\nto the most prevalent genus.",
+                    "type": "integer",
+                    "example": 5
+                },
+                "mainKingdom": {
+                    "description": "MainKingdom is the most prevalent kingdom in the Item.",
                     "type": "string",
                     "example": "Animalia"
                 },
-                "itemKingdomPercent": {
-                    "description": "ItemKingdomPercent indicates the percentage of names that belong\nto the consensus Kingdom.",
+                "mainKingdomPercent": {
+                    "description": "MainKingdomPercent indicates the percentage of names that belong\nto the most prevalent kingdom.",
                     "type": "integer",
-                    "example": 81
+                    "example": 79
                 },
-                "itemMainTaxon": {
-                    "description": "ItemMainTaxon provides a clade that contains a majority of scientific names\nmentioned in the Item.",
+                "mainOrder": {
+                    "description": "MainOrder is the most prevalent order in the Item.",
+                    "type": "string",
+                    "example": "Coleoptera"
+                },
+                "mainOrderPercent": {
+                    "description": "MainOrderPercent indicates the percentage of names that belong\nto the most prevalent order.",
+                    "type": "integer",
+                    "example": 14
+                },
+                "mainPhylum": {
+                    "description": "MainPhylum is the most prevalent phylum in the Item.",
+                    "type": "string",
+                    "example": "Arthropoda"
+                },
+                "mainPhylumPercent": {
+                    "description": "MainPhylumPercent indicates the percentage of names that belong\nto the most prevalent phylum.",
+                    "type": "integer",
+                    "example": 45
+                },
+                "mainTaxon": {
+                    "description": "MainTaxon provides a clade that contains a majority of scientific names\nmentioned in the Item.",
                     "type": "string",
                     "example": "Arthropoda"
                 },

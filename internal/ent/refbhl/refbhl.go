@@ -129,19 +129,54 @@ type Part struct {
 // @Description This data can be used to infer the prevalent taxonomic
 // @Description groups within the Item.
 type ItemStats struct {
-	// ItemKingdom a consensus kingdom for names from the Item (journal volume).
-	ItemKingdom string `json:"itemKingdom" example:"Animalia"`
+	// MainKingdom is the most prevalent kingdom in the Item.
+	MainKingdom string `json:"mainKingdom,omitempty" example:"Animalia"`
 
-	// ItemKingdomPercent indicates the percentage of names that belong
-	// to the consensus Kingdom.
-	ItemKingdomPercent int `json:"itemKingdomPercent" example:"81"`
+	// MainKingdomPercent indicates the percentage of names that belong
+	// to the most prevalent kingdom.
+	MainKingdomPercent int `json:"mainKingdomPercent,omitempty" example:"79"`
+
+	// MainPhylum is the most prevalent phylum in the Item.
+	MainPhylum string `json:"mainPhylum,omitempty" example:"Arthropoda"`
+
+	// MainPhylumPercent indicates the percentage of names that belong
+	// to the most prevalent phylum.
+	MainPhylumPercent int `json:"mainPhylumPercent,omitempty" example:"45"`
+
+	// MainClass is the most prevalent class in the Item.
+	MainClass string `json:"mainClass,omitempty" example:"Insecta"`
+
+	// MainClassPercent indicates the percentage of names that belong
+	// to the most prevalent class.
+	MainClassPercent int `json:"mainClassPercent,omitempty" example:"44"`
+
+	// MainOrder is the most prevalent order in the Item.
+	MainOrder string `json:"mainOrder,omitempty" example:"Coleoptera"`
+
+	// MainOrderPercent indicates the percentage of names that belong
+	// to the most prevalent order.
+	MainOrderPercent int `json:"mainOrderPercent,omitempty" example:"14"`
+
+	// MainFamily is the most prevalent family in the Item.
+	MainFamily string `json:"mainFamily,omitempty" example:"Buprestidae"`
+
+	// MainFamilyPercent indicates the percentage of names that belong
+	// to the most prevalent family.
+	MainFamilyPercent int `json:"mainFamilyPercent,omitempty" example:"13"`
+
+	// MainGenus is the most prevalent genus in the Item.
+	MainGenus string `json:"mainGenus,omitempty" example:"Agrilus"`
+
+	// MainGenusPercent indicates the percentage of names that belong
+	// to the most prevalent genus.
+	MainGenusPercent int `json:"mainGenusPercent,omitempty" example:"5"`
 
 	// UniqNamesNum is the number of unique names in the Item.
-	UniqNamesNum int `json:"uniqNamesNum" example:"1234"`
+	UniqNamesNum int `json:"uniqNamesNum,omitempty" example:"1234"`
 
-	// ItemMainTaxon provides a clade that contains a majority of scientific names
+	// MainTaxon provides a clade that contains a majority of scientific names
 	// mentioned in the Item.
-	ItemMainTaxon string `json:"itemMainTaxon" example:"Arthropoda"`
+	MainTaxon string `json:"mainTaxon,omitempty" example:"Arthropoda"`
 }
 
 // @Description Score provides a qualitative estimation of a match quality

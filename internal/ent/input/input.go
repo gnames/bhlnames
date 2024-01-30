@@ -66,13 +66,13 @@ type Reference struct {
 
 	// Volume is the volume of the journal where the reference was
 	// published.
-	Volume int `json:"volume,omitempty"`
+	Volume int `json:"volume,omitempty" example:"1"`
 
 	// PageStart is the first page of the reference.
-	PageStart int `json:"pageStart,omitempty"`
+	PageStart int `json:"pageStart,omitempty" example:"24"`
 
 	// PageEnd is the last page of the reference.
-	PageEnd int `json:"pageEnd,omitempty"`
+	PageEnd int `json:"pageEnd,omitempty" example:"24"`
 }
 
 type Option func(*Input)
