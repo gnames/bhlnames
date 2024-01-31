@@ -1,7 +1,6 @@
 package builderio
 
 import (
-	"database/sql"
 	"fmt"
 	"log/slog"
 	"path/filepath"
@@ -9,34 +8,26 @@ import (
 	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/gnames/bhlnames/internal/ent/builder"
 	"github.com/gnames/bhlnames/internal/io/bhlsys"
-	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/internal/io/namesbhlio"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnsys"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jinzhu/gorm"
 )
 
 type builderio struct {
 	config.Config
-	DB     *sql.DB
+	DB     *pgxpool.Pool
 	GormDB *gorm.DB
 }
 
-func New(cfg config.Config) (builder.Builder, error) {
-	dbConn, err := db.NewDB(cfg)
-	if err != nil {
-		return nil, err
-	}
-	gormDB, err := db.NewDbGorm(cfg)
-	if err != nil {
-		return nil, err
-	}
+func New(cfg config.Config, pool *pgxpool.Pool, grm *gorm.DB) (builder.Builder, error) {
 	res := builderio{
 		Config: cfg,
-		DB:     dbConn,
-		GormDB: gormDB,
+		DB:     pool,
+		GormDB: grm,
 	}
-	err = res.touchDirs()
+	err := res.touchDirs()
 	if err != nil {
 		return nil, err
 	}

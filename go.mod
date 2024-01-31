@@ -17,6 +17,7 @@ require (
 	github.com/gnames/gnstats v0.2.1
 	github.com/gnames/gnsys v0.2.3
 	github.com/google/uuid v1.6.0
+	github.com/jackc/pgx/v5 v5.5.2
 	github.com/jinzhu/gorm v1.9.16
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/lib/pq v1.10.9
@@ -55,6 +56,9 @@ require (
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
+	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

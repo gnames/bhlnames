@@ -1,15 +1,21 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log/slog"
 	"strings"
+	"sync"
 
 	"github.com/gnames/bhlnames/pkg/config"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
+
+var dbOnce sync.Once
+var gormOnce sync.Once
 
 func opts(cfg config.Config) string {
 	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -17,7 +23,12 @@ func opts(cfg config.Config) string {
 }
 
 func NewDbGorm(cnf config.Config) (*gorm.DB, error) {
-	db, err := gorm.Open("postgres", opts(cnf))
+	var db *gorm.DB
+	var err error
+
+	gormOnce.Do(func() {
+		db, err = gorm.Open("postgres", opts(cnf))
+	})
 	if err != nil {
 		err = fmt.Errorf("db.NewDbGorm: %#w", err)
 		slog.Error("Cannot connect to DB", "error", err)
@@ -26,11 +37,25 @@ func NewDbGorm(cnf config.Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-func NewDB(cnf config.Config) (*sql.DB, error) {
-	db, err := sql.Open("postgres", opts(cnf))
+func NewDB(cnf config.Config) (*pgxpool.Pool, error) {
+	var db *pgxpool.Pool
+	var err error
+
+	pgxCfg, err := pgxpool.ParseConfig(opts(cnf))
 	if err != nil {
-		err = fmt.Errorf("db.NewDB: %#w", err)
-		slog.Error("Cannot connect to DB", "error", err)
+		slog.Error("Cannot parse pgx config", "error", err)
+		return nil, err
+	}
+	pgxCfg.MaxConns = 15
+
+	dbOnce.Do(func() {
+		db, err = pgxpool.NewWithConfig(
+			context.Background(),
+			pgxCfg,
+		)
+	})
+	if err != nil {
+		slog.Error("Cannot connect to database", "error", err)
 		return nil, err
 	}
 	return db, nil

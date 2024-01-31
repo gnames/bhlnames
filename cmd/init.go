@@ -26,6 +26,7 @@ import (
 	"os"
 
 	"github.com/gnames/bhlnames/internal/io/builderio"
+	"github.com/gnames/bhlnames/internal/io/db"
 	bhlnames "github.com/gnames/bhlnames/pkg"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/spf13/cobra"
@@ -51,7 +52,21 @@ after enother. The result will be identical to "bhlnames init".`,
 		opts = append(opts, config.OptWithRebuild(rebuild))
 		cfg := config.New(opts...)
 
-		builder, err := builderio.New(cfg)
+		pool, err := db.NewDB(cfg)
+		if err != nil {
+			slog.Error("Cannot connect to DB", "error", err)
+			os.Exit(1)
+		}
+		defer pool.Close()
+
+		gorm, err := db.NewDbGorm(cfg)
+		if err != nil {
+			slog.Error("Cannot connect to gorm.DB", "error", err)
+			os.Exit(1)
+		}
+		defer gorm.Close()
+
+		builder, err := builderio.New(cfg, pool, gorm)
 		if err != nil {
 			slog.Error("Cannot create builder", "error", err)
 			os.Exit(1)

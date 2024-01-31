@@ -5,6 +5,7 @@
 ## [v0.1.8]
 
 - Add [#49]: switch logs to slog.
+- Add [#48]: switch to pgx driver.
 
 ## [v0.1.7]
 
