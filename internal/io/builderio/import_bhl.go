@@ -34,7 +34,10 @@ func (b builderio) importDataBHL() error {
 	}
 
 	if err == nil {
-		ts := newTitleStore(b.Config, titlesMap)
+		ts, err := newTitleStore(b.Config, titlesMap)
+		if err != nil {
+			return err
+		}
 		return ts.setup()
 	}
 

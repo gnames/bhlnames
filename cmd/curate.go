@@ -3,13 +3,13 @@ package cmd
 import (
 	"cmp"
 	"fmt"
+	"log/slog"
 	"os"
 	"slices"
 
 	"github.com/fatih/color"
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
 	"github.com/gnames/gnfmt"
-	"github.com/rs/zerolog/log"
 )
 
 // curateData is used for creation of a golden standard. The input is set
@@ -21,7 +21,7 @@ func curateData(out <-chan *namerefs.NameRefs, outputPath string) {
 	var res []*namerefs.NameRefs
 	for r := range out {
 		if r.Error != nil {
-			log.Warn().Err(r.Error)
+			slog.Error("output error", "error", r.Error)
 		}
 		res = append(res, r)
 	}
@@ -109,12 +109,13 @@ func getOutput(nrs []*namerefs.NameRefs, outputPath string) {
 	resJSON, err := enc.Encode(res)
 	if err != nil {
 		err = fmt.Errorf("cmd getOutput: %#w", err)
-		log.Fatal().Err(err).Msg("getOutput")
+		slog.Error("Output error", "error", err)
+		os.Exit(1)
 	}
 
 	err = os.WriteFile(outputPath, resJSON, 0644)
 	if err != nil {
 		err = fmt.Errorf("cmd getOutput: %#w", err)
-		log.Fatal().Err(err).Msg("GetOutput")
+		slog.Error("Output error", "error", err)
 	}
 }

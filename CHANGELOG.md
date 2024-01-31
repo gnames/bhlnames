@@ -2,8 +2,32 @@
 
 ## Unreleased
 
-## [v0.2.0]
+## [v0.1.8]
 
+- Add [#49]: switch logs to slog.
+
+## [v0.1.7]
+
+- Add: modules update.
+- Add: bug fixes.
+- Add: update outputs.
+
+## [v0.1.6]
+
+- Add: update API documentation.
+
+## [v0.1.5]
+
+- Add: the title store creation to REST initiation.
+- Add: directory initiation to REST init.
+
+## [v0.1.4]
+
+- Add: update dockerfile.
+
+## [v0.1.3]
+
+- Add: update documentation.
 - Add [#47]: method and API to find Reference by PageID
 - Add: update Go to 1.21, modules, sort using `slices` package.
 - Add [#42]: import data using new bhlindex dump format.

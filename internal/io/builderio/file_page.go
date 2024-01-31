@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -13,7 +14,6 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/lib/pq"
-	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -37,12 +37,16 @@ const BatchSize = 100_000
 func (b builderio) importPage(itemMap map[uint]string) error {
 	var err error
 	var id, itemID, fileNum, pageNum int
-	log.Info().Msg("Importing page.txt data to db.")
+	slog.Info("Importing page.txt data to db.")
 	err = db.ResetKeyVal(b.PageDir)
 	if err != nil {
 		return err
 	}
-	kv := db.InitKeyVal(b.PageDir)
+	kv, err := db.InitKeyVal(b.PageDir)
+	if err != nil {
+		return err
+	}
+
 	total := 0
 	pMap := make(map[int]struct{})
 	res := make([]*db.Page, 0, BatchSize)
@@ -53,6 +57,7 @@ func (b builderio) importPage(itemMap map[uint]string) error {
 	}
 	defer f.Close()
 	defer kv.Close()
+
 	scanner := bufio.NewScanner(f)
 	count := 0
 	header := true

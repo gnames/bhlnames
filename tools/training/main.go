@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -9,7 +10,6 @@ import (
 	ft "github.com/gnames/bayes/ent/feature"
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
 	"github.com/gnames/gnfmt"
-	"github.com/rs/zerolog/log"
 )
 
 var dataPath = filepath.Join("..", "..", "io", "bayesio", "data")
@@ -25,13 +25,15 @@ func (l label) String() string {
 func main() {
 	gold, err := os.ReadFile(goldFile)
 	if err != nil {
-		log.Fatal().Err(err).Msg("main")
+		slog.Error("Cannot read gold file", "error", err)
+		os.Exit(1)
 	}
 	var data []*namerefs.NameRefs
 	enc := gnfmt.GNjson{Pretty: true}
 	err = enc.Decode(gold, &data)
 	if err != nil {
-		log.Fatal().Err(err).Msg("main")
+		slog.Error("Cannot decode gold file", "error", err)
+		os.Exit(1)
 	}
 	var lfs []ft.ClassFeatures
 	for _, v := range data {
@@ -41,11 +43,13 @@ func main() {
 	nb.Train(lfs)
 	nbDump, err := nb.Dump()
 	if err != nil {
-		log.Fatal().Err(err).Msg("main")
+		slog.Error("Cannot dump bayes", "error", err)
+		os.Exit(1)
 	}
 	err = os.WriteFile(outputFile, nbDump, 0644)
 	if err != nil {
-		log.Fatal().Err(err).Msg("main")
+		slog.Error("Cannot write bayes", "error", err)
+		os.Exit(1)
 	}
 }
 

@@ -2,6 +2,7 @@ package restio
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,7 +16,6 @@ import (
 	"github.com/gnames/gnfmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/rs/zerolog/log"
 	"github.com/sfgrp/lognsq/ent/nsq"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
@@ -62,7 +62,8 @@ func New(bn bhlnames.BHLnames) rest.REST {
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
 func (r restio) Run() {
-	log.Info().Msgf("Starting the HTTP API server on port %d.", r.Config().PortREST)
+	str := fmt.Sprintf("Starting the HTTP API server on port %d.", r.Config().PortREST)
+	slog.Info(str)
 
 	loggerNSQ := r.setLogger()
 	if loggerNSQ != nil {
@@ -141,7 +142,6 @@ func ver(bn bhlnames.BHLnames) func(echo.Context) error {
 func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 	return func(c echo.Context) error {
 		pageIDStr := c.Param("page_id")
-		log.Print(pageIDStr)
 		pageID, err := strconv.Atoi(pageIDStr)
 		if err != nil {
 			return err
@@ -219,7 +219,8 @@ func refsCommon(bn bhlnames.BHLnames, withSynonyms bool) func(echo.Context) erro
 		}
 
 		if err != nil {
-			log.Warn().Err(err).Msg("nameRefs")
+			slog.Error("nameRefs", "error", err)
+			return err
 		}
 		return err
 	}
@@ -253,7 +254,7 @@ func nomenRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
 		}
 
 		if err != nil {
-			log.Warn().Err(err).Msg("nomenRefs")
+			slog.Error("nomenRefs", "error", err)
 		}
 		return err
 	}

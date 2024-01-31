@@ -3,6 +3,7 @@ package builderio
 import (
 	"bufio"
 	"database/sql"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -12,7 +13,6 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/lib/pq"
-	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -26,7 +26,7 @@ const (
 var yrRe = regexp.MustCompile(`\b[c]?([\d]{4})\b\s*([,/-]\s*([\d]{4})\b)?`)
 
 func (b builderio) importItem(titles map[int]*title) (map[uint]string, error) {
-	log.Info().Msg("Preparing item.txt data for db.")
+	slog.Info("Preparing item.txt data for db.")
 	iMap := make(map[int]struct{})
 	var res []*db.Item
 	path := filepath.Join(b.DownloadDir, "item.txt")
@@ -87,7 +87,7 @@ func (b builderio) importItem(titles map[int]*title) (map[uint]string, error) {
 }
 
 func (b builderio) importItems(items []*db.Item) (map[uint]string, error) {
-	log.Info().Msgf("Importing %s records to items table.", humanize.Comma(int64(len(items))))
+	slog.Info("Importing records to items table", "records-num", humanize.Comma(int64(len(items))))
 	columns := []string{"id", "bar_code", "vol", "year_start", "year_end",
 		"title_id", "title_doi", "title_name", "title_year_start", "title_year_end",
 		"title_lang"}

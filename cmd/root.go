@@ -23,6 +23,7 @@ THE SOFTWARE.
 import (
 	_ "embed"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -31,7 +32,6 @@ import (
 	bhlnames "github.com/gnames/bhlnames/pkg"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnsys"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -68,8 +68,8 @@ usages found at BHL for a scientific name.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		version, err := cmd.Flags().GetBool("version")
 		if err != nil {
-			err = fmt.Errorf("main: %#w", err)
-			log.Fatal().Err(err).Msg("rootCmd")
+			slog.Error("Flag version failed", "error", err)
+			os.Exit(1)
 		}
 		if version {
 			fmt.Printf("\nversion: %s\nbuild: %s\n\n", bhlnames.Version, bhlnames.Build)
@@ -113,8 +113,8 @@ func initConfig() {
 	configFile := "bhlnames"
 	configDir, err := os.UserConfigDir()
 	if err != nil {
-		err = fmt.Errorf("main: %#w", err)
-		log.Fatal().Err(err).Msg("Cannot find home directory.")
+		slog.Error("Cannot find user config dir", "error", err)
+		os.Exit(1)
 	}
 	viper.AddConfigPath(configDir)
 	viper.SetConfigName(configFile)
@@ -137,7 +137,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		log.Info().Msgf("Using config file: %s.", viper.ConfigFileUsed())
+		slog.Info("Using config file", "file", viper.ConfigFileUsed())
 	}
 
 	opts = getOpts()
@@ -150,8 +150,8 @@ func getOpts() []config.Option {
 	cfg := &fConfig{}
 	err := viper.Unmarshal(cfg)
 	if err != nil {
-		err = fmt.Errorf("main: %#w", err)
-		log.Fatal().Err(err).Msg("getOpts")
+		slog.Error("Cannot unmarshal config", "error", err)
+		os.Exit(1)
 	}
 
 	if cfg.BHLDumpURL != "" {
@@ -194,7 +194,7 @@ func touchConfigFile(configPath string) {
 		return
 	}
 
-	log.Info().Msgf("Creating config file: %s.", configPath)
+	slog.Info("Creating config file", "file", configPath)
 	createConfig(configPath)
 }
 
@@ -202,13 +202,13 @@ func touchConfigFile(configPath string) {
 func createConfig(path string) {
 	err := gnsys.MakeDir(filepath.Dir(path))
 	if err != nil {
-		err = fmt.Errorf("main: %#w", err)
-		log.Fatal().Err(err).Msgf("Cannot create dir %s.", path)
+		slog.Error("Cannot create config dir", "error", err)
+		os.Exit(1)
 	}
 
 	err = os.WriteFile(path, []byte(configText), 0644)
 	if err != nil {
-		err = fmt.Errorf("main: %#w", err)
-		log.Fatal().Err(err).Msgf("Cannot write to file %s", path)
+		slog.Error("Cannot create config file", "error", err)
+		os.Exit(1)
 	}
 }

@@ -3,6 +3,7 @@ package builderio
 import (
 	"bufio"
 	"database/sql"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -13,7 +14,6 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/lib/pq"
-	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -51,7 +51,7 @@ var dateRe = regexp.MustCompile(`\b([\d]{4})\b\s*(-\s*([\d]{1,4})\b(-([\d]{1,2})
 var pagesRe = regexp.MustCompile(`\b([\d]+)\b\s*((,|-|--|–)\s*\b([\d]+)\b)?`)
 
 func (b builderio) importPart(doiMap map[int]string) error {
-	log.Info().Msg("Preparing part.txt data for db.")
+	slog.Info("Preparing part.txt data for db.")
 	//keeps unique IDs of the parts
 	pMap := make(map[int]struct{})
 	var res []*db.Part
@@ -64,7 +64,11 @@ func (b builderio) importPart(doiMap map[int]string) error {
 	if err != nil {
 		return err
 	}
-	kv := db.InitKeyVal(b.PartDir)
+	kv, err := db.InitKeyVal(b.PartDir)
+	if err != nil {
+		return err
+	}
+
 	defer f.Close()
 	defer kv.Close()
 	scanner := bufio.NewScanner(f)
@@ -132,7 +136,7 @@ func (b builderio) importPart(doiMap map[int]string) error {
 }
 
 func (b builderio) importParts(kv *badger.DB, items []*db.Part) error {
-	log.Info().Msgf("Importing %s records to parts table.", humanize.Comma(int64(len(items))))
+	slog.Info("Importing records to parts table", "records-num", humanize.Comma(int64(len(items))))
 	columns := []string{"id", "page_id", "item_id", "length", "doi",
 		"contributor_name", "sequence_order", "segment_type", "title",
 		"container_title", "publication_details", "volume", "series",

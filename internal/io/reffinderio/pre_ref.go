@@ -3,6 +3,7 @@ package reffinderio
 import (
 	"cmp"
 	"fmt"
+	"log/slog"
 	"slices"
 	"strconv"
 
@@ -14,14 +15,18 @@ import (
 
 // updateOutput makes sure that every item part and title get only one unique
 // name to avoid information overload.
-func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*refRow) {
-	kv := l.kvDB
+func (rf reffinderio) updateOutput(o *namerefs.NameRefs, raw []*refRow) error {
+	kv := rf.kvDB
 	o.ReferenceNumber = len(raw)
 	partsMap := make(map[string]*preReference)
 	itemsMap := make(map[string]*preReference)
 	var preRefs []*preReference
 	for _, v := range raw {
-		partID := findPart(kv, v.pageID)
+		partID, err := findPart(kv, v.pageID)
+		if err != nil {
+			slog.Error("Cannot find part", "pageID", v.pageID, "error", err)
+			return err
+		}
 		if partID == 0 {
 			// find the first name in the Item
 			id := genMapID(v.itemID, v.matchedCanonical)
@@ -42,18 +47,18 @@ func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*refRow) {
 			id := genMapID(partID, v.matchedCanonical)
 			part := &db.Part{}
 			if ref, ok := partsMap[id]; !ok {
-				l.gormDB.Where("id = ?", partID).First(part)
+				rf.gormDB.Where("id = ?", partID).First(part)
 				partsMap[id] = &preReference{item: v, part: part}
 			} else {
 				// prefer annotation
 				if ref.item.annotation == "NO_ANNOT" &&
 					v.annotation != "NO_ANNOT" {
-					l.gormDB.Where("id = ?", partID).First(part)
+					rf.gormDB.Where("id = ?", partID).First(part)
 					partsMap[id] = &preReference{item: v, part: part}
 				}
 				// prefer a parsed page number
 				if ref.item.pageNum.Int64 == 0 && v.pageNum.Int64 > 0 {
-					l.gormDB.Where("id = ?", partID).First(part)
+					rf.gormDB.Where("id = ?", partID).First(part)
 					partsMap[id] = &preReference{item: v, part: part}
 				}
 			}
@@ -65,13 +70,14 @@ func (l reffinderio) updateOutput(o *namerefs.NameRefs, raw []*refRow) {
 	for _, v := range partsMap {
 		preRefs = append(preRefs, v)
 	}
-	refs := l.genReferences(preRefs)
-	if l.withSynonyms {
+	refs := rf.genReferences(preRefs)
+	if rf.withSynonyms {
 		o.Synonyms = genSynonyms(refs, o.CurrentCanonical)
 	}
-	if !l.withShortenedOutput {
+	if !rf.withShortenedOutput {
 		o.References = refs
 	}
+	return nil
 }
 
 func genMapID(id int, name string) string {
@@ -98,7 +104,7 @@ func genSynonyms(refs []*refbhl.ReferenceNameBHL, current string) []string {
 // checks if a page ID is included into any parts. All pageIDs that correspond
 // to a particular `part` are saved to key-value store. So if a pageID is not
 // found in the store, it means it is not associated with any `parts`. In such case we return 0.
-func findPart(kv *badger.DB, pageID int) int {
+func findPart(kv *badger.DB, pageID int) (int, error) {
 	return db.GetValue(kv, strconv.Itoa(pageID))
 }
 
@@ -149,7 +155,7 @@ func (l reffinderio) genReferences(prs []*preReference) []*refbhl.ReferenceNameB
 					MainKingdom:        v.item.mainKingdom,
 					MainKingdomPercent: v.item.mainKingdomPercent,
 					UniqNamesNum:       v.item.namesTotal,
-					MainTaxon:      v.item.mainTaxon,
+					MainTaxon:          v.item.mainTaxon,
 				},
 			},
 		}

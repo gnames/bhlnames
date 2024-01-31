@@ -3,6 +3,7 @@ package reffinderio
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"net/url"
 
 	"github.com/dgraph-io/badger/v2"
@@ -15,7 +16,6 @@ import (
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnparser"
 	"github.com/jinzhu/gorm"
-	"github.com/rs/zerolog/log"
 )
 
 // reffinderio is an implementation of Librarian interface. It uses
@@ -47,15 +47,31 @@ type reffinderio struct {
 	AC aho_corasick.AhoCorasick
 }
 
-func New(cfg config.Config) reffinder.RefFinder {
-	log.Info().Msgf("Connecting to PostgreSQL database %s at %s", cfg.DbDatabase, cfg.DbHost)
-	res := &reffinderio{
-		kvDB:   db.InitKeyVal(cfg.PartDir),
-		db:     db.NewDB(cfg),
-		gormDB: db.NewDbGorm(cfg),
+func New(cfg config.Config) (reffinder.RefFinder, error) {
+	slog.Info("Connecting to PostgreSQL database", "database", cfg.DbDatabase, "host", cfg.DbHost)
+	kvDB, err := db.InitKeyVal(cfg.PartDir)
+	if err != nil {
+		return nil, err
 	}
-	return res
+
+	dbConn, err := db.NewDB(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	gormDB, err := db.NewDbGorm(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &reffinderio{
+		kvDB:   kvDB,
+		db:     dbConn,
+		gormDB: gormDB,
+	}
+	return res, nil
 }
+
 func (rf reffinderio) RefByPageID(pageID int) (*refbhl.Reference, error) {
 	var ref *refbhl.Reference
 	ref, err := rf.refByPageID(pageID)
@@ -87,9 +103,15 @@ func (rf reffinderio) ReferencesBHL(
 
 	var rows []*refRow
 	if rf.withSynonyms {
-		rows = rf.taxonOccurrences(res)
+		rows, err = rf.taxonOccurrences(res)
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		rows = rf.nameOnlyOccurrences(res)
+		rows, err = rf.nameOnlyOccurrences(res)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	res.ImagesURL = imagesUrl(res.CurrentCanonical)

@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
 	"github.com/gnames/bhlnames/internal/ent/refbhl"
 	"github.com/gnames/bhlnames/internal/io/db"
-	"github.com/rs/zerolog/log"
 )
 
 type preReference struct {
@@ -63,19 +63,25 @@ func (rf reffinderio) refByPageID(pageID int) (*refbhl.Reference, error) {
 	)
 	if err != nil {
 		err = fmt.Errorf("reffinderio.refByPageID: %w", err)
-		log.Warn().Err(err).Msg("")
+		slog.Error("Cannot find page", "page_id", pageID, "err", err)
 		return nil, err
 	}
 
 	preRes := preReference{item: &rr}
 
-	partID := findPart(rf.kvDB, pageID)
+	partID, err := findPart(rf.kvDB, pageID)
+	if err != nil {
+		err = fmt.Errorf("reffinderio.refByPageID: %w", err)
+		slog.Error("Cannot find part", "page_id", pageID, "err", err)
+		return nil, err
+	}
+
 	if partID > 0 {
 
 		part, err := rf.partByID(partID)
 		if err != nil {
 			err = fmt.Errorf("reffinderio.refByPageID: %w", err)
-			log.Warn().Err(err).Msg("")
+			slog.Error("Cannot find part", "part_id", partID, "err", err)
 			return nil, err
 		}
 		preRes.part = part
@@ -98,25 +104,26 @@ func (rf reffinderio) partByID(partID int) (*db.Part, error) {
 		&res.PageNumEnd, &res.Year)
 	if err != nil {
 		err = fmt.Errorf("reffinderio.partByID: %w", err)
-		log.Warn().Err(err).Msg("")
+		slog.Error("Cannot find part", "part_id", partID, "err", err)
+		return nil, err
 	}
 	return &res, nil
 }
 
-func (l reffinderio) nameOnlyOccurrences(nameRefs *namerefs.NameRefs) []*refRow {
+func (l reffinderio) nameOnlyOccurrences(nameRefs *namerefs.NameRefs) ([]*refRow, error) {
 	return l.occurrences(nameRefs.Canonical, "matched_canonical")
 }
 
-func (l reffinderio) taxonOccurrences(nameRefs *namerefs.NameRefs) []*refRow {
+func (l reffinderio) taxonOccurrences(nameRefs *namerefs.NameRefs) ([]*refRow, error) {
 	return l.occurrences(nameRefs.CurrentCanonical, "current_canonical")
 }
 
-func (l reffinderio) occurrences(name string, field string) []*refRow {
+func (l reffinderio) occurrences(name string, field string) ([]*refRow, error) {
 	switch field {
 	case "matched_canonical", "current_canonical":
 	default:
-		log.Warn().Msgf("Unregistered field: %s", field)
-		return nil
+		slog.Warn("Unregistered field", "field", field)
+		return nil, nil
 	}
 	var res []*refRow
 	var itemID, titleID, pageID int
@@ -143,7 +150,8 @@ func (l reffinderio) occurrences(name string, field string) []*refRow {
 
 	rows, err := l.db.Query(q, name)
 	if err != nil {
-		log.Warn().Err(err).Msg("Cannot find occurrences.")
+		slog.Error("Cannot run occurences query", "error", err)
+		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -153,7 +161,8 @@ func (l reffinderio) occurrences(name string, field string) []*refRow {
 			&nameID, &nameString, &matchedCanonical, &matchType, &editDistance)
 		if err != nil {
 			err = fmt.Errorf("reffinderio.occurrences: %w", err)
-			log.Fatal().Err(err).Msg("")
+			slog.Error("Cannot scan row", "error", err)
+			return nil, err
 		}
 		rec := &refRow{
 			itemID:             itemID,
@@ -181,7 +190,7 @@ func (l reffinderio) occurrences(name string, field string) []*refRow {
 
 		res = append(res, rec)
 	}
-	return res
+	return res, nil
 }
 
 func (l reffinderio) currentCanonical(canonical string) (string, error) {

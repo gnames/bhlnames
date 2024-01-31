@@ -5,6 +5,7 @@ VER = $(shell git describe --tags --abbrev=0)
 DATE = $(shell date -u '+%Y-%m-%d_%H:%M:%S%Z')
 
 NO_C = CGO_ENABLED=0
+FLAGS_SHARED = CGO_ENABLED=0 GOARCH=amd64
 FLAGS_LINUX = $(FLAGS_SHARED) GOOS=linux
 FLAGS_MAC = $(FLAGS_SHARED) GOOS=darwin
 FLAGS_WIN = $(FLAGS_SHARED) GOOS=windows
@@ -12,7 +13,6 @@ FLAGS_WIN = $(FLAGS_SHARED) GOOS=windows
 FLAGS_LD = -ldflags "-X github.com/gnames/$(PROJ_NAME)/pkg.Build=${DATE} \
                   -X github.com/gnames/$(PROJ_NAME)/pkg.Version=${VERSION}"
 FLAGS_REL = -trimpath -ldflags "-s -w -X github.com/gnames/$(PROJ_NAME)/pkg.Build=$(DATE)"
-FLAGS_SHARED = CGO_ENABLED=0 GOARCH=amd64
 
 RELEASE_DIR = /tmp
 TEST_OPTS = -v -shuffle=on -race -coverprofile=coverage.txt -covermode=atomic
@@ -45,28 +45,26 @@ tools: deps ## Install tools
 
 ## Build:
 build: openapi ## Build binary
-	$(NO_C) $(GOCMD) build \
+	$(NO_C) $(GOBUILD) \
 		-o $(PROJ_NAME) \
-		$(FLAGS_LD) \
 		.
 
 ## Build Release
 buildrel: openapi ## Build binary without debug info and with hardcoded version
-	$(NO_C) $(GOCMD) build \
+	$(NO_C) $(GORELEASE) \
 		-o $(PROJ_NAME) \
-		$(FLAGS_REL) \
 		.
 
 ## Release
 release: openapi dockerhub ## Build and package binaries for release
 	$(GOCLEAN); \
-	$(FLAGS_SHARED) GOOS=linux $(GOBUILD); \
+	$(FLAGS_LINUX) $(GORELEASE); \
 	tar zcvf /tmp/bhlnames-${VER}-linux.tar.gz bhlnames; \
 	$(GOCLEAN); \
-	$(FLAGS_SHARED) GOOS=darwin $(GOBUILD); \
+	$(FLAGS_MAC) $(GORELEASE);  \
 	tar zcvf /tmp/bhlnames-${VER}-mac.tar.gz bhlnames; \
 	$(GOCLEAN); \
-	$(FLAGS_WIN) $(NO_C) $(GOBUILD); \
+	$(FLAGS_WIN) $(GORELEASE); \
 	zip -9 /tmp/bhlnames-$(VER)-win-64.zip bhlnames.exe; \
 	$(GOCLEAN);
 

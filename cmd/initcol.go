@@ -18,11 +18,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-*/
-package cmd
+*/package cmd
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/gnames/bhlnames/internal/io/bayesio"
@@ -32,7 +32,6 @@ import (
 	bhlnames "github.com/gnames/bhlnames/pkg"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnparser"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -49,14 +48,14 @@ This command runs for several hours and is a part of initialization.`,
 	Run: func(cmd *cobra.Command, _ []string) {
 		rebuild, err := cmd.Flags().GetBool("restart")
 		if err != nil {
-			err = fmt.Errorf("initCmd: %#w", err)
-			log.Fatal().Err(err).Msg("")
+			slog.Error("Flag restart failed", "error", err)
+			os.Exit(1)
 		}
 
 		recalc, err := cmd.Flags().GetBool("recalc")
 		if err != nil {
-			err = fmt.Errorf("initCmd: %#w", err)
-			log.Fatal().Err(err).Msg("")
+			slog.Error("Flag recalc failed", "error", err)
+			os.Exit(1)
 		}
 
 		opts = append(
@@ -66,9 +65,26 @@ This command runs for several hours and is a part of initialization.`,
 		)
 
 		cfg := config.New(opts...)
-		cn := colbuildio.New(cfg)
-		rf := reffinderio.New(cfg)
-		tm := titlemio.New(cfg)
+		cn, err := colbuildio.New(cfg)
+		if err != nil {
+			err = fmt.Errorf("colbuildio.New: %w", err)
+			slog.Error("Cannot create colBuilder", "error", err)
+			os.Exit(1)
+		}
+
+		rf, err := reffinderio.New(cfg)
+		if err != nil {
+			err = fmt.Errorf("reffinderio.New: %w", err)
+			slog.Error("Cannot create refFinder", "error", err)
+			os.Exit(1)
+		}
+
+		tm, err := titlemio.New(cfg)
+		if err != nil {
+			err = fmt.Errorf("titlemio.New: %w", err)
+			slog.Error("Cannot create titleMatcher", "error", err)
+			os.Exit(1)
+		}
 
 		gnp := gnparser.New(gnparser.NewConfig())
 
@@ -87,14 +103,16 @@ This command runs for several hours and is a part of initialization.`,
 		err = bn.InitializeCol()
 		if err != nil {
 			err = fmt.Errorf("InitializeCol: %w", err)
-			log.Fatal().Err(err).Msg("")
+			slog.Error("Init CoL failed", "error", err)
+			os.Exit(1)
 		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(initcolCmd)
-	initcolCmd.Flags().BoolP("restart", "R", false, "Delete and rebuild files and tables for CoL data.")
+	initcolCmd.Flags().
+		BoolP("restart", "R", false, "Delete and rebuild files and tables for CoL data.")
 	initcolCmd.Flags().BoolP("recalc", "r", false, "Keep downloads, rebuild and reimport tables")
 
 }

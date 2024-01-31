@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/gnames/bhlnames/internal/io/titlemio"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnfmt"
-	"github.com/rs/zerolog/log"
 )
 
 var dataPath = filepath.Join("..", "..", "io", "bayesio", "data")
@@ -48,13 +48,15 @@ func main() {
 
 	gold, err := os.ReadFile(goldFile)
 	if err != nil {
-		log.Fatal().Err(err).Msg("ReadFile")
+		slog.Error("Cannot read gold file", "error", err)
+		os.Exit(1)
 	}
 	var nrs []*namerefs.NameRefs
 	enc := gnfmt.GNjson{Pretty: true}
 	err = enc.Decode(gold, &nrs)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Decode")
+		slog.Error("Cannot decode gold file", "error", err)
+		os.Exit(1)
 	}
 	sts := new(stats)
 	sts.namesNum = len(nrs)
@@ -153,10 +155,12 @@ func output(nrs []*namerefs.NameRefs) {
 	}
 	bs, err := enc.Encode(res)
 	if err != nil {
-		log.Fatal().Err(err).Msg("")
+		slog.Error("Cannot encode results", "error", err)
+		os.Exit(1)
 	}
 	err = os.WriteFile(resFile, bs, 0644)
 	if err != nil {
-		log.Fatal().Err(err).Msg("")
+		slog.Error("Cannot write results", "error", err)
+		os.Exit(1)
 	}
 }

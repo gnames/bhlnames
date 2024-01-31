@@ -3,12 +3,12 @@ package builderio
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"math"
 
 	"github.com/gnames/bhlnames/internal/ent/txstats"
 	gnstats "github.com/gnames/gnstats/ent/stats"
 	"github.com/lib/pq"
-	"github.com/rs/zerolog/log"
 )
 
 func (b builderio) itemsNum() (int, error) {
@@ -58,7 +58,8 @@ func (b builderio) addStatsToItems(chIn <-chan []txstats.ItemTaxa) error {
 				classPcnt, order, orderPcnt, family, familyPcnt, genus, genusPcnt,
 			)
 			if err != nil {
-				log.Fatal().Err(err).Msg("saveNames:")
+				err = fmt.Errorf("addStatsToItems: %w", err)
+				slog.Error("Cannot save item", "item_id", v.ItemID, "err", err)
 				return err
 			}
 		}

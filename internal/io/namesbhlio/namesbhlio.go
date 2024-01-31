@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,7 +17,6 @@ import (
 	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/jinzhu/gorm"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -45,8 +45,8 @@ func New(cfg config.Config, db *sql.DB, gormdb *gorm.DB) namebhl.NameBHL {
 // ImportOccurrences transfers occurrences data from bhlindex's
 // occurrences.csv dump file to the database.
 func (n namesbhlio) ImportOccurrences(blf *bloom.BloomFilter) error {
-	log.Info().Msg("Importing names' occurrences.")
-	log.Info().Msg("Truncating data from name_occurrences table.")
+	slog.Info("Importing names' occurrences.")
+	slog.Info("Truncating data from name_occurrences table.")
 	err := db.Truncate(n.db, []string{"name_occurrences"})
 	if err != nil {
 		return err
@@ -175,8 +175,8 @@ func convertToOccurs(data [][]string) ([]db.NameOccurrence, error) {
 // ImportNames takes batches of verified names from a bhlindex dump file
 // and saves them into database.
 func (n namesbhlio) ImportNames() (*bloom.BloomFilter, error) {
-	log.Info().Msg("Ingesting names resolved to Catalogue of Life.")
-	log.Info().Msg("Truncating data from names_strings table.")
+	slog.Info("Ingesting names resolved to Catalogue of Life.")
+	slog.Info("Truncating data from names_strings table.")
 
 	blf := bloom.NewWithEstimates(25_000_000, 0.001)
 

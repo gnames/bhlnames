@@ -3,6 +3,7 @@ package builderio
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 
 	"github.com/bits-and-blooms/bloom/v3"
@@ -13,7 +14,6 @@ import (
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnsys"
 	"github.com/jinzhu/gorm"
-	"github.com/rs/zerolog/log"
 )
 
 type builderio struct {
@@ -22,14 +22,26 @@ type builderio struct {
 	GormDB *gorm.DB
 }
 
-func New(cfg config.Config) builder.Builder {
+func New(cfg config.Config) (builder.Builder, error) {
+	dbConn, err := db.NewDB(cfg)
+	if err != nil {
+		return nil, err
+	}
+	gormDB, err := db.NewDbGorm(cfg)
+	if err != nil {
+		return nil, err
+	}
 	res := builderio{
 		Config: cfg,
-		DB:     db.NewDB(cfg),
-		GormDB: db.NewDbGorm(cfg),
+		DB:     dbConn,
+		GormDB: gormDB,
 	}
-	res.touchDirs()
-	return res
+	err = res.touchDirs()
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // Close closes all resources used by the Builder.
@@ -38,7 +50,7 @@ func (b builderio) Close() {
 	b.GormDB.Close()
 }
 
-func (b builderio) touchDirs() {
+func (b builderio) touchDirs() error {
 	dirs := []string{
 		b.InputDir,
 		b.DownloadDir,
@@ -54,15 +66,18 @@ func (b builderio) touchDirs() {
 			err := gnsys.MakeDir(dirs[i])
 			if err != nil {
 				err = fmt.Errorf("builderio.touchDirs: %#w", err)
-				log.Fatal().Err(err).Msg("touchDirs")
+				slog.Error("Cannot create dir", "dir", dirs[i], "err", err)
+				return err
 			}
 		}
 	}
+	return nil
 }
 
 func (b builderio) PrepareData() error {
 	var err error
-	exists, err := gnsys.FileExists(filepath.Join(b.AhoCorKeyValDir, "patterns.txt"))
+	path := filepath.Join(b.AhoCorasickDir, "patterns.txt")
+	exists, err := gnsys.FileExists(path)
 	if err != nil {
 		return err
 	}
@@ -70,12 +85,16 @@ func (b builderio) PrepareData() error {
 		return nil
 	}
 
-	log.Info().Msg("Preparing data for bhlnames service.")
+	slog.Info("Preparing data for bhlnames service.")
 	titlesMap, err := b.dbTitlesMap()
 	if err != nil {
 		return err
 	}
-	ts := newTitleStore(b.Config, titlesMap)
+	ts, err := newTitleStore(b.Config, titlesMap)
+	if err != nil {
+		return err
+	}
+
 	err = ts.setup()
 	if err != nil {
 		return err
@@ -84,16 +103,22 @@ func (b builderio) PrepareData() error {
 	return nil
 }
 
-func (b builderio) ResetData() {
+func (b builderio) ResetData() error {
 	var err error
-
-	log.Info().Msgf("Reseting filesystem at '%s'.", b.InputDir)
+	slog.Info("Resetting filesystem", "input-dir", b.InputDir)
 	err = b.resetDirs()
 	if err != nil {
 		err = fmt.Errorf("builderio.ResetData: %#w", err)
-		log.Fatal().Err(err).Msg("Cannot reset dirs")
+		slog.Error("Cannot reset dirs", "err", err)
+		return err
 	}
-	b.resetDB()
+
+	err = b.resetDB()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (b builderio) ImportData() error {
@@ -101,14 +126,14 @@ func (b builderio) ImportData() error {
 	n := namesbhlio.New(b.Config, b.DB, b.GormDB)
 
 	// Download and Extract
-	log.Info().Msg("Downloading database dump from BHL.")
+	slog.Info("Downloading database dump from BHL.")
 	err := bhlsys.Download(b.DownloadBHLFile, b.BHLDumpURL, b.WithRebuild)
 	if err == nil {
 		err = bhlsys.Extract(b.DownloadBHLFile, b.DownloadDir, b.WithRebuild)
 	}
 
 	if err == nil {
-		log.Info().Msg("Downloading names data from bhlindex.")
+		slog.Info("Downloading names data from bhlindex.")
 		err = bhlsys.Download(b.DownloadNamesFile, b.BHLNamesURL, b.WithRebuild)
 	}
 	if err == nil {

@@ -2,12 +2,12 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnsys"
-	"github.com/rs/zerolog/log"
 )
 
 // Config contains data needed for BHLnames functionality.
@@ -169,7 +169,8 @@ func OptInputDir(s string) Option {
 		s, err = gnsys.ConvertTilda(s)
 		if err != nil {
 			err = fmt.Errorf("config.OptInputDir: %#w", err)
-			log.Fatal().Err(err).Msg("OptInputDir")
+			slog.Error("Cannot convert tilda to path", "error", err)
+			os.Exit(1)
 		}
 		cfg.InputDir = s
 	}

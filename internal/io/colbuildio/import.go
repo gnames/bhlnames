@@ -3,11 +3,11 @@ package colbuildio
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 
 	"github.com/gnames/bhlnames/internal/io/db"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -18,8 +18,8 @@ const (
 func (c colbuildio) importCol() error {
 	var err error
 
-	log.Info().Msg("Importing nomenclatural references from CoL.")
-	log.Info().Msg("Truncating data from col_nomen_refs table.")
+	slog.Info("Importing nomenclatural references from CoL.")
+	slog.Info("Truncating data from col_nomen_refs table.")
 	c.resetColDB()
 
 	g := errgroup.Group{}

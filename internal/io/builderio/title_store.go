@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -15,7 +16,6 @@ import (
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/bhlnames/pkg/ent/abbr"
 	"github.com/gnames/gnfmt"
-	"github.com/rs/zerolog/log"
 )
 
 type titleStore struct {
@@ -51,19 +51,19 @@ FROM items
 	return res, rows.Err()
 }
 
-func newTitleStore(cfg config.Config, titles map[int]*title) *titleStore {
+func newTitleStore(cfg config.Config, titles map[int]*title) (*titleStore, error) {
 	d := dictio.New()
 	shortWords, err := d.ShortWords()
 	if err != nil {
 		err = fmt.Errorf("builderio.newTitleStore: %#w", err)
-		log.Fatal().Err(err).Msg("newTitleStore")
+		slog.Error("Cannot generate short words", "error", err)
 	}
 	res := titleStore{
 		cfg:        cfg,
 		titles:     titles,
 		shortWords: shortWords,
 	}
-	return &res
+	return &res, nil
 }
 
 func (ts *titleStore) setup() error {
@@ -81,7 +81,10 @@ func (ts *titleStore) setup() error {
 
 func (ts *titleStore) save(abbrMap map[string][]int) error {
 	var err error
-	kv := db.InitKeyVal(ts.cfg.AhoCorKeyValDir)
+	kv, err := db.InitKeyVal(ts.cfg.AhoCorKeyValDir)
+	if err != nil {
+		return err
+	}
 	defer kv.Close()
 
 	kvTxn := kv.NewTransaction(true)

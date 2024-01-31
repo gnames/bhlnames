@@ -2,6 +2,7 @@ package score
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/gnames/bayes"
 	ft "github.com/gnames/bayes/ent/feature"
@@ -11,7 +12,6 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
 	"github.com/gnames/bhlnames/internal/ent/refbhl"
 	"github.com/gnames/bhlnames/internal/ent/title_matcher"
-	"github.com/rs/zerolog/log"
 )
 
 type score struct {
@@ -121,15 +121,17 @@ func (s *score) String() string {
 
 // BoostBestResult provides additional score for the best result in
 // NameRefs.
-func BoostBestResult(nr *namerefs.NameRefs, nb bayes.Bayes) {
+func BoostBestResult(nr *namerefs.NameRefs, nb bayes.Bayes) error {
 	if len(nr.References) > 0 {
 		f := ft.Feature{Name: ft.Name("bestRes"), Value: ft.Value("true")}
 		bestRes, err := nb.Likelihood(f, ft.Class("isNomen"))
 		if err != nil {
-			log.Fatal().Err(err).Msg("BoostBestResult")
+			slog.Error("BoostBestResult failed", "error", err)
+			return err
 		}
 		nr.References[0].Score.Odds *= bestRes
 	}
+	return nil
 }
 
 func (s *score) combineScores() {

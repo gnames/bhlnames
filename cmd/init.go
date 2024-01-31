@@ -22,12 +22,12 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
+	"log/slog"
+	"os"
 
 	"github.com/gnames/bhlnames/internal/io/builderio"
 	bhlnames "github.com/gnames/bhlnames/pkg"
 	"github.com/gnames/bhlnames/pkg/config"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -45,22 +45,26 @@ after enother. The result will be identical to "bhlnames init".`,
 	Run: func(cmd *cobra.Command, _ []string) {
 		rebuild, err := cmd.Flags().GetBool("rebuild")
 		if err != nil {
-			err = fmt.Errorf("initCmd: %#w", err)
-			log.Fatal().Err(err).Msg("initCmd")
+			slog.Error("Flag rebuild failed", "error", err)
+			os.Exit(1)
 		}
 		opts = append(opts, config.OptWithRebuild(rebuild))
 		cfg := config.New(opts...)
 
-		builder := builderio.New(cfg)
+		builder, err := builderio.New(cfg)
+		if err != nil {
+			slog.Error("Cannot create builder", "error", err)
+			os.Exit(1)
+		}
 		bn := bhlnames.New(cfg, bhlnames.OptBuilder(builder))
 		defer bn.Close()
 
 		err = bn.Initialize()
 		if err != nil {
-			err = fmt.Errorf("initCmd: %#w", err)
-			log.Fatal().Err(err).Msg("initCmd")
+			slog.Error("Initialize failed", "error", err)
+			os.Exit(1)
 		}
-		log.Info().Msg("Import of BHL data and names is done.")
+		slog.Info("Import of BHL data and names is done.")
 	},
 }
 

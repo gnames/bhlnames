@@ -3,13 +3,13 @@ package builderio
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 
 	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames/internal/ent/txstats"
 	"github.com/gnames/bhlnames/internal/io/db"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -17,9 +17,9 @@ func (b builderio) CalculateTxStats() error {
 	var err error
 	var itemsTotal int
 	var itx []txstats.ItemTaxa
-	log.Info().Msg("Truncating item_stats table.")
+	slog.Info("Truncating item_stats table.")
 	db.Truncate(b.DB, []string{"item_stats"})
-	log.Info().Msg("Calclulating taxonomic statistics for items.")
+	slog.Info("Calclulating taxonomic statistics for items.")
 	itemsTotal, err = b.itemsNum()
 	if err != nil {
 		return fmt.Errorf("calculateStats: %w", err)
@@ -50,7 +50,7 @@ func (b builderio) CalculateTxStats() error {
 			itemID += limit
 			if count%25_000 == 0 {
 				fmt.Fprint(os.Stderr, "\r")
-				log.Info().Msgf("Calculated stats for %s items.", humanize.Comma(int64(count)))
+				slog.Info("Calculated stats for items.", "items-num", humanize.Comma(int64(count)))
 			} else {
 				fmt.Fprintf(os.Stderr, "\r%s", strings.Repeat(" ", 35))
 				fmt.Fprintf(os.Stderr, "\rCalculated taxonomic stats for %s items.",
@@ -65,6 +65,6 @@ func (b builderio) CalculateTxStats() error {
 		return err
 	}
 	fmt.Fprintln(os.Stderr)
-	log.Info().Msg("Finished calculation of taxonomic stats for items.")
+	slog.Info("Finished calculation of taxonomic stats for items.")
 	return nil
 }

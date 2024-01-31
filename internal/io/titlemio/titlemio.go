@@ -2,6 +2,7 @@ package titlemio
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/title_matcher"
 	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/pkg/config"
-	"github.com/rs/zerolog/log"
 )
 
 type titlemio struct {
@@ -26,18 +26,23 @@ type titlemio struct {
 	TitleKV *badger.DB
 }
 
-func New(cfg config.Config) title_matcher.TitleMatcher {
+func New(cfg config.Config) (title_matcher.TitleMatcher, error) {
+	titleKV, err := db.InitKeyVal(cfg.AhoCorKeyValDir)
+	if err != nil {
+		return nil, err
+	}
 	res := &titlemio{
 		acDir:   cfg.AhoCorasickDir,
-		TitleKV: db.InitKeyVal(cfg.AhoCorKeyValDir),
+		TitleKV: titleKV,
 	}
 	ac, err := res.getAhoCorasick()
 	if err != nil {
 		err = fmt.Errorf("titlemio.New: %w", err)
-		log.Fatal().Err(err).Msg("")
+		slog.Error("Cannot create AhoCorasick", "error", err)
+		return nil, err
 	}
 	res.AhoCorasick = ac
-	return res
+	return res, nil
 }
 
 func (tm titlemio) Close() error {
@@ -58,7 +63,8 @@ func (tm titlemio) getAhoCorasick() (aho_corasick.AhoCorasick, error) {
 			patterns[i] = strings.TrimSpace(patterns[i])
 		}
 		acSize := ac.Setup(patterns)
-		log.Info().Msgf("Created Title search trie with %d nodes.\n", acSize)
+		str := fmt.Sprintf("Created Title search trie with %d nodes.\n", acSize)
+		slog.Info(str)
 	}
 	return ac, err
 }

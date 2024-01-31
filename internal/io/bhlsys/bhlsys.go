@@ -4,13 +4,13 @@ import (
 	"archive/zip"
 	"errors"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
 
 	"code.cloudfoundry.org/bytefmt"
 	"github.com/gnames/gnsys"
-	"github.com/rs/zerolog/log"
 	progressbar "github.com/schollz/progressbar/v3"
 )
 
@@ -64,7 +64,7 @@ func unzip(path, dlDir string, rebuild bool) error {
 		fpath := filepath.Join(dlDir, filepath.Base(f.Name))
 		exists, _ := gnsys.FileExists(fpath)
 		if !rebuild && exists {
-			log.Info().Msgf("File %s already exists, skipping unzip.", fpath)
+			slog.Info("Skipping unzip, file already exists", "file", fpath)
 			continue
 		}
 
@@ -78,7 +78,10 @@ func unzip(path, dlDir string, rebuild bool) error {
 			return err
 		}
 		size := f.UncompressedSize64
-		log.Info().Msgf("Extracting %s (%s).", f.Name, bytefmt.ByteSize(size))
+		slog.Info(
+			"Extracting",
+			"file", f.Name, "bytes-size", bytefmt.ByteSize(size),
+		)
 		_, err = io.Copy(outFile, rc)
 
 		outFile.Close()
@@ -98,7 +101,7 @@ func unzip(path, dlDir string, rebuild bool) error {
 func Download(path, url string, rebuild bool) error {
 	exists, _ := gnsys.FileExists(path)
 	if !rebuild && exists {
-		log.Info().Msgf("File %s already exists, skipping download.", path)
+		slog.Info("File already exists, skipping download.", "file", path)
 		return nil
 	}
 	out, err := os.Create(path + ".tmp")
@@ -127,6 +130,6 @@ func Download(path, url string, rebuild bool) error {
 	if err != nil {
 		return err
 	}
-	log.Info().Msg("Download finished")
+	slog.Info("Download finished")
 	return nil
 }

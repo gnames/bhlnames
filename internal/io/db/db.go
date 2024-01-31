@@ -3,12 +3,12 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/rs/zerolog/log"
 )
 
 func opts(cfg config.Config) string {
@@ -16,22 +16,24 @@ func opts(cfg config.Config) string {
 		cfg.DbHost, cfg.DbUser, cfg.DbPass, cfg.DbDatabase)
 }
 
-func NewDbGorm(cnf config.Config) *gorm.DB {
+func NewDbGorm(cnf config.Config) (*gorm.DB, error) {
 	db, err := gorm.Open("postgres", opts(cnf))
 	if err != nil {
 		err = fmt.Errorf("db.NewDbGorm: %#w", err)
-		log.Fatal().Err(err).Msg("NewDbGorm")
+		slog.Error("Cannot connect to DB", "error", err)
+		return nil, err
 	}
-	return db
+	return db, nil
 }
 
-func NewDB(cnf config.Config) *sql.DB {
+func NewDB(cnf config.Config) (*sql.DB, error) {
 	db, err := sql.Open("postgres", opts(cnf))
 	if err != nil {
 		err = fmt.Errorf("db.NewDB: %#w", err)
-		log.Fatal().Err(err).Msg("NewDB")
+		slog.Error("Cannot connect to DB", "error", err)
+		return nil, err
 	}
-	return db
+	return db, nil
 }
 
 func Truncate(d *sql.DB, tables []string) error {
@@ -45,13 +47,14 @@ func Truncate(d *sql.DB, tables []string) error {
 	return nil
 }
 
-func RunQuery(d *sql.DB, q string) *sql.Rows {
+func RunQuery(d *sql.DB, q string) (*sql.Rows, error) {
 	rows, err := d.Query(q)
 	if err != nil {
 		err = fmt.Errorf("db.RunQuery: %#w", err)
-		log.Fatal().Err(err).Msg("RunQuery")
+		slog.Error("Cannot run query", "query", q, "error", err)
+		return nil, err
 	}
-	return rows
+	return rows, nil
 }
 
 // QuoteString makes a string value compatible with SQL synthax by wrapping it

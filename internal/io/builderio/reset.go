@@ -2,15 +2,15 @@ package builderio
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/gnsys"
-	"github.com/rs/zerolog/log"
 )
 
-func (b builderio) resetDB() {
-	log.Info().Msgf("Resetting '%s' database at '%s'.", b.DbDatabase, b.DbHost)
+func (b builderio) resetDB() error {
+	slog.Info("Resetting database", "database", b.DbDatabase, "host", b.DbHost)
 	q := `
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
@@ -21,13 +21,19 @@ COMMENT ON SCHEMA public IS 'standard public schema'`
 	_, err := b.DB.Exec(q)
 	if err != nil {
 		err = fmt.Errorf("builderio.resetDB: %w", err)
-		log.Fatal().Err(err).Msg("Database reset failed")
+		slog.Error("Cannot reset database", "err", err)
+		return err
 	}
-	log.Info().Msg("Creating tables.")
-	b.migrate()
+	slog.Info("Creating tables.")
+	err = b.migrate()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (b builderio) migrate() {
+func (b builderio) migrate() error {
 	b.GormDB.AutoMigrate(
 		&db.Item{},
 		&db.ItemStats{},
@@ -41,8 +47,10 @@ func (b builderio) migrate() {
 	err := db.Truncate(b.DB, []string{"items", "pages", "parts"})
 	if err != nil {
 		err = fmt.Errorf("builderio.migrate: %w", err)
-		log.Fatal().Err(err).Msg("migration")
+		slog.Error("Cannot truncate tables", "err", err)
+		return err
 	}
+	return nil
 }
 
 func (b builderio) resetDirs() error {

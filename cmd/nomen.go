@@ -26,6 +26,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"sync"
 	"time"
@@ -41,7 +42,6 @@ import (
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnparser"
 	"github.com/gnames/gnsys"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -76,8 +76,17 @@ a putative link in BHL to the event.
 		}
 		cfg := config.New(opts...)
 
-		rf := reffinderio.New(cfg)
-		tm := titlemio.New(cfg)
+		rf, err := reffinderio.New(cfg)
+		if err != nil {
+			slog.Error("Cannot create reffinder", "error", err)
+			os.Exit(1)
+		}
+
+		tm, err := titlemio.New(cfg)
+		if err != nil {
+			slog.Error("Cannot create title matcher", "error", err)
+			os.Exit(1)
+		}
 
 		gnp := gnparser.New(gnparser.NewConfig())
 
@@ -129,8 +138,8 @@ func nomen(bn bhlnames.BHLnames, data string, year int, curate bool, output stri
 	if exists {
 		f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 		if err != nil {
-			err = fmt.Errorf("nomen: %#w", err)
-			log.Fatal().Err(err).Msg("nomen")
+			slog.Error("Cannot open file", "error", err)
+			os.Exit(1)
 		}
 		nomensFromFile(bn, f, curate, output)
 		f.Close()
@@ -155,8 +164,8 @@ func nomensFromFile(bn bhlnames.BHLnames, f io.Reader, curate bool, output strin
 	header := make(map[string]int)
 	hdr, err := r.Read()
 	if err != nil {
-		err = fmt.Errorf("nomensFromFile: %#w", err)
-		log.Fatal().Err(err).Msg("Cannot read CSV file")
+		slog.Error("Cannot read CSV file", "error", err)
+		os.Exit(1)
 	}
 	for i, v := range hdr {
 		header[v] = i
@@ -168,20 +177,20 @@ func nomensFromFile(bn bhlnames.BHLnames, f io.Reader, curate bool, output strin
 		return ""
 	}
 	count := 0
-	log.Info().Msg("Finding references.")
+	slog.Info("Finding references.")
 	for {
 		row, err := r.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			err = fmt.Errorf("nomensFromFile: %#w", err)
-			log.Fatal().Err(err).Msg("Cannot read CSV row.")
+			slog.Error("Cannot read CSV file", "error", err)
+			os.Exit(1)
 		}
 
 		count++
 		if count%1000 == 0 {
-			log.Info().Msgf("Processing %s-th line.\n", humanize.Comma(int64(count)))
+			slog.Info("Processing lines", "line", humanize.Comma(int64(count)))
 		}
 		opts := []input.Option{
 			input.OptID(csvVal(row, "Id")),
@@ -193,7 +202,7 @@ func nomensFromFile(bn bhlnames.BHLnames, f io.Reader, curate bool, output strin
 	}
 	close(chIn)
 	wg.Wait()
-	log.Info().Msg("Finish finding references")
+	slog.Info("Finish finding references")
 }
 
 func processNomenResults(f gnfmt.Format, out <-chan *namerefs.NameRefs,
@@ -206,7 +215,7 @@ func processNomenResults(f gnfmt.Format, out <-chan *namerefs.NameRefs,
 		enc := gnfmt.GNjson{}
 		for r := range out {
 			if r.Error != nil {
-				log.Warn().Err(r.Error)
+				slog.Error("Results error", "error", r.Error)
 			}
 			fmt.Println(enc.Output(r, f))
 		}
@@ -224,8 +233,8 @@ func nomenFromString(bn bhlnames.BHLnames, name string, year int) {
 	data := input.New(gnp, opts...)
 	res, err := bn.NomenRefs(data)
 	if err != nil {
-		err = fmt.Errorf("nomenFromString: %#w", err)
-		log.Fatal().Err(err).Msg("nomenFromString")
+		slog.Error("Cannot get nomen", "error", err)
+		os.Exit(1)
 	}
 	out, _ := enc.Encode(res)
 	fmt.Println(string(out))
@@ -254,18 +263,18 @@ func delimiterFlag(cmd *cobra.Command) rune {
 
 	switch delim {
 	case "":
-		log.Info().Msg("empty delimiter option")
-		log.Info().Msg("keeping the default delimiter \",\"")
+		slog.Info("Empty delimiter option")
+		slog.Info("Keeping the default delimiter \",\"")
 		return ','
 	case "\\t":
-		log.Info().Msg("Setting delimiter to \"\\t\"")
+		slog.Info("Setting delimiter to \"\\t\"")
 		return '\t'
 	case ",":
-		log.Info().Msg("Setting delimiter to \",\"")
+		slog.Info("Setting delimiter to \",\"")
 		return ','
 	default:
-		log.Info().Msg("supported delimiters are \",\" and \"\t\"")
-		log.Info().Msg("keeping the default delimiter \",\"")
+		slog.Info("Supported delimiters are \",\" and \"\t\"")
+		slog.Info("Keeping the default delimiter \",\"")
 		return ','
 	}
 }
@@ -273,8 +282,8 @@ func delimiterFlag(cmd *cobra.Command) rune {
 func curationFlag(cmd *cobra.Command) bool {
 	cur, err := cmd.Flags().GetBool("curation")
 	if err != nil {
-		err = fmt.Errorf("curationFlag: %#w", err)
-		log.Fatal().Err(err).Msg("curationFlag")
+		slog.Error("Flag curation failed", "error", err)
+		os.Exit(1)
 	}
 
 	return cur
@@ -286,8 +295,8 @@ func outputFlag(cmd *cobra.Command) string {
 		err = errors.New("output path for curated results should be set")
 	}
 	if err != nil {
-		err = fmt.Errorf("outputFlag: %#w", err)
-		log.Fatal().Err(err).Msg("outputFlag")
+		slog.Error("Flag output failed", "error", err)
+		os.Exit(1)
 	}
 	return output
 }

@@ -5,7 +5,7 @@
 *.so
 *.dylib
 *res.json
-bhlnames/bhlnames
+bhlnames
 
 # Test binary, built with `go test -c`
 *.test

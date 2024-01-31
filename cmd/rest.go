@@ -22,6 +22,9 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"log/slog"
+	"os"
+
 	"github.com/gnames/bhlnames/internal/io/bayesio"
 	"github.com/gnames/bhlnames/internal/io/builderio"
 	"github.com/gnames/bhlnames/internal/io/reffinderio"
@@ -30,7 +33,6 @@ import (
 	bhlnames "github.com/gnames/bhlnames/pkg"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnparser"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -46,16 +48,30 @@ var restCmd = &cobra.Command{
 		cfg := config.New(opts...)
 
 		// init directories
-		bld := builderio.New(cfg)
-		err := bld.PrepareData()
+		bld, err := builderio.New(cfg)
 		if err != nil {
-			log.Fatal().Err(err).Msg("PrepareData")
+			slog.Error("Cannot create builder", "error", err)
+			os.Exit(1)
+		}
+
+		err = bld.PrepareData()
+		if err != nil {
+			slog.Error("PrepareData failed", "error", err)
+			os.Exit(1)
 		}
 		bld.Close()
 
-		rf := reffinderio.New(cfg)
+		rf, err := reffinderio.New(cfg)
+		if err != nil {
+			slog.Error("Cannot create ref-finder", "error", err)
+			os.Exit(1)
+		}
 
-		tm := titlemio.New(cfg)
+		tm, err := titlemio.New(cfg)
+		if err != nil {
+			slog.Error("Cannot create title-matcher", "error", err)
+			os.Exit(1)
+		}
 
 		gnp := gnparser.New(gnparser.NewConfig())
 
@@ -82,7 +98,8 @@ func init() {
 func portFlag(cmd *cobra.Command) int {
 	p, err := cmd.Flags().GetInt("port")
 	if err != nil {
-		log.Fatal().Err(err).Msg("portFlag")
+		slog.Error("Flag port failed", "error", err)
+		os.Exit(1)
 	}
 	return p
 }

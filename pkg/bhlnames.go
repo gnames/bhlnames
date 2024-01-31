@@ -3,6 +3,7 @@ package bhlnames
 import (
 	"cmp"
 	"fmt"
+	"log/slog"
 	"slices"
 	"sync"
 
@@ -19,7 +20,6 @@ import (
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnlib/ent/gnvers"
 	"github.com/gnames/gnparser"
-	"github.com/rs/zerolog/log"
 )
 
 type Option func(*bhlnames)
@@ -186,7 +186,7 @@ func (bn bhlnames) nameRefsWorker(
 		nameRefs, err := bn.ReferencesBHL(inp, bn.cfg)
 		if err != nil {
 			err = fmt.Errorf("bhlnames.nameRefsWorker: %w", err)
-			log.Warn().Err(err)
+			slog.Error("bhlnames.nameRefsWorker", "error", err)
 		}
 		chOut <- nameRefs
 	}
@@ -227,12 +227,12 @@ func (bn bhlnames) nomenRefsWorker(
 		nr, err := bn.ReferencesBHL(inp, bn.cfg)
 		if err != nil {
 			err = fmt.Errorf("bhlnames.nomenRefsWorker: %#w", err)
-			log.Warn().Err(err)
+			slog.Error("bhlnames.nomenRefsWorker", "error", err)
 		}
 		err = bn.sortByScore(nr)
 		if err != nil {
 			err = fmt.Errorf("bhlnames.nomenRefsWorker: %#w", err)
-			log.Warn().Err(err)
+			slog.Error("bhlnames.nomenRefsWorker", "error", err)
 		}
 		chOut <- nr
 	}
@@ -274,7 +274,11 @@ func (bn bhlnames) sortByScore(nr *namerefs.NameRefs) error {
 		nr.References = nr.References[:noScoreIndex]
 	}
 
-	score.BoostBestResult(nr, bn.Bayes)
+	err = score.BoostBestResult(nr, bn.Bayes)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

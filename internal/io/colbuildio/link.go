@@ -3,15 +3,15 @@ package colbuildio
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 
 	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
 	"github.com/gnames/gnparser"
-	"github.com/rs/zerolog/log"
 )
 
 func (c colbuildio) inputFromCol(chIn chan<- input.Input) error {
-	log.Info().Msg("Finding nomenclatural events for names from the Catalogue of Life.")
+	slog.Info("Finding nomenclatural events for names from the Catalogue of Life.")
 
 	gnp := gnparser.New(gnparser.NewConfig())
 	cursor := c.lastProcRec

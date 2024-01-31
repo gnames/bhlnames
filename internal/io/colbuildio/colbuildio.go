@@ -3,6 +3,7 @@ package colbuildio
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,7 +19,6 @@ import (
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnsys"
 	"github.com/jinzhu/gorm"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -35,16 +35,24 @@ type colbuildio struct {
 	gormDB *gorm.DB
 }
 
-func New(cfg config.Config) colbuild.ColBuild {
+func New(cfg config.Config) (colbuild.ColBuild, error) {
+	dbConn, err := db.NewDB(cfg)
+	if err != nil {
+		return nil, err
+	}
+	gormDB, err := db.NewDbGorm(cfg)
+	if err != nil {
+		return nil, err
+	}
 	res := colbuildio{
 		dlURL:        cfg.CoLDataURL,
 		dlDir:        cfg.DownloadDir,
 		pathDownload: cfg.DownloadCoLFile,
 		pathExtract:  filepath.Join(cfg.DownloadDir, "Taxon.tsv"),
-		db:           db.NewDB(cfg),
-		gormDB:       db.NewDbGorm(cfg),
+		db:           dbConn,
+		gormDB:       gormDB,
 	}
-	return &res
+	return &res, nil
 }
 
 func (c colbuildio) DataStatus() (bool, bool, error) {
@@ -66,14 +74,14 @@ func (c colbuildio) DataStatus() (bool, bool, error) {
 }
 
 func (c colbuildio) ResetColData() {
-	log.Info().Msg("Reseting CoL files")
+	slog.Info("Reseting CoL files")
 	c.deleteFiles()
 	c.resetColDB()
 }
 
 func (c colbuildio) ImportColData() error {
 	var err error
-	log.Info().Msg("Downloading CoL DwCA data.")
+	slog.Info("Downloading CoL DwCA data.")
 	err = bhlsys.Download(c.pathDownload, c.dlURL, false)
 	if err != nil {
 		err = fmt.Errorf("download: %w", err)
@@ -94,21 +102,27 @@ func (c colbuildio) ImportColData() error {
 	return nil
 }
 
-func (c colbuildio) LinkColToBhl(nomenRef func(<-chan input.Input, chan<- *namerefs.NameRefs)) error {
+func (c colbuildio) LinkColToBhl(
+	nomenRef func(<-chan input.Input, chan<- *namerefs.NameRefs),
+) error {
 	var err error
-	log.Info().Msg("Linking CoL references to BHL pages.")
-	log.Warn().Msg("This part might take a few days.")
+	slog.Info("Linking CoL references to BHL pages.")
+	slog.Warn("This part might take a few days.")
 
 	c.recordsNum, c.lastProcRec, err = c.stats()
 	if err != nil {
 		return err
 	}
 
-	log.Info().Msgf("Processing %d CoL records.", c.recordsNum)
+	slog.Info("Processing CoL records.", "records-num", c.recordsNum)
 
 	if c.lastProcRec > 0 {
-		log.Info().Msgf("Already processed %d records out of %d (%0.2f%%).",
-			c.lastProcRec, c.recordsNum, c.recNumToPcent(c.lastProcRec))
+		slog.Info(
+			"Processsing records",
+			"records-num", c.lastProcRec,
+			"all-records-num", c.recordsNum,
+			"percent", c.recNumToPcent(c.lastProcRec),
+		)
 	}
 
 	start := time.Now()
@@ -155,13 +169,13 @@ func (c colbuildio) LinkColToBhl(nomenRef func(<-chan input.Input, chan<- *namer
 	}
 
 	fmt.Fprintln(os.Stderr)
-	log.Info().Msg("Finished linking CoL nomenclatural references to BHL.")
+	slog.Info("Finished linking CoL nomenclatural references to BHL.")
 	err = g2.Wait()
 	if err != nil {
 		return err
 	}
 	dur := float64(time.Since(start)) / float64(time.Hour)
-	log.Info().Msgf("Processed %d records in %0.2f hours.", count, dur)
+	slog.Info("Stats", "records-num", count, "hours", dur)
 	return nil
 }
 
@@ -182,7 +196,7 @@ func (c colbuildio) progressOutput(start time.Time, recsNum int) {
 	fmt.Fprintf(os.Stderr, "\r%s", strings.Repeat(" ", 80))
 	if recsNum%10_000 == 0 {
 		fmt.Fprint(os.Stderr, "\r")
-		log.Info().Msg(str)
+		slog.Info(str)
 	} else {
 		fmt.Fprintf(os.Stderr, "\r%s", str)
 	}

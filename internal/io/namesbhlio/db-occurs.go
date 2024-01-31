@@ -2,6 +2,7 @@ package namesbhlio
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/lib/pq"
-	"github.com/rs/zerolog/log"
 )
 
 func (n namesbhlio) saveOcurrences(
@@ -59,10 +59,12 @@ func (n namesbhlio) saveOcurrences(
 		}
 	}
 	fmt.Fprintln(os.Stderr)
-	log.Info().Msgf(
+	str := fmt.Sprintf(
 		"Imported %s name occurrences, %s occurrences ignored (no page reference).",
 		humanize.Comma(int64(count)),
 		humanize.Comma(int64(missing)),
 	)
+	slog.Info(str)
+
 	return nil
 }

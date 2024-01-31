@@ -10,7 +10,6 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnparser"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,9 +23,7 @@ func TestPing(t *testing.T) {
 	assert.Nil(t, err)
 
 	res, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal().Err(err).Msg("")
-	}
+	assert.Nil(t, err)
 
 	assert.Equal(t, "pong", string(res))
 }
@@ -36,9 +33,7 @@ func TestVer(t *testing.T) {
 	assert.Nil(t, err)
 
 	res, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal().Err(err).Msg("")
-	}
+	assert.Nil(t, err)
 
 	assert.Contains(t, string(res), "version")
 }

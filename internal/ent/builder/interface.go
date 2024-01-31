@@ -8,7 +8,7 @@ type Builder interface {
 
 	// ResetData removes all downloaded and generated resources, leaving
 	// empty databases and directories.
-	ResetData()
+	ResetData() error
 
 	// ImportData downloads remote datasets to the local file system and generates
 	// data needed for bhlnames functionality.

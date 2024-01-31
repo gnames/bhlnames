@@ -24,6 +24,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"sync"
 
@@ -36,7 +37,6 @@ import (
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnparser"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -63,9 +63,17 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 		}
 		cfg := config.New(opts...)
 
-		rf := reffinderio.New(cfg)
+		rf, err := reffinderio.New(cfg)
+		if err != nil {
+			slog.Error("Cannot create reffinder", "error", err)
+			os.Exit(1)
+		}
 
-		tm := titlemio.New(cfg)
+		tm, err := titlemio.New(cfg)
+		if err != nil {
+			slog.Error("Cannot create title matcher", "error", err)
+			os.Exit(1)
+		}
 
 		gnp := gnparser.New(gnparser.NewConfig())
 
@@ -127,9 +135,9 @@ func formatFlag(cmd *cobra.Command) gnfmt.Format {
 	if s != "csv" {
 		fmt, _ := gnfmt.NewFormat(s)
 		if fmt == gnfmt.FormatNone {
-			log.Info().Msgf(
-				"Cannot set format from '%s', setting format to csv",
-				s,
+			slog.Info(
+				"Cannot set format from string, setting it to csv",
+				"format-string", s,
 			)
 			return format
 		}
@@ -188,7 +196,8 @@ func checkStdin() bool {
 	stat, err := stdInFile.Stat()
 	if err != nil {
 		err = fmt.Errorf("checkStdin: %#w", err)
-		log.Fatal().Err(err).Msg("checkStdin")
+		slog.Error("Cannot get Stdin stat", "error", err)
+		os.Exit(1)
 	}
 	return (stat.Mode() & os.ModeCharDevice) == 0
 }
@@ -210,8 +219,7 @@ func name(bn bhlnames.BHLnames, data string) {
 	if fileExists(path) {
 		f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 		if err != nil {
-			err = fmt.Errorf("name: %#w", err)
-			log.Fatal().Err(err).Msg("name")
+			slog.Error("Cannot open file", "error", err, "path", path)
 		}
 		nameFile(bn, f)
 		f.Close()
@@ -246,8 +254,8 @@ func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 	header := make(map[string]int)
 	hdr, err := r.Read()
 	if err != nil {
-		err = fmt.Errorf("nameFile: %#w", err)
-		log.Fatal().Err(err).Msg("Cannot read CSV file.")
+		slog.Error("Cannot read CSV file", "error", err)
+		os.Exit(1)
 	}
 	for i, v := range hdr {
 		header[v] = i
@@ -260,20 +268,19 @@ func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 	}
 
 	count := 0
-	log.Info().Msg("Finding references.")
+	slog.Info("Finding references.")
 	for {
 		row, err := r.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			err = fmt.Errorf("nameFile: %#w", err)
-			log.Fatal().Err(err).Msg("Cannot read CSV row.")
+			slog.Error("Cannot read CSV row", "error", err)
 		}
 
 		count++
 		if count%1000 == 0 {
-			log.Info().Msgf("Processing %s-th line.\n", humanize.Comma(int64(count)))
+			slog.Info("Processing lines", "line", humanize.Comma(int64(count)))
 		}
 		opts := []input.Option{
 			input.OptID(csvVal(row, "Id")),
@@ -285,7 +292,7 @@ func nameFile(bn bhlnames.BHLnames, f io.Reader) {
 	}
 	close(in)
 	wg.Wait()
-	log.Info().Msg("Finished finding references.")
+	slog.Info("Finished finding references.")
 }
 
 func processResults(f gnfmt.Format, chOut <-chan *namerefs.NameRefs,
@@ -299,13 +306,13 @@ func processResults(f gnfmt.Format, chOut <-chan *namerefs.NameRefs,
 	}
 	encDump, err := enc.Encode(dump)
 	if err != nil {
-		err = fmt.Errorf("processResults: %#w", err)
-		log.Fatal().Err(err).Msg("processResults")
+		slog.Error("Cannot encode results", "error", err)
+		os.Exit(1)
 	}
 	err = os.WriteFile("testdata/stubs_namerefs.json", encDump, 0644)
 	if err != nil {
-		err = fmt.Errorf("processResults: %#w", err)
-		log.Fatal().Err(err).Msg("processResults")
+		slog.Error("Cannot write results", "error", err)
+		os.Exit(1)
 	}
 }
 
@@ -315,8 +322,8 @@ func nameString(bn bhlnames.BHLnames, name string) {
 	enc := gnfmt.GNjson{}
 	res, err := bn.NameRefs(data)
 	if err != nil {
-		err = fmt.Errorf("nameString: %#w", err)
-		log.Fatal().Err(err).Msg("nameString")
+		slog.Error("Cannot get names with references", "error", err)
+		os.Exit(1)
 	}
 	fmt.Println(enc.Output(res, bn.Config().Format))
 }

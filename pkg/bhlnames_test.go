@@ -22,7 +22,7 @@ func TestNameRefs(t *testing.T) {
 	}{
 		{
 			"acheniumh", "Achenium lusitanicum Skalitzky, 1884",
-			"Achenium nigriventris", 13, nil,
+			"Achenium nigriventris", 15, nil,
 		},
 	}
 
@@ -31,7 +31,8 @@ func TestNameRefs(t *testing.T) {
 	cfg := config.New()
 	gnp := gnparser.New(gnparser.NewConfig())
 	rf := new(reffindertest.FakeRefFinder)
-	tm := titlemio.New(cfg)
+	tm, err := titlemio.New(cfg)
+	assert.Nil(t, err)
 
 	opts := []bhlnames.Option{
 		bhlnames.OptParser(gnp),
