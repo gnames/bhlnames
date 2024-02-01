@@ -9,7 +9,6 @@ import (
 	"sync"
 
 	"github.com/gnames/bhlnames/pkg/config"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -89,23 +88,4 @@ func RunQuery(d *sql.DB, q string) (*sql.Rows, error) {
 // in quotes and escaping internal quotes.
 func QuoteString(s string) string {
 	return "'" + strings.ReplaceAll(s, "'", "''") + "'"
-}
-
-func InsertRows(
-	pool *pgxpool.Pool,
-	tbl string,
-	columns []string,
-	rows [][]any,
-) (int64, error) {
-	copyCount, err := pool.CopyFrom(
-		context.Background(),
-		pgx.Identifier{tbl},
-		columns,
-		pgx.CopyFromRows(rows),
-	)
-	if err != nil {
-		return 0, err
-	}
-
-	return int64(copyCount), nil
 }

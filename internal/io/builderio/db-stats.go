@@ -1,19 +1,20 @@
 package builderio
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"log/slog"
-	"math"
 
 	"github.com/gnames/bhlnames/internal/ent/txstats"
+	"github.com/gnames/bhlnames/internal/io/db"
 	gnstats "github.com/gnames/gnstats/ent/stats"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5"
 )
 
 func (b builderio) itemsNum() (int, error) {
 	var res int
-	err := b.DB.QueryRow("SELECT count(*) from items").Scan(&res)
+	ctx := context.Background()
+	err := b.DB.QueryRow(ctx, "SELECT count(*) from items").Scan(&res)
 	return res, err
 }
 
@@ -27,140 +28,62 @@ func (b builderio) addStatsToItems(chIn <-chan []txstats.ItemTaxa) error {
 	}
 
 	for taxa := range chIn {
-		transaction, err := b.DB.Begin()
-		if err != nil {
-			return err
-		}
-		stmt, err := transaction.Prepare(pq.CopyIn("item_stats", columns...))
-		if err != nil {
-			return err
-		}
-
-		var taxon, taxonRank, kingdom, phylum, class, order,
-			family, genus sql.NullString
-		var taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt,
-			familyPcnt, genusPcnt sql.NullInt16
-		var total, animNum, plantNum, fungiNum, bactNum uint
-		var st gnstats.Stats
+		rows := make([][]any, 0, len(taxa))
+		var ist db.ItemStats
 
 		for _, v := range taxa {
-			st = gnstats.New(v.Taxa, 0.5)
-			total = uint(st.NamesNum)
-			animNum, plantNum, fungiNum, bactNum = kingdomDistribution(st)
-			taxon, taxonRank, kingdom, phylum, class, order, family,
-				genus = statStrings(st)
-			taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt,
-				familyPcnt, genusPcnt = statInts(st)
+			st := gnstats.New(v.Taxa, 0.5)
+			ist.NamesTotal = uint(st.NamesNum)
+			addKingdomDistribution(&ist, st)
+			addStatStrings(&ist, st)
+			addStatInts(&ist, st)
 
-			_, err = stmt.Exec(
-				v.ItemID, total, taxon, taxonRank, taxonPcnt, kingdom, kingdomPcnt,
-				animNum, plantNum, fungiNum, bactNum, phylum, phylumPcnt, class,
-				classPcnt, order, orderPcnt, family, familyPcnt, genus, genusPcnt,
-			)
-			if err != nil {
-				err = fmt.Errorf("addStatsToItems: %w", err)
-				slog.Error("Cannot save item", "item_id", v.ItemID, "err", err)
-				return err
-			}
-		}
-
-		err = stmt.Close()
-		if err != nil {
-			return err
-		}
-		err = transaction.Commit()
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }
 
-func statInts(st gnstats.Stats) (
-	sql.NullInt16, sql.NullInt16, sql.NullInt16,
-	sql.NullInt16, sql.NullInt16, sql.NullInt16, sql.NullInt16) {
-	var taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt,
-		familyPcnt, genusPcnt sql.NullInt16
-	if st.MainTaxon.Name != "" {
-		taxonPcnt = floatToNullInt(st.MainTaxonPercentage)
-	}
-	if st.Kingdom.Name != "" {
-		kingdomPcnt = floatToNullInt(st.KingdomPercentage)
-	}
-	if st.Phylum.Name != "" {
-		phylumPcnt = floatToNullInt(st.PhylumPercentage)
-	}
-	if st.Class.Name != "" {
-		classPcnt = floatToNullInt(st.ClassPercentage)
-	}
-	if st.Order.Name != "" {
-		orderPcnt = floatToNullInt(st.OrderPercentage)
-	}
-	if st.Family.Name != "" {
-		familyPcnt = floatToNullInt(st.FamilyPercentage)
-	}
-	if st.Genus.Name != "" {
-		genusPcnt = floatToNullInt(st.GenusPercentage)
-	}
-	return taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt, familyPcnt, genusPcnt
+func addStatInts(ist *db.ItemStats, st gnstats.Stats) {
+	ist.MainTaxonPercent = uint(st.MainTaxonPercentage)
+	ist.MainKingdomPercent = uint(st.KingdomPercentage)
+	ist.MainPhylumPercent = uint(st.PhylumPercentage)
+	ist.MainClassPercent = uint(st.ClassPercentage)
+	ist.MainOrderPercent = uint(st.OrderPercentage)
+	ist.MainFamilyPercent = uint(st.FamilyPercentage)
+	ist.MainGenusPercent = uint(st.GenusPercentage)
 }
 
-func floatToNullInt(f float32) sql.NullInt16 {
-	i := math.Round(float64(f) * 100)
-	return sql.NullInt16{Int16: int16(i), Valid: true}
+func addStatStrings(ist *db.ItemStats, st gnstats.Stats) {
+	ist.MainTaxon = st.MainTaxon.Name
+	ist.MainTaxonRank = st.MainTaxon.RankStr
+	ist.MainKingdom = st.Kingdom.Name
+	ist.MainPhylum = st.Phylum.Name
+	ist.MainClass = st.Class.Name
+	ist.MainOrder = st.Order.Name
+	ist.MainFamily = st.Family.Name
+	ist.MainGenus = st.Genus.Name
 }
 
-func statStrings(st gnstats.Stats) (
-	sql.NullString, sql.NullString,
-	sql.NullString, sql.NullString, sql.NullString, sql.NullString,
-	sql.NullString, sql.NullString) {
-	var taxon, taxonRank, kingdom, phylum, class, order, family, genus sql.NullString
-	if st.MainTaxon.Name != "" {
-		taxon = sql.NullString{String: st.MainTaxon.Name, Valid: true}
-		taxonRank = sql.NullString{String: st.MainTaxon.RankStr, Valid: true}
-	}
-	if st.Kingdom.Name != "" {
-		kingdom = sql.NullString{String: st.Kingdom.Name, Valid: true}
-	}
-	if st.Phylum.Name != "" {
-		phylum = sql.NullString{String: st.Phylum.Name, Valid: true}
-	}
-	if st.Class.Name != "" {
-		class = sql.NullString{String: st.Class.Name, Valid: true}
-	}
-	if st.Order.Name != "" {
-		order = sql.NullString{String: st.Order.Name, Valid: true}
-	}
-	if st.Family.Name != "" {
-		family = sql.NullString{String: st.Family.Name, Valid: true}
-	}
-	if st.Genus.Name != "" {
-		genus = sql.NullString{String: st.Genus.Name, Valid: true}
-	}
-	return taxon, taxonRank, kingdom, phylum, class, order, family, genus
-}
-
-func kingdomDistribution(st gnstats.Stats) (uint, uint, uint, uint) {
-	var anim, plant, fungi, bact uint
+func addKingdomDistribution(ist *db.ItemStats, st gnstats.Stats) {
 	for _, v := range st.Kingdoms {
 		switch v.Name {
 		case "Animalia":
-			anim = uint(v.NamesNum)
+			ist.AnimaliaNum = uint(v.NamesNum)
 		case "Plantae":
-			plant = uint(v.NamesNum)
+			ist.PlantaeNum = uint(v.NamesNum)
 		case "Fungi":
-			fungi = uint(v.NamesNum)
+			ist.FungiNum = uint(v.NamesNum)
 		case "Bacteria":
-			bact = uint(v.NamesNum)
+			ist.BacteriaNum = uint(v.NamesNum)
 		}
 	}
-	return anim, plant, fungi, bact
 }
 
 func (b builderio) getItemsTaxa(id, limit int) ([]txstats.ItemTaxa, error) {
 	res := make([]txstats.ItemTaxa, 0, limit)
-	var rows *sql.Rows
+	var rows pgx.Rows
 	var err error
+
+	ctx := context.Background()
 
 	q := `
 SELECT
@@ -173,7 +96,7 @@ SELECT
 GROUP BY i.id, n.classification, n.classification_ranks, n.classification_ids
 ORDER BY i.id
 `
-	rows, err = b.DB.Query(q, id, id+limit)
+	rows, err = b.DB.Query(ctx, q, id, id+limit)
 	if err != nil {
 		return nil, fmt.Errorf("statItems: %w", err)
 	}

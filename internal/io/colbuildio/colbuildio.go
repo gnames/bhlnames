@@ -1,7 +1,6 @@
 package colbuildio
 
 import (
-	"database/sql"
 	"fmt"
 	"log/slog"
 	"os"
@@ -14,10 +13,10 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
 	"github.com/gnames/bhlnames/internal/io/bhlsys"
-	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnsys"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/sync/errgroup"
 )
@@ -31,28 +30,20 @@ type colbuildio struct {
 	recordsNum  int
 	lastProcRec int
 
-	db     *sql.DB
+	db     *pgxpool.Pool
 	gormDB *gorm.DB
 }
 
-func New(cfg config.Config) (colbuild.ColBuild, error) {
-	dbConn, err := db.NewDB(cfg)
-	if err != nil {
-		return nil, err
-	}
-	gormDB, err := db.NewDbGorm(cfg)
-	if err != nil {
-		return nil, err
-	}
+func New(cfg config.Config, pl *pgxpool.Pool, grm *gorm.DB) colbuild.ColBuild {
 	res := colbuildio{
 		dlURL:        cfg.CoLDataURL,
 		dlDir:        cfg.DownloadDir,
 		pathDownload: cfg.DownloadCoLFile,
 		pathExtract:  filepath.Join(cfg.DownloadDir, "Taxon.tsv"),
-		db:           dbConn,
-		gormDB:       gormDB,
+		db:           pl,
+		gormDB:       grm,
 	}
-	return &res, nil
+	return &res
 }
 
 func (c colbuildio) DataStatus() (bool, bool, error) {

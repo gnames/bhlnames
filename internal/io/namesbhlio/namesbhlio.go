@@ -1,7 +1,6 @@
 package namesbhlio
 
 import (
-	"database/sql"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -16,6 +15,7 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/namebhl"
 	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/pkg/config"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/sync/errgroup"
 )
@@ -28,11 +28,11 @@ const (
 type namesbhlio struct {
 	cfg    config.Config
 	client *http.Client
-	db     *sql.DB
+	db     *pgxpool.Pool
 	gormDB *gorm.DB
 }
 
-func New(cfg config.Config, db *sql.DB, gormdb *gorm.DB) namebhl.NameBHL {
+func New(cfg config.Config, db *pgxpool.Pool, gormdb *gorm.DB) namebhl.NameBHL {
 	tr := &http.Transport{
 		MaxIdleConns:    10,
 		IdleConnTimeout: 10 * time.Second,

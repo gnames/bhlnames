@@ -31,6 +31,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
+	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/internal/io/reffinderio"
 	"github.com/gnames/bhlnames/internal/io/titlemio"
 	bhlnames "github.com/gnames/bhlnames/pkg"
@@ -63,13 +64,37 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 		}
 		cfg := config.New(opts...)
 
-		rf, err := reffinderio.New(cfg)
+		pool, err := db.NewDB(cfg)
 		if err != nil {
-			slog.Error("Cannot create reffinder", "error", err)
+			slog.Error("Cannot connect to DB", "error", err)
 			os.Exit(1)
 		}
+		defer pool.Close()
 
-		tm, err := titlemio.New(cfg)
+		grm, err := db.NewDbGorm(cfg)
+		if err != nil {
+			slog.Error("Cannot connect to gorm.DB", "error", err)
+			os.Exit(1)
+		}
+		defer grm.Close()
+
+		kvPart, err := db.InitKeyVal(cfg.PartDir)
+		if err != nil {
+			slog.Error("Cannot connect to KeyValue store", "error", err)
+			os.Exit(1)
+		}
+		defer kvPart.Close()
+
+		kvTitle, err := db.InitKeyVal(cfg.PartDir)
+		if err != nil {
+			slog.Error("Cannot connect to KeyValue store", "error", err)
+			os.Exit(1)
+		}
+		defer kvTitle.Close()
+
+		rf := reffinderio.New(cfg, pool, grm, kvPart)
+
+		tm, err := titlemio.New(cfg, kvTitle)
 		if err != nil {
 			slog.Error("Cannot create title matcher", "error", err)
 			os.Exit(1)
@@ -84,7 +109,6 @@ a list of usages/references for the names in Biodiversity Heritage Library.`,
 		}
 
 		bn := bhlnames.New(cfg, bnOpts...)
-		defer bn.Close()
 
 		if len(args) == 0 {
 			processStdin(cmd, bn)

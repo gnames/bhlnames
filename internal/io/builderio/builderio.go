@@ -35,12 +35,6 @@ func New(cfg config.Config, pool *pgxpool.Pool, grm *gorm.DB) (builder.Builder, 
 	return res, nil
 }
 
-// Close closes all resources used by the Builder.
-func (b builderio) Close() {
-	b.DB.Close()
-	b.GormDB.Close()
-}
-
 func (b builderio) touchDirs() error {
 	dirs := []string{
 		b.InputDir,

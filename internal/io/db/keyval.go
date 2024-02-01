@@ -9,12 +9,16 @@ import (
 	"github.com/gnames/gnsys"
 )
 
-// InitBadger finds and initializes connection to a badger key-value store.
+// InitKeyVal finds and initializes connection to a badger key-value store.
 // If the store does not exist, InitBadger creates it.
 func InitKeyVal(dir string) (*badger.DB, error) {
+	var bdb *badger.DB
+	var err error
 	options := badger.DefaultOptions(dir)
 	options.Logger = nil
-	bdb, err := badger.Open(options)
+
+	bdb, err = badger.Open(options)
+
 	if err != nil {
 		err = fmt.Errorf("db.InitKeyVal: %w", err)
 		slog.Error("Cannot open Badger DB", "error", err)

@@ -58,7 +58,4 @@ type BHLnames interface {
 	// ChangeConfig modifies config and returns back an instance of BHLnames
 	// with updated Config.
 	ChangeConfig(...config.Option) BHLnames
-
-	// Close terminates connections to databases and key-value stores.
-	Close() error
 }

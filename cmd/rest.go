@@ -27,6 +27,7 @@ import (
 
 	"github.com/gnames/bhlnames/internal/io/bayesio"
 	"github.com/gnames/bhlnames/internal/io/builderio"
+	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/internal/io/reffinderio"
 	"github.com/gnames/bhlnames/internal/io/restio"
 	"github.com/gnames/bhlnames/internal/io/titlemio"
@@ -47,8 +48,36 @@ var restCmd = &cobra.Command{
 		}
 		cfg := config.New(opts...)
 
+		pool, err := db.NewDB(cfg)
+		if err != nil {
+			slog.Error("Cannot connect to DB", "error", err)
+			os.Exit(1)
+		}
+		defer pool.Close()
+
+		grm, err := db.NewDbGorm(cfg)
+		if err != nil {
+			slog.Error("Cannot connect to gorm.DB", "error", err)
+			os.Exit(1)
+		}
+		defer grm.Close()
+
+		kvPart, err := db.InitKeyVal(cfg.PartDir)
+		if err != nil {
+			slog.Error("Cannot connect to KeyValue store", "error", err)
+			os.Exit(1)
+		}
+		defer kvPart.Close()
+
+		kvTitle, err := db.InitKeyVal(cfg.PartDir)
+		if err != nil {
+			slog.Error("Cannot connect to KeyValue store", "error", err)
+			os.Exit(1)
+		}
+		defer kvTitle.Close()
+
 		// init directories
-		bld, err := builderio.New(cfg)
+		bld, err := builderio.New(cfg, pool, grm)
 		if err != nil {
 			slog.Error("Cannot create builder", "error", err)
 			os.Exit(1)
@@ -59,15 +88,10 @@ var restCmd = &cobra.Command{
 			slog.Error("PrepareData failed", "error", err)
 			os.Exit(1)
 		}
-		bld.Close()
 
-		rf, err := reffinderio.New(cfg)
-		if err != nil {
-			slog.Error("Cannot create ref-finder", "error", err)
-			os.Exit(1)
-		}
+		rf := reffinderio.New(cfg, pool, grm, kvPart)
 
-		tm, err := titlemio.New(cfg)
+		tm, err := titlemio.New(cfg, kvTitle)
 		if err != nil {
 			slog.Error("Cannot create title-matcher", "error", err)
 			os.Exit(1)
@@ -83,7 +107,7 @@ var restCmd = &cobra.Command{
 		}
 
 		bn := bhlnames.New(cfg, bnOpts...)
-		defer bn.Close()
+
 		api := restio.New(bn)
 		api.Run()
 	},

@@ -1,12 +1,15 @@
 package bhlnames_test
 
 import (
+	"log/slog"
+	"os"
 	"testing"
 
 	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/internal/ent/reffinder/reffindertest"
 	"github.com/gnames/bhlnames/internal/ent/title_matcher/titlematchertest"
 	"github.com/gnames/bhlnames/internal/io/bayesio"
+	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/internal/io/titlemio"
 	bhlnames "github.com/gnames/bhlnames/pkg"
 	"github.com/gnames/bhlnames/pkg/config"
@@ -29,9 +32,17 @@ func TestNameRefs(t *testing.T) {
 	stubs := reffindertest.Stubs(t)
 
 	cfg := config.New()
+
+	kvTitle, err := db.InitKeyVal(cfg.PartDir)
+	if err != nil {
+		slog.Error("Cannot connect to KeyValue store", "error", err)
+		os.Exit(1)
+	}
+	defer kvTitle.Close()
+
 	gnp := gnparser.New(gnparser.NewConfig())
 	rf := new(reffindertest.FakeRefFinder)
-	tm, err := titlemio.New(cfg)
+	tm, err := titlemio.New(cfg, kvTitle)
 	assert.Nil(t, err)
 
 	opts := []bhlnames.Option{
@@ -41,7 +52,7 @@ func TestNameRefs(t *testing.T) {
 	}
 
 	bn := bhlnames.New(cfg, opts...)
-	defer bn.Close()
+
 	for _, v := range tests {
 		opt := input.OptNameString(v.name)
 		rf.ReferencesBHLReturns(stubs[v.name], nil)
@@ -119,7 +130,6 @@ func TestNomenRefs(t *testing.T) {
 	}
 
 	bn := bhlnames.New(cfg, opts...)
-	defer bn.Close()
 
 	for _, v := range tests {
 		opts := []input.Option{

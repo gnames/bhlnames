@@ -27,6 +27,7 @@ import (
 
 	"github.com/gnames/bhlnames/internal/io/bayesio"
 	"github.com/gnames/bhlnames/internal/io/colbuildio"
+	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/internal/io/reffinderio"
 	"github.com/gnames/bhlnames/internal/io/titlemio"
 	bhlnames "github.com/gnames/bhlnames/pkg"
@@ -65,21 +66,38 @@ This command runs for several hours and is a part of initialization.`,
 		)
 
 		cfg := config.New(opts...)
-		cn, err := colbuildio.New(cfg)
+
+		pool, err := db.NewDB(cfg)
 		if err != nil {
-			err = fmt.Errorf("colbuildio.New: %w", err)
-			slog.Error("Cannot create colBuilder", "error", err)
+			slog.Error("Cannot connect to DB", "error", err)
 			os.Exit(1)
 		}
+		defer pool.Close()
 
-		rf, err := reffinderio.New(cfg)
+		grm, err := db.NewDbGorm(cfg)
 		if err != nil {
-			err = fmt.Errorf("reffinderio.New: %w", err)
-			slog.Error("Cannot create refFinder", "error", err)
+			slog.Error("Cannot connect to gorm.DB", "error", err)
 			os.Exit(1)
 		}
+		defer grm.Close()
 
-		tm, err := titlemio.New(cfg)
+		kvPart, err := db.InitKeyVal(cfg.PartDir)
+		if err != nil {
+			slog.Error("Cannot connect to KeyValue store", "error", err)
+			os.Exit(1)
+		}
+		defer kvPart.Close()
+
+		kvTitle, err := db.InitKeyVal(cfg.PartDir)
+		if err != nil {
+			slog.Error("Cannot connect to KeyValue store", "error", err)
+			os.Exit(1)
+		}
+		defer kvTitle.Close()
+
+		cn := colbuildio.New(cfg, pool, grm)
+		rf := reffinderio.New(cfg, pool, grm, kvPart)
+		tm, err := titlemio.New(cfg, kvTitle)
 		if err != nil {
 			err = fmt.Errorf("titlemio.New: %w", err)
 			slog.Error("Cannot create titleMatcher", "error", err)
@@ -97,7 +115,6 @@ This command runs for several hours and is a part of initialization.`,
 		}
 
 		bn := bhlnames.New(cfg, bnOpts...)
-		defer bn.Close()
 
 		showWarning(bn)
 		err = bn.InitializeCol()

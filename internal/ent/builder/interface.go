@@ -20,7 +20,4 @@ type Builder interface {
 	// PrepareData prepares already imported data for BHLnames
 	// RESTful service.
 	PrepareData() error
-
-	// Close closes all resources used by the Builder.
-	Close()
 }

@@ -1,9 +1,7 @@
 package reffinderio
 
 import (
-	"database/sql"
 	"fmt"
-	"log/slog"
 	"net/url"
 
 	"github.com/dgraph-io/badger/v2"
@@ -12,9 +10,9 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/namerefs"
 	"github.com/gnames/bhlnames/internal/ent/refbhl"
 	"github.com/gnames/bhlnames/internal/ent/reffinder"
-	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnparser"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jinzhu/gorm"
 )
 
@@ -38,7 +36,7 @@ type reffinderio struct {
 	kvDB *badger.DB
 
 	// db is a PostgreSQL connection for plain SQL-queries.
-	db *sql.DB
+	db *pgxpool.Pool
 
 	// gormDB is a PostgreSQL connection for ORM-queries.
 	gormDB *gorm.DB
@@ -47,29 +45,18 @@ type reffinderio struct {
 	AC aho_corasick.AhoCorasick
 }
 
-func New(cfg config.Config) (reffinder.RefFinder, error) {
-	slog.Info("Connecting to PostgreSQL database", "database", cfg.DbDatabase, "host", cfg.DbHost)
-	kvDB, err := db.InitKeyVal(cfg.PartDir)
-	if err != nil {
-		return nil, err
-	}
-
-	dbConn, err := db.NewDB(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	gormDB, err := db.NewDbGorm(cfg)
-	if err != nil {
-		return nil, err
-	}
-
+func New(
+	cfg config.Config,
+	pl *pgxpool.Pool,
+	grm *gorm.DB,
+	kv *badger.DB,
+) reffinder.RefFinder {
 	res := &reffinderio{
-		kvDB:   kvDB,
-		db:     dbConn,
-		gormDB: gormDB,
+		kvDB:   kv,
+		db:     pl,
+		gormDB: grm,
 	}
-	return res, nil
+	return res
 }
 
 func (rf reffinderio) RefByPageID(pageID int) (*refbhl.Reference, error) {
@@ -117,19 +104,6 @@ func (rf reffinderio) ReferencesBHL(
 	res.ImagesURL = imagesUrl(res.CurrentCanonical)
 	rf.updateOutput(res, rows)
 	return res, nil
-}
-
-func (rf reffinderio) Close() error {
-	err1 := rf.db.Close()
-	err2 := rf.gormDB.Close()
-	err3 := rf.kvDB.Close()
-
-	for _, err := range []error{err1, err2, err3} {
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (rf reffinderio) emptyNameRefs(data input.Input) *namerefs.NameRefs {

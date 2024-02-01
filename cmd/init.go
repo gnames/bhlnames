@@ -59,20 +59,19 @@ after enother. The result will be identical to "bhlnames init".`,
 		}
 		defer pool.Close()
 
-		gorm, err := db.NewDbGorm(cfg)
+		grm, err := db.NewDbGorm(cfg)
 		if err != nil {
 			slog.Error("Cannot connect to gorm.DB", "error", err)
 			os.Exit(1)
 		}
-		defer gorm.Close()
+		defer grm.Close()
 
-		builder, err := builderio.New(cfg, pool, gorm)
+		builder, err := builderio.New(cfg, pool, grm)
 		if err != nil {
 			slog.Error("Cannot create builder", "error", err)
 			os.Exit(1)
 		}
 		bn := bhlnames.New(cfg, bhlnames.OptBuilder(builder))
-		defer bn.Close()
 
 		err = bn.Initialize()
 		if err != nil {
@@ -85,14 +84,5 @@ after enother. The result will be identical to "bhlnames init".`,
 
 func init() {
 	rootCmd.AddCommand(initCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// initCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 	initCmd.Flags().BoolP("rebuild", "r", false, "Delete data and rebuild")
 }

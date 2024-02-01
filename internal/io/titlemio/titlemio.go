@@ -10,7 +10,6 @@ import (
 	"github.com/dgraph-io/badger/v2"
 	"github.com/gnames/aho_corasick"
 	"github.com/gnames/bhlnames/internal/ent/title_matcher"
-	"github.com/gnames/bhlnames/internal/io/db"
 	"github.com/gnames/bhlnames/pkg/config"
 )
 
@@ -26,11 +25,10 @@ type titlemio struct {
 	TitleKV *badger.DB
 }
 
-func New(cfg config.Config) (title_matcher.TitleMatcher, error) {
-	titleKV, err := db.InitKeyVal(cfg.AhoCorKeyValDir)
-	if err != nil {
-		return nil, err
-	}
+func New(
+	cfg config.Config,
+	titleKV *badger.DB,
+) (title_matcher.TitleMatcher, error) {
 	res := &titlemio{
 		acDir:   cfg.AhoCorasickDir,
 		TitleKV: titleKV,
@@ -43,10 +41,6 @@ func New(cfg config.Config) (title_matcher.TitleMatcher, error) {
 	}
 	res.AhoCorasick = ac
 	return res, nil
-}
-
-func (tm titlemio) Close() error {
-	return tm.TitleKV.Close()
 }
 
 func (tm titlemio) getAhoCorasick() (aho_corasick.AhoCorasick, error) {
