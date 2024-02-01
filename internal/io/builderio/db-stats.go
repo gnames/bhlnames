@@ -3,7 +3,6 @@ package builderio
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/gnames/bhlnames/internal/ent/txstats"
 	"github.com/gnames/bhlnames/internal/io/db"
@@ -19,6 +18,7 @@ func (b builderio) itemsNum() (int, error) {
 }
 
 func (b builderio) addStatsToItems(chIn <-chan []txstats.ItemTaxa) error {
+	var err error
 	columns := []string{
 		"id", "names_total", "main_taxon", "main_taxon_rank", "main_taxon_percent",
 		"main_kingdom", "main_kingdom_percent", "animalia_num", "plantae_num",
@@ -31,13 +31,27 @@ func (b builderio) addStatsToItems(chIn <-chan []txstats.ItemTaxa) error {
 		rows := make([][]any, 0, len(taxa))
 		var ist db.ItemStats
 
-		for _, v := range taxa {
+		for i, v := range taxa {
 			st := gnstats.New(v.Taxa, 0.5)
 			ist.NamesTotal = uint(st.NamesNum)
 			addKingdomDistribution(&ist, st)
 			addStatStrings(&ist, st)
 			addStatInts(&ist, st)
-
+			row := []any{
+				v.ItemID, ist.NamesTotal, ist.MainTaxon, ist.MainTaxonRank,
+				ist.MainTaxonPercent, ist.MainKingdom, ist.MainKingdomPercent,
+				ist.AnimaliaNum, ist.PlantaeNum, ist.FungiNum, ist.BacteriaNum,
+				ist.MainPhylum, ist.MainPhylumPercent, ist.MainClass,
+				ist.MainClassPercent, ist.MainOrder, ist.MainOrderPercent,
+				ist.MainFamily, ist.MainFamilyPercent, ist.MainGenus,
+				ist.MainGenusPercent,
+			}
+			rows[i] = row
+		}
+		_, err = db.InsertRows(b.DB, "items_stats", columns, rows)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
