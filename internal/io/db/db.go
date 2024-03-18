@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -64,10 +63,10 @@ func NewDB(cnf config.Config) (*pgxpool.Pool, error) {
 	return db, nil
 }
 
-func Truncate(d *sql.DB, tables []string) error {
+func Truncate(ctx context.Context, d *pgxpool.Pool, tables []string) error {
 	for _, v := range tables {
 		q := fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY", v)
-		_, err := d.Exec(q)
+		_, err := d.Exec(ctx, q)
 		if err != nil {
 			return fmt.Errorf("cannot truncate '%s': %w", v, err)
 		}
@@ -75,15 +74,15 @@ func Truncate(d *sql.DB, tables []string) error {
 	return nil
 }
 
-func RunQuery(d *sql.DB, q string) (*sql.Rows, error) {
-	rows, err := d.Query(q)
-	if err != nil {
-		err = fmt.Errorf("db.RunQuery: %#w", err)
-		slog.Error("Cannot run query", "query", q, "error", err)
-		return nil, err
-	}
-	return rows, nil
-}
+// func RunQuery(ctx context.Context, d *pgxpool.Pool, q string) (pgx.Rows, error) {
+// 	rows, err := d.Query(ctx, q)
+// 	if err != nil {
+// 		err = fmt.Errorf("db.RunQuer: %w", err)
+// 		slog.Error("Cannot run query", "query", q, "error", err)
+// 		return nil, err
+// 	}
+// 	return rows, nil
+// }
 
 // QuoteString makes a string value compatible with SQL synthax by wrapping it
 // in quotes and escaping internal quotes.

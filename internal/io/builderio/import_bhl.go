@@ -1,6 +1,8 @@
 package builderio
 
 import (
+	"context"
+
 	"github.com/gnames/bhlnames/internal/io/db"
 )
 
@@ -10,8 +12,9 @@ func (b builderio) importDataBHL() error {
 	var partDOImap map[int]string
 	var itemMap map[uint]string
 	var titleDOImap map[int]string
+	ctx := context.Background()
 
-	err = db.Truncate(b.DB, []string{"items", "pages", "parts"})
+	err = db.Truncate(ctx, b.DB, []string{"items", "pages", "parts"})
 
 	if err == nil {
 		titleDOImap, partDOImap, err = b.prepareDOI()
