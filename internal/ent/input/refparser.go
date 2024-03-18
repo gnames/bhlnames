@@ -25,6 +25,7 @@ var volumePatterns = []*regexp.Regexp{
 	regexp.MustCompile(`([\d]+)[\s]*\:[\s]*[\d]+`),
 	regexp.MustCompile(`([\d]+)[\s]*\(.+\)[\s]*\:[\s]*[\d]+`),
 	regexp.MustCompile(`[Vv][.]*[\s]*([\d]+)`),
+	regexp.MustCompile(`([\d]+):\s*No`),
 }
 
 var yearPatterns = []*regexp.Regexp{

@@ -22,8 +22,8 @@ func Reverse(s string) string {
 	return string(buf)
 }
 
-// NormUTF converts all UTF8 runes into closest related ASCII characters.
-func NormUTF(s string) (string, error) {
+// UtfToAscii converts all UTF8 runes into closest related ASCII characters.
+func UtfToAscii(s string) (string, error) {
 	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 	s, _, err := transform.String(t, s)
 	return s, err

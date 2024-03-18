@@ -75,12 +75,11 @@ func (r restio) Run() {
 	r.GET(apiPath, info)
 	r.GET(apiPath+"/ping", ping)
 	r.GET(apiPath+"/version", ver(r.BHLnames))
+	r.GET(apiPath+"/ds_refs/:data_source", dataSourceIDsGet(r.BHLnames))
 	r.POST(apiPath+"/name_refs", nameRefsPost(r.BHLnames))
 	r.POST(apiPath+"/taxon_refs", taxonRefsPost(r.BHLnames))
-	r.POST(apiPath+"/nomen_refs", nomenRefsPost(r.BHLnames))
-	// r.GET(apiPath+"/name_refs", nameRefsGet(r.BHLnames))
-	// r.GET(apiPath+"/taxon_refs", taxonRefsGet(r.BHLnames))
-	// r.GET(apiPath+"/nomen_refs", nomenRefsGet(r.BHLnames))
+	r.GET(apiPath+"/name_refs", nameRefsGet(r.BHLnames))
+	r.GET(apiPath+"/taxon_refs", taxonRefsGet(r.BHLnames))
 	r.GET(apiPath+"/references/:page_id", refs(r.BHLnames))
 
 	addr := fmt.Sprintf(":%d", r.Config().PortREST)
@@ -155,6 +154,10 @@ func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 	}
 }
 
+func dataSourceIDsGet(bn bhlnames.BHLnames) func(echo.Context) error {
+	return nil
+}
+
 // nameRefsGet takes an name string, optionally reference and returns
 // best matched reference to provided data.
 // @Summary Finds BHL references for a name
@@ -168,6 +171,10 @@ func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Router /name_refs [post]
 func nameRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 	return refsCommon(bn, false)
+}
+
+func taxonRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
+	return refsCommon(bn, true)
 }
 
 // nameRefsPost takes an input.Input with a name, optionally reference and returns

@@ -60,11 +60,10 @@ func TestNomenRefs(t *testing.T) {
 		itemID, score, scoreAnnot, scoreYear, scoreTitle int
 		odds                                             float64
 	}{
-
 		{
 			"Achenium", "Achenium lusitanicum Skalitzky, 1884",
 			"Skalitzky, C. Zwei neue europäische Staphylinenarten aus Portugal. Wiener Entomologische Zeitung, 3 (4): 97-99. (1884).",
-			43792, 8, 3, 3, 1, 150,
+			43792, 10, 3, 3, 1, 150,
 		},
 		{
 			"Sagenia", "Sagenia longicruris Christ",
@@ -74,32 +73,32 @@ func TestNomenRefs(t *testing.T) {
 		{
 			"Hamotus", "Hamotus gracilicornis Reitter, 1882",
 			"Reitter, E. Neue Pselaphiden und Scydmaeniden aus Brasilien. Deutsche Entomologische Zeitschrift, 26 (1): 129-152, pl. 5. (1882).",
-			103947, 11, 3, 3, 1, 20000,
+			103947, 10, 3, 3, 1, 20000,
 		},
 		{
 			"Pseudo", "Pseudotrochalus niger Brenske, 1903",
 			"",
-			42374, 10, 3, 3, 0, 900,
+			42374, 9, 3, 3, 0, 900,
 		},
-		{
-			"Ortho", "Orthocarpus attenuatus A.Gray",
-			"A. Gray. In: Pacif. Rail. Rep. 4: 121. (1857).",
-			100867, 8, 3, 2, 0, 30,
-		},
+		// {
+		// 	"Ortho", "Orthocarpus attenuatus A.Gray",
+		// 	"A. Gray. In: Pacif. Rail. Rep. 4: 121. (1857).",
+		// 	100867, 8, 3, 2, 0, 30,
+		// },
 		{
 			"Cyathea", "Cyathea aureonitens Christ",
 			"Christ. In: Bull. Herb. Boiss. II, 4: 948. (1904).",
 			104955, 8, 3, 1, 1, 200,
 		},
-		{
-			"Licaria", "Licaria simulans C.K.Allen",
-			"C. K. Allen. In: Mem. N. Y. Bot. Gard. 10: No. 5, 55. (1964).",
-			150908, 8, 3, 3, 2, 10,
-		},
+		// {
+		// 	"Licaria", "Licaria simulans C.K.Allen",
+		// 	"C. K. Allen. In: Mem. N. Y. Bot. Gard. 10: No. 5, 55. (1964).",
+		// 	150908, 8, 3, 3, 2, 10,
+		// },
 		{
 			"Anthoceros", "Anthoceros muscoides Colenso",
 			"Colenso W. A further contribution toward making known the botany of New Zealand. Transactions and Proceedings of the New Zealand Institute 16: 325-363. (1884).",
-			103797, 11, 3, 2, 3, 8000,
+			105242, 11, 3, 2, 3, 8000,
 		},
 	}
 

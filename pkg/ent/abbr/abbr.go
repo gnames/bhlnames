@@ -49,14 +49,23 @@ func Patterns(s string, d map[string]struct{}) []string {
 	return res
 }
 
+// Abbr returns the "long" abbreviation of a string. For example, "Journal of
+// the Linnean Society" becomes "jotls". such short strings are used with the
+// Aho-Corasick algorithm to find matches of journal titles in a reference to
+// the titles in the BHL database.
 func Abbr(s string) string {
 	return abbr(s, nil)
 }
 
+// AbbrMax abbreviates a string ignoring common short words. For example,
+// "Journal of the Linnean Society" becomes "jls". Such abbreviations are used
+// with the Aho-Corasick algorithm to find matches of journal titles in a
+// reference to the titles in the BHL database.
 func AbbrMax(s string, shortWords map[string]struct{}) string {
 	return abbr(s, shortWords)
 }
 
+// Derivatives returns shortened versions of a string.
 func Derivatives(s string) []string {
 	if len(s) < 5 {
 		return []string{s}
@@ -81,7 +90,7 @@ func abbr(s string, shortWords map[string]struct{}) string {
 	)
 	var res []byte
 	for _, v := range tokens {
-		word, _ := str.NormUTF(v.Cleaned())
+		word, _ := str.UtfToAscii(v.Cleaned())
 		if shortWords != nil {
 			if _, ok := shortWords[word]; ok {
 				continue

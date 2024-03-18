@@ -98,30 +98,30 @@ func TestTaxonRefs(t *testing.T) {
 	assert.Greater(len(matchedNames), 1)
 }
 
-func TestNomenRefs(t *testing.T) {
-	assert := assert.New(t)
-	opts := []input.Option{
-		input.OptNameString("Amphioplus lucidus Koehler, 1922"),
-		input.OptRefString(
-			"Koehler, R. Ophiurans of the Philippine Seas and adjacent waters. Smithsonian Institution United States National Museum Bulletin. 100(5): 1-486. (1922).",
-		),
-	}
-
-	gnp := gnparser.New(gnparser.NewConfig())
-	inp := input.New(gnp, opts...)
-
-	reqBody, err := gnfmt.GNjson{}.Encode(inp)
-	assert.Nil(err)
-
-	r := bytes.NewReader(reqBody)
-	resp, err := http.Post(testURL+"/nomen_refs", "application/json", r)
-	assert.Nil(err)
-
-	respBytes, err := io.ReadAll(resp.Body)
-	assert.Nil(err)
-
-	var response namerefs.NameRefs
-	err = enc.Decode(respBytes, &response)
-	assert.Nil(err)
-	assert.Greater(response.ReferenceNumber, 10)
-}
+// func TestNomenRefs(t *testing.T) {
+// 	assert := assert.New(t)
+// 	opts := []input.Option{
+// 		input.OptNameString("Amphioplus lucidus Koehler, 1922"),
+// 		input.OptRefString(
+// 			"Koehler, R. Ophiurans of the Philippine Seas and adjacent waters. Smithsonian Institution United States National Museum Bulletin. 100(5): 1-486. (1922).",
+// 		),
+// 	}
+//
+// 	gnp := gnparser.New(gnparser.NewConfig())
+// 	inp := input.New(gnp, opts...)
+//
+// 	reqBody, err := gnfmt.GNjson{}.Encode(inp)
+// 	assert.Nil(err)
+//
+// 	r := bytes.NewReader(reqBody)
+// 	resp, err := http.Post(testURL+"/nomen_refs", "application/json", r)
+// 	assert.Nil(err)
+//
+// 	respBytes, err := io.ReadAll(resp.Body)
+// 	assert.Nil(err)
+//
+// 	var response namerefs.NameRefs
+// 	err = enc.Decode(respBytes, &response)
+// 	assert.Nil(err)
+// 	assert.Greater(response.ReferenceNumber, 10)
+// }

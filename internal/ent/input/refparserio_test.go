@@ -56,6 +56,9 @@ func TestParseVolume(t *testing.T) {
 		{
 			"5", "Courtec. & P. Roux. In: Docums Mycol. V: 51", 0,
 		},
+		{
+			"6", "C. K. Allen. In: Mem. N. Y. Bot. Gard. 10: No. 5, 55. (1964).", 10,
+		},
 	}
 
 	for _, v := range tests {

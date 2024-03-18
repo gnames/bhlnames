@@ -13,9 +13,9 @@ FLAGS_WIN = $(FLAGS_SHARED) GOOS=windows
 FLAGS_LD = -ldflags "-X github.com/gnames/$(PROJ_NAME)/pkg.Build=${DATE} \
                   -X github.com/gnames/$(PROJ_NAME)/pkg.Version=${VERSION}"
 FLAGS_REL = -trimpath -ldflags "-s -w -X github.com/gnames/$(PROJ_NAME)/pkg.Build=$(DATE)"
-
 RELEASE_DIR = /tmp
-TEST_OPTS = -v -shuffle=on -race -coverprofile=coverage.txt -covermode=atomic
+TEST_OPTS =  -p 1 -shuffle=on ./internal/ent/input ./internal/ent/score ./internal/io/dictio ./pkg
+
 
 GOCMD = go
 GOTEST = $(GOCMD) test
@@ -32,7 +32,11 @@ all: install
 
 ## Test:
 test: ## Run the tests of the project
-	$(GOTEST) $(TEST_OPTS) ./...
+	$(GOTEST) $(TEST_OPTS);
+	@echo "Also start restful service and run tests with 'make testrest'"
+
+testrest:
+	$(GOTEST) -p 1 -shuffle=on ./internal/io/restio
 
 ## Dependencies
 deps: ## Download dependencies

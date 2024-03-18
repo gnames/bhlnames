@@ -36,9 +36,6 @@ func (tm *titlemio) abbrsToTitleIDs(abbrs []string) (map[int][]string, error) {
 			return res, err
 		}
 		for i := range ids {
-			if err != nil {
-				return res, err
-			}
 			res[ids[i]] = append(res[ids[i]], k)
 		}
 	}

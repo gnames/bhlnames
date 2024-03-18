@@ -39,7 +39,7 @@ func (d dictIO) ShortWords() (map[string]struct{}, error) {
 
 	res := make(map[string]struct{})
 	for i := range words {
-		line, err := str.NormUTF(words[i])
+		line, err := str.UtfToAscii(words[i])
 		if err != nil {
 			return nil, err
 		}
