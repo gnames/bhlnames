@@ -82,7 +82,7 @@ func (r restio) Run() {
 	r.GET(apiPath+"/references/:page_id", refs(r.BHLnames))
 	r.GET(apiPath+"/external_ids/:data_source", externalIDGet(r.BHLnames))
 	r.GET(apiPath+"/item_stats/:item_id", itemStatsGet(r.BHLnames))
-	r.GET(apiPath+"/items_by_taxon", itemsByTaxonGet(r.BHLnames))
+	r.GET(apiPath+"/items_by_taxon/:taxon_name", itemsByTaxonGet(r.BHLnames))
 
 	addr := fmt.Sprintf(":%d", r.Config().PortREST)
 	s := &http.Server{
@@ -160,16 +160,13 @@ func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 // best matched references to provided data. It can also try to return
 // a reference for the nomenclatural event for the name.
 // @Summary Finds BHL references for a name
-// @Description Finds BHL references for a name, does not include
-// @Description references of synonyms. There is an option to find references
-// @Description for the nomenclatural event of a name.
+// @Description Finds BHL references for a name, does not include references of synonyms. There is an option to find references for the nomenclatural event of a name.
 // @ID get-name-refs
-// @Param name query string true "Name to find references for." example("Pardosa moesta")
-// @Accept string @Produce json
+// @Param name path string true "Name to find references for." example("Pardosa moesta")
 // @Param reference query string false "Reference data used to filter results." example("Docums Mycol. 34(nos 135-136):50. (2008)")
-// @Accept string @Produce json
 // @Param nomen_event query boolean false "If true, tries to find nomenclatural event reference." example(true)
-// @Accept string @Produce json
+// @Accept plain
+// @Produce json
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
 // @Router /name_refs [get]
 func nameRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
@@ -179,17 +176,31 @@ func nameRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 // nameRefsPost takes an input.Input with a name, optionally reference and returns
 // best matched reference to provided data.
 // @Summary Finds BHL references for a name
-// @Description Finds BHL references for a name, does not include
-// @Description references of synonyms.
+// @Description Finds BHL references for a name, does not include references of synonyms.
 // @ID post-name-refs
 // @Param input body input.Input true "Input data"
-// @Accept json @Produce json
+// @Accept json
+// @Produce json
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
 // @Router /name_refs [post]
 func nameRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
 	return refsCommon(bn, false)
 }
 
+// taxonRefsGet takes a name (could be a synonym), also optionally a reference
+// and returns references for all names known for the taxon, including synonyms.
+// It can also try to return a referencs for the nomenclatural events
+// known for all the names.
+// @Summary Finds BHL references for a taxon, including synonyms.
+// @Description Finds BHL references for a taxon, including references of synonyms. There is an option to find references for the nomenclatural events for all names of the taxon.
+// @ID get-taxon-refs
+// @Param name path string true "Name to find references for." example("Pardosa moesta")
+// @Param reference query string false "Reference data used to filter results." example("Docums Mycol. 34(nos 135-136):50. (2008)")
+// @Param nomen_event query boolean false "If true, tries to find nomenclatural event reference." example(true)
+// @Accept plain
+// @Produce json
+// @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
+// @Router /taxon_refs [get]
 func taxonRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 	return refsCommon(bn, true)
 }
@@ -197,8 +208,7 @@ func taxonRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 // taxonRefsPost takes an input.Input with a name, optionally reference and returns
 // best matched reference to provided data.
 // @Summary Finds BHL references for a taxon (includes references of synonyms)
-// @Description Finds BHL references for a taxon, does include
-// @Description references of synonyms.
+// @Description Finds BHL references for a taxon, does include references of synonyms.
 // @ID post-taxon-refs
 // @Param input body input.Input true "Input data"
 // @Accept json
@@ -209,14 +219,39 @@ func taxonRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
 	return refsCommon(bn, true)
 }
 
+// externalIDGet provides nomenclatural event data for a given external ID.
+// @Summary Get nomenclatural event data by external ID from a data source.
+// @ID get-external-id
+// @Param data_source path string true "Data source name" example("col")
+// @Param external_id query string true "External ID" example("BKDDK")
+// @Accept plain
+// @Produce json
+// @Success 200 {object} namerefs.NameRefs  "Matched references for the provided external ID"
+// @Router /external_ids/{data_source} [get]
 func externalIDGet(bn bhlnames.BHLnames) func(echo.Context) error {
 	return nil
 }
 
+// itemStatsGet provides statistics for a given item.
+// @Summary Get taxonomic statistics for a given item.
+// @Description Get taxonomic statistics for a given item. Provides most prevalent kingdoms, most prevalent taxa etc.
+// @Param item_id path string true "Item ID" example("123456")
+// @Accept plain
+// @Produce json
+// @Success 200 {object} namerefs.NameRefs  "Taxonomic statistics for the provided item"
+// @Router /item_stats/{item_id} [get]
 func itemStatsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 	return nil
 }
 
+// itemsByTaxonGet provides items for a given taxon.
+// @Summary Get items where a given taxon is the most prevalent.
+// @Description Get items where a given higher taxon is the most prevalent. For example, if the taxon is 'Aves' it provides items where birds are the most prevalent taxon.
+// @Param taxon path string true "Taxon name" example("Aves")
+// @Accept plain
+// @Produce json
+// @Success 200 {object} namerefs.NameRefs  "Items where the taxon is the most prevalent"
+// @Router /items_by_taxon [get]
 func itemsByTaxonGet(bn bhlnames.BHLnames) func(echo.Context) error {
 	return nil
 }
@@ -242,40 +277,6 @@ func refsCommon(bn bhlnames.BHLnames, withSynonyms bool) func(echo.Context) erro
 		if err != nil {
 			slog.Error("nameRefs", "error", err)
 			return err
-		}
-		return err
-	}
-}
-
-// nomenRefsPost takes an input.Input with a name and nomenclatural reference
-// and returns back the putative nomenclatural event reference from BHL.
-// @Summary Finds in BHL the nomenclatural event references for a name.
-// @Description Takes an input.Input with a name and nomenclatural reference and returns back the putative nomenclatural event reference from BHL.
-// @ID post-nomen-refs
-// @Param input body input.Input true "Input data"
-// @Accept json
-// @Produce json
-// @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
-// @Router /nomen_refs [post]
-func nomenRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
-	enc := gnfmt.GNjson{}
-	var err error
-	var res *namerefs.NameRefs
-	return func(c echo.Context) error {
-		var inp input.Input
-		err = c.Bind(&inp)
-
-		if err == nil {
-			res, err = bn.NomenRefs(inp)
-		}
-
-		if err == nil {
-			o := enc.Output(res, gnfmt.CompactJSON)
-			err = c.String(http.StatusOK, o)
-		}
-
-		if err != nil {
-			slog.Error("nomenRefs", "error", err)
 		}
 		return err
 	}
