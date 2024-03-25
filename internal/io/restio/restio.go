@@ -52,11 +52,11 @@ func New(bn bhlnames.BHLnames) rest.REST {
 // @license.url https://opensource.org/licenses/MIT
 
 // Server Definitions
-// @Server http://localhost:8888 Description for local server
 // @Server https://bhlquest.globalnames.org Description for production server
+// @Server http://localhost:8888 Description for local server
 
-// @host localhost:8888
 // @host bhlnames.globalnames.org
+// @host localhost:8888
 // @BasePath /api/v1
 
 // @externalDocs.description  OpenAPI
@@ -76,7 +76,7 @@ func (r restio) Run() {
 	r.GET(apiPath+"/ping", ping)
 	r.GET(apiPath+"/version", ver(r.BHLnames))
 	r.POST(apiPath+"/name_refs", nameRefsPost(r.BHLnames))
-	r.GET(apiPath+"/name_refs", nameRefsGet(r.BHLnames))
+	r.GET(apiPath+"/name_refs/:name", nameRefsGet(r.BHLnames))
 	r.POST(apiPath+"/taxon_refs", taxonRefsPost(r.BHLnames))
 	r.GET(apiPath+"/taxon_refs", taxonRefsGet(r.BHLnames))
 	r.GET(apiPath+"/references/:page_id", refs(r.BHLnames))
@@ -170,7 +170,28 @@ func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
 // @Router /name_refs [get]
 func nameRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
-	return refsCommon(bn, false)
+	slog.Info("taxonRefsGet")
+	enc := gnfmt.GNjson{}
+	var err error
+	bn = bn.ChangeConfig(config.OptWithSynonyms(false))
+	var res *namerefs.NameRefs
+	_ = res
+	_ = enc
+	_ = bn
+	_ = err
+	return func(c echo.Context) error {
+		var inp input.Input
+		// name := c.Param("name")
+		// slog.Info("taxonRefsGet", "name", name)
+		name := "Bubo bubo"
+		ref := c.QueryParam("reference")
+		nomenEvent := c.QueryParam("nomen_event")
+		inp.NameString = name
+		inp.RefString = ref
+		inp.NomenEvent = nomenEvent == "true"
+		slog.Info("taxonRefsGet", "input", inp)
+		return c.JSON(http.StatusOK, res)
+	}
 }
 
 // nameRefsPost takes an input.Input with a name, optionally reference and returns
@@ -184,7 +205,29 @@ func nameRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
 // @Router /name_refs [post]
 func nameRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
-	return refsCommon(bn, false)
+	enc := gnfmt.GNjson{}
+	var err error
+	bn = bn.ChangeConfig(config.OptWithSynonyms(false))
+	var res *namerefs.NameRefs
+	return func(c echo.Context) error {
+		var inp input.Input
+		err = c.Bind(&inp)
+
+		if err == nil {
+			res, err = bn.NameRefs(inp)
+		}
+
+		if err == nil {
+			o := enc.Output(res, gnfmt.CompactJSON)
+			err = c.String(http.StatusOK, o)
+		}
+
+		if err != nil {
+			slog.Error("nameRefs", "error", err)
+			return err
+		}
+		return err
+	}
 }
 
 // taxonRefsGet takes a name (could be a synonym), also optionally a reference
@@ -202,7 +245,7 @@ func nameRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
 // @Router /taxon_refs [get]
 func taxonRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
-	return refsCommon(bn, true)
+	return nil
 }
 
 // taxonRefsPost takes an input.Input with a name, optionally reference and returns

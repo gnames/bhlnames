@@ -157,7 +157,17 @@ func (bn bhlnames) RefByPageID(pageID int) (*refbhl.Reference, error) {
 // NameRefs takes a name and optionally reference, and find matching
 // locations and references in BHL.
 func (bn bhlnames) NameRefs(inp input.Input) (*namerefs.NameRefs, error) {
-	return bn.ReferencesBHL(inp, bn.cfg)
+	res, err := bn.ReferencesBHL(inp, bn.cfg)
+	if err != nil {
+		return nil, err
+	}
+	if inp.NomenEvent {
+		err = bn.sortByScore(res)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 // NameRefsStream takes a stream of names/references and returns back
@@ -187,6 +197,13 @@ func (bn bhlnames) nameRefsWorker(
 		if err != nil {
 			err = fmt.Errorf("bhlnames.nameRefsWorker: %w", err)
 			slog.Error("bhlnames.nameRefsWorker", "error", err)
+		}
+		if inp.NomenEvent {
+			err = bn.sortByScore(nameRefs)
+			if err != nil {
+				err = fmt.Errorf("bhlnames.nameRefsWorker: %w", err)
+				slog.Error("bhlnames.nameRefsWorker", "error", err)
+			}
 		}
 		chOut <- nameRefs
 	}

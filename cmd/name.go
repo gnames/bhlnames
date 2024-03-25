@@ -22,11 +22,13 @@ package cmd
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames/internal/ent/input"
@@ -326,4 +328,65 @@ func nameString(bn bhlnames.BHLnames, name string) {
 		os.Exit(1)
 	}
 	fmt.Println(enc.Output(res, bn.Config().Format))
+}
+
+func yearFlag(cmd *cobra.Command) int {
+	now := time.Now()
+	maxYear := now.Year() + 2
+	y, err := cmd.Flags().GetInt("year")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	if y < 1750 || y > maxYear {
+		return 0
+	}
+	return y
+}
+
+func delimiterFlag(cmd *cobra.Command) rune {
+	delim, err := cmd.Flags().GetString("delimiter")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	switch delim {
+	case "":
+		slog.Info("Empty delimiter option")
+		slog.Info("Keeping the default delimiter \",\"")
+		return ','
+	case "\\t":
+		slog.Info("Setting delimiter to \"\\t\"")
+		return '\t'
+	case ",":
+		slog.Info("Setting delimiter to \",\"")
+		return ','
+	default:
+		slog.Info("Supported delimiters are \",\" and \"\t\"")
+		slog.Info("Keeping the default delimiter \",\"")
+		return ','
+	}
+}
+
+func curationFlag(cmd *cobra.Command) bool {
+	cur, err := cmd.Flags().GetBool("curation")
+	if err != nil {
+		slog.Error("Flag curation failed", "error", err)
+		os.Exit(1)
+	}
+
+	return cur
+}
+
+func outputFlag(cmd *cobra.Command) string {
+	output, err := cmd.Flags().GetString("output")
+	if output == "" {
+		err = errors.New("output path for curated results should be set")
+	}
+	if err != nil {
+		slog.Error("Flag output failed", "error", err)
+		os.Exit(1)
+	}
+	return output
 }

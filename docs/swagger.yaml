@@ -32,6 +32,12 @@ definitions:
         description: |-
           Name provides data about a scientific name. Information can be
           provided by a name-string or be split into separate fields.
+      nomenEvent:
+        description: |-
+          NomenEvent is true when the result tries to get a nomenclatural event
+          for the name.
+        example: false
+        type: boolean
       reference:
         allOf:
         - $ref: '#/definitions/input.Reference'
@@ -55,7 +61,7 @@ definitions:
         type: string
       nameString:
         description: |-
-          NameString is a scientific name as a string. It might be enough to
+          NameString is a scientific name as a stringough to
           provide only NameString without provided other fields.
         example: Canis lupus Linnaeus, 1758
         type: string
@@ -439,7 +445,7 @@ definitions:
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: bhlnames.globalnames.org
+host: localhost:8888
 info:
   contact:
     email: dmozzherin@gmail.com

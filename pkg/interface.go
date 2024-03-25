@@ -35,14 +35,6 @@ type BHLnames interface {
 	// a stream of matched locations in BHL.
 	NameRefsStream(chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)
 
-	// NomenRefs takes a name and a nomenclatural reference and returns back
-	// putative locations of the nomenclatural publication in BHL.
-	NomenRefs(data input.Input) (*namerefs.NameRefs, error)
-
-	// NomenRefsStream takes a stream of names/references and returns a stream
-	// of putative locations of the nomenclatural publications in BHL.
-	NomenRefsStream(chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)
-
 	// GetVersion returns back the version of BHLnames
 	// @Summary Get BHLnames version
 	// @Description Retrieves the current version of the BHLnames application.

@@ -391,6 +391,11 @@ const docTemplate = `{
                         }
                     ]
                 },
+                "nomenEvent": {
+                    "description": "NomenEvent is true when the result tries to get a nomenclatural event\nfor the name.",
+                    "type": "boolean",
+                    "example": false
+                },
                 "reference": {
                     "description": "Reference provides data about a reference where the name was\nmentioned. Information can be provided by a reference-string or\nbe split into separate fields.",
                     "allOf": [
@@ -416,7 +421,7 @@ const docTemplate = `{
                     "example": "Canis lupus"
                 },
                 "nameString": {
-                    "description": "NameString is a scientific name as a string. It might be enough to\nprovide only NameString without provided other fields.",
+                    "description": "NameString is a scientific name as a stringough to\nprovide only NameString without provided other fields.",
                     "type": "string",
                     "example": "Canis lupus Linnaeus, 1758"
                 },
@@ -855,7 +860,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "bhlnames.globalnames.org",
+	Host:             "localhost:8888",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "BHLnames API",
