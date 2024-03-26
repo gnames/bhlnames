@@ -142,7 +142,7 @@ func (bn bhlnames) InitializeCol() error {
 		}
 	}
 
-	err = bn.LinkColToBhl(bn.NomenRefsStream)
+	err = bn.LinkColToBhl(bn.NameRefsStream)
 	if err != nil {
 		err = fmt.Errorf("LinkColToBhl: %w", err)
 	}
@@ -156,24 +156,32 @@ func (bn bhlnames) RefByPageID(pageID int) (*refbhl.Reference, error) {
 
 // NameRefs takes a name and optionally reference, and find matching
 // locations and references in BHL.
-func (bn bhlnames) NameRefs(inp input.Input) (*namerefs.NameRefs, error) {
+func (bn bhlnames) NameRefs(inp *input.Input) (*namerefs.NameRefs, error) {
 	res, err := bn.ReferencesBHL(inp, bn.cfg)
 	if err != nil {
 		return nil, err
 	}
-	if inp.NomenEvent {
-		err = bn.sortByScore(res)
-		if err != nil {
-			return nil, err
-		}
+
+	if !inp.NomenEvent {
+		return res, nil
 	}
+
+	if ref := inp.Reference; ref == nil {
+
+	}
+
+	err = bn.sortByScore(res)
+	if err != nil {
+		return nil, err
+	}
+
 	return res, nil
 }
 
 // NameRefsStream takes a stream of names/references and returns back
 // a stream of matched locations in BHL.
 func (bn bhlnames) NameRefsStream(
-	chIn <-chan input.Input,
+	chIn <-chan *input.Input,
 	chOut chan<- *namerefs.NameRefs,
 ) {
 	var wg sync.WaitGroup
@@ -187,7 +195,7 @@ func (bn bhlnames) NameRefsStream(
 }
 
 func (bn bhlnames) nameRefsWorker(
-	chIn <-chan input.Input,
+	chIn <-chan *input.Input,
 	chOut chan<- *namerefs.NameRefs,
 	wg *sync.WaitGroup,
 ) {
@@ -206,52 +214,6 @@ func (bn bhlnames) nameRefsWorker(
 			}
 		}
 		chOut <- nameRefs
-	}
-}
-
-func (bn bhlnames) NomenRefs(
-	inp input.Input,
-) (*namerefs.NameRefs, error) {
-	nrs, err := bn.ReferencesBHL(inp, bn.cfg)
-	if err != nil {
-		return nil, err
-	}
-	err = bn.sortByScore(nrs)
-	return nrs, err
-}
-
-func (bn bhlnames) NomenRefsStream(
-	chIn <-chan input.Input,
-	chOut chan<- *namerefs.NameRefs,
-) {
-	var wg sync.WaitGroup
-	wg.Add(bn.cfg.JobsNum)
-
-	for i := 0; i < bn.cfg.JobsNum; i++ {
-		go bn.nomenRefsWorker(chIn, chOut, &wg)
-	}
-	wg.Wait()
-	close(chOut)
-}
-
-func (bn bhlnames) nomenRefsWorker(
-	chIn <-chan input.Input,
-	chOut chan<- *namerefs.NameRefs,
-	wg *sync.WaitGroup,
-) {
-	defer wg.Done()
-	for inp := range chIn {
-		nr, err := bn.ReferencesBHL(inp, bn.cfg)
-		if err != nil {
-			err = fmt.Errorf("bhlnames.nomenRefsWorker: %#w", err)
-			slog.Error("bhlnames.nomenRefsWorker", "error", err)
-		}
-		err = bn.sortByScore(nr)
-		if err != nil {
-			err = fmt.Errorf("bhlnames.nomenRefsWorker: %#w", err)
-			slog.Error("bhlnames.nomenRefsWorker", "error", err)
-		}
-		chOut <- nr
 	}
 }
 
@@ -308,6 +270,13 @@ func (bn bhlnames) ChangeConfig(opts ...config.Option) BHLnames {
 		o(&bn.cfg)
 	}
 	return bn
+}
+
+func (bn bhlnames) RefsByExternalID(
+	dataSource, exiternalID string,
+	allRefs bool,
+) ([]*refbhl.Reference, error) {
+	return nil, nil
 }
 
 func (bn bhlnames) GetVersion() gnvers.Version {

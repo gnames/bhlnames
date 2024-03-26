@@ -82,7 +82,7 @@ func (rf reffinderio) RefByPageID(pageID int) (*refbhl.Reference, error) {
 }
 
 func (rf reffinderio) ReferencesBHL(
-	inp input.Input,
+	inp *input.Input,
 	cfg config.Config) (*namerefs.NameRefs, error) {
 	var err error
 	rf.withSynonyms = cfg.WithSynonyms
@@ -132,7 +132,7 @@ func (rf reffinderio) Close() error {
 	return nil
 }
 
-func (rf reffinderio) emptyNameRefs(data input.Input) *namerefs.NameRefs {
+func (rf reffinderio) emptyNameRefs(data *input.Input) *namerefs.NameRefs {
 	res := &namerefs.NameRefs{
 		Input:        data,
 		References:   make([]*refbhl.ReferenceNameBHL, 0),

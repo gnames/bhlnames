@@ -103,7 +103,7 @@ func (c colbuildio) ImportColData() error {
 }
 
 func (c colbuildio) LinkColToBhl(
-	nomenRef func(<-chan input.Input, chan<- *namerefs.NameRefs),
+	nomenRef func(<-chan *input.Input, chan<- *namerefs.NameRefs),
 ) error {
 	var err error
 	slog.Info("Linking CoL references to BHL pages.")
@@ -126,7 +126,7 @@ func (c colbuildio) LinkColToBhl(
 	}
 
 	start := time.Now()
-	chIn := make(chan input.Input)
+	chIn := make(chan *input.Input)
 	chOut := make(chan *namerefs.NameRefs)
 
 	g1 := errgroup.Group{}

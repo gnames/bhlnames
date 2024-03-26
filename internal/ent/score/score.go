@@ -33,7 +33,7 @@ func (s *score) Calculate(
 ) error {
 	var err error
 	refs := nr.References
-	yr := getYear(nr.Input)
+	yr := getYear(*nr.Input)
 
 	refString := nr.Input.RefString
 	var titleIDs map[int][]string

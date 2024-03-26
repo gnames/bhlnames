@@ -140,6 +140,38 @@ const docTemplate = `{
             }
         },
         "/name_refs": {
+            "post": {
+                "description": "Finds BHL references for a name, does not include references of synonyms.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Finds BHL references for a name",
+                "operationId": "post-name-refs",
+                "parameters": [
+                    {
+                        "description": "Input data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/input.Input"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Matched references for the provided name",
+                        "schema": {
+                            "$ref": "#/definitions/namerefs.NameRefs"
+                        }
+                    }
+                }
+            }
+        },
+        "/name_refs/{name}": {
             "get": {
                 "description": "Finds BHL references for a name, does not include references of synonyms. There is an option to find references for the nomenclatural event of a name.",
                 "consumes": [
@@ -172,36 +204,6 @@ const docTemplate = `{
                         "description": "If true, tries to find nomenclatural event reference.",
                         "name": "nomen_event",
                         "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Matched references for the provided name",
-                        "schema": {
-                            "$ref": "#/definitions/namerefs.NameRefs"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Finds BHL references for a name, does not include references of synonyms.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Finds BHL references for a name",
-                "operationId": "post-name-refs",
-                "parameters": [
-                    {
-                        "description": "Input data",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/input.Input"
-                        }
                     }
                 ],
                 "responses": {

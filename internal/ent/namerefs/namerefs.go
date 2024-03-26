@@ -8,7 +8,7 @@ import (
 // NameRefs provides apparent occurrences of a name-string in BHL.
 type NameRefs struct {
 	// Input of a name and/or reference
-	Input input.Input `json:"input"`
+	Input *input.Input `json:"input"`
 
 	// Canonical is a full canonical form of the input name-string.
 	Canonical string `json:"canonical,omitempty"`

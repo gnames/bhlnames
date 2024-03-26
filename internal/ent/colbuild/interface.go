@@ -23,5 +23,5 @@ type ColBuild interface {
 
 	// LinkColToBhl discovers putative links from CoL references to BHL pages
 	// and stores the results.
-	LinkColToBhl(func(<-chan input.Input, chan<- *namerefs.NameRefs)) error
+	LinkColToBhl(func(<-chan *input.Input, chan<- *namerefs.NameRefs)) error
 }

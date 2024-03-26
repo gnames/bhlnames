@@ -22,7 +22,7 @@ type RefFinder interface {
 	// every `part`, but also first occurrence of a name-string in the `item`, if
 	// it exists outside of all `parts`.
 	ReferencesBHL(
-		inp input.Input,
+		inp *input.Input,
 		cfg config.Config,
 	) (*namerefs.NameRefs, error)
 

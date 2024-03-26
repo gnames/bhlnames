@@ -75,10 +75,10 @@ func (r restio) Run() {
 	r.GET(apiPath, info)
 	r.GET(apiPath+"/ping", ping)
 	r.GET(apiPath+"/version", ver(r.BHLnames))
-	r.POST(apiPath+"/name_refs", nameRefsPost(r.BHLnames))
 	r.GET(apiPath+"/name_refs/:name", nameRefsGet(r.BHLnames))
-	r.POST(apiPath+"/taxon_refs", taxonRefsPost(r.BHLnames))
+	r.POST(apiPath+"/name_refs", nameRefsPost(r.BHLnames))
 	r.GET(apiPath+"/taxon_refs", taxonRefsGet(r.BHLnames))
+	r.POST(apiPath+"/taxon_refs/:name", taxonRefsPost(r.BHLnames))
 	r.GET(apiPath+"/references/:page_id", refs(r.BHLnames))
 	r.GET(apiPath+"/external_ids/:data_source", externalIDGet(r.BHLnames))
 	r.GET(apiPath+"/item_stats/:item_id", itemStatsGet(r.BHLnames))
@@ -168,28 +168,26 @@ func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Accept plain
 // @Produce json
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided name"
-// @Router /name_refs [get]
+// @Router /name_refs/{name} [get]
 func nameRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
-	slog.Info("taxonRefsGet")
-	enc := gnfmt.GNjson{}
-	var err error
 	bn = bn.ChangeConfig(config.OptWithSynonyms(false))
-	var res *namerefs.NameRefs
-	_ = res
-	_ = enc
-	_ = bn
-	_ = err
 	return func(c echo.Context) error {
 		var inp input.Input
-		// name := c.Param("name")
-		// slog.Info("taxonRefsGet", "name", name)
-		name := "Bubo bubo"
+		var res *namerefs.NameRefs
+
+		name := c.Param("name")
 		ref := c.QueryParam("reference")
 		nomenEvent := c.QueryParam("nomen_event")
+
 		inp.NameString = name
 		inp.RefString = ref
 		inp.NomenEvent = nomenEvent == "true"
-		slog.Info("taxonRefsGet", "input", inp)
+
+		res, err := bn.NameRefs(&inp)
+		if err != nil {
+			return err
+		}
+
 		return c.JSON(http.StatusOK, res)
 	}
 }
@@ -214,7 +212,7 @@ func nameRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
 		err = c.Bind(&inp)
 
 		if err == nil {
-			res, err = bn.NameRefs(inp)
+			res, err = bn.NameRefs(&inp)
 		}
 
 		if err == nil {
@@ -272,7 +270,24 @@ func taxonRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Success 200 {object} namerefs.NameRefs  "Matched references for the provided external ID"
 // @Router /external_ids/{data_source} [get]
 func externalIDGet(bn bhlnames.BHLnames) func(echo.Context) error {
-	return nil
+	return func(c echo.Context) error {
+		dataSource := c.Param("data_source")
+		if dataSource == "" {
+			dataSource = "col"
+		}
+
+		externalID := c.QueryParam("external_id")
+		if externalID == "" {
+			return fmt.Errorf("external_id is required")
+		}
+		allRefs := c.QueryParam("all_refs") == "true"
+
+		res, err := bn.RefsByExternalID(dataSource, externalID, allRefs)
+		if err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, res)
+	}
 }
 
 // itemStatsGet provides statistics for a given item.
@@ -309,7 +324,7 @@ func refsCommon(bn bhlnames.BHLnames, withSynonyms bool) func(echo.Context) erro
 		err = c.Bind(&inp)
 
 		if err == nil {
-			res, err = bn.NameRefs(inp)
+			res, err = bn.NameRefs(&inp)
 		}
 
 		if err == nil {

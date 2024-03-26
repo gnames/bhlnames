@@ -27,13 +27,22 @@ type BHLnames interface {
 	// RefByPageID returns a reference for a given pageID.
 	RefByPageID(pageID int) (*refbhl.Reference, error)
 
+	// RefsByExternalID returns cached references for a given external ID and
+	// the corresponding data source. If allRefs is true, it returns all
+	// references for the external ID, otherwise it returns only the first.
+	RefsByExternalID(
+		dataSource string,
+		externalID string,
+		allRefs bool,
+	) ([]*refbhl.Reference, error)
+
 	// NameRefs takes a name and optionally reference, and find matching
 	// locations and references in BHL.
-	NameRefs(data input.Input) (*namerefs.NameRefs, error)
+	NameRefs(data *input.Input) (*namerefs.NameRefs, error)
 
 	// NameRefsStream takes a stream of names/references and returns back
 	// a stream of matched locations in BHL.
-	NameRefsStream(chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)
+	NameRefsStream(chIn <-chan *input.Input, chOut chan<- *namerefs.NameRefs)
 
 	// GetVersion returns back the version of BHLnames
 	// @Summary Get BHLnames version

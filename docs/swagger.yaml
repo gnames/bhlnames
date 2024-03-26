@@ -545,6 +545,28 @@ paths:
             $ref: '#/definitions/namerefs.NameRefs'
       summary: Get items where a given taxon is the most prevalent.
   /name_refs:
+    post:
+      consumes:
+      - application/json
+      description: Finds BHL references for a name, does not include references of
+        synonyms.
+      operationId: post-name-refs
+      parameters:
+      - description: Input data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/input.Input'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Matched references for the provided name
+          schema:
+            $ref: '#/definitions/namerefs.NameRefs'
+      summary: Finds BHL references for a name
+  /name_refs/{name}:
     get:
       consumes:
       - text/plain
@@ -569,27 +591,6 @@ paths:
         in: query
         name: nomen_event
         type: boolean
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Matched references for the provided name
-          schema:
-            $ref: '#/definitions/namerefs.NameRefs'
-      summary: Finds BHL references for a name
-    post:
-      consumes:
-      - application/json
-      description: Finds BHL references for a name, does not include references of
-        synonyms.
-      operationId: post-name-refs
-      parameters:
-      - description: Input data
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/input.Input'
       produces:
       - application/json
       responses:

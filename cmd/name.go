@@ -240,7 +240,7 @@ func fileExists(path string) bool {
 }
 
 func nameFile(bn bhlnames.BHLnames, f io.Reader) {
-	in := make(chan input.Input)
+	in := make(chan *input.Input)
 	out := make(chan *namerefs.NameRefs)
 
 	var wg sync.WaitGroup

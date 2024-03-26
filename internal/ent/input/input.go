@@ -19,12 +19,12 @@ type Input struct {
 
 	// Name provides data about a scientific name. Information can be
 	// provided by a name-string or be split into separate fields.
-	Name `json:"name"`
+	*Name `json:"name"`
 
 	// Reference provides data about a reference where the name was
 	// mentioned. Information can be provided by a reference-string or
 	// be split into separate fields.
-	Reference `json:"reference"`
+	*Reference `json:"reference"`
 
 	// NomenEvent is true when the result tries to get a nomenclatural event
 	// for the name.
@@ -105,7 +105,7 @@ func OptRefString(s string) Option {
 	}
 }
 
-func New(gnp gnparser.GNparser, opts ...Option) Input {
+func New(gnp gnparser.GNparser, opts ...Option) *Input {
 	res := Input{}
 	for i := range opts {
 		opts[i](&res)
@@ -121,7 +121,7 @@ func New(gnp gnparser.GNparser, opts ...Option) Input {
 	if res.RefString != "" {
 		parseRefString(&res)
 	}
-	return res
+	return &res
 }
 
 func parseNameString(gnp gnparser.GNparser, inp *Input) {

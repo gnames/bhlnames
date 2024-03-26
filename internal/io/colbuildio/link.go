@@ -10,7 +10,7 @@ import (
 	"github.com/gnames/gnparser"
 )
 
-func (c colbuildio) inputFromCol(chIn chan<- input.Input) error {
+func (c colbuildio) inputFromCol(chIn chan<- *input.Input) error {
 	slog.Info("Finding nomenclatural events for names from the Catalogue of Life.")
 
 	gnp := gnparser.New(gnparser.NewConfig())
@@ -31,7 +31,9 @@ func (c colbuildio) inputFromCol(chIn chan<- input.Input) error {
 				input.OptNameString(cnr[i].Name),
 				input.OptRefString(cnr[i].Ref),
 			}
-			chIn <- input.New(gnp, opts...)
+			inp := input.New(gnp, opts...)
+			inp.NomenEvent = true
+			chIn <- inp
 		}
 	}
 	return nil
