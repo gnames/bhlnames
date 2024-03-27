@@ -22,6 +22,21 @@ type FakeRefFinder struct {
 	closeReturnsOnCall map[int]struct {
 		result1 error
 	}
+	NomenRefsByExternalIDStub        func(string, string, bool) ([]*refbhl.Reference, error)
+	nomenRefsByExternalIDMutex       sync.RWMutex
+	nomenRefsByExternalIDArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 bool
+	}
+	nomenRefsByExternalIDReturns struct {
+		result1 []*refbhl.Reference
+		result2 error
+	}
+	nomenRefsByExternalIDReturnsOnCall map[int]struct {
+		result1 []*refbhl.Reference
+		result2 error
+	}
 	RefByPageIDStub        func(int) (*refbhl.Reference, error)
 	refByPageIDMutex       sync.RWMutex
 	refByPageIDArgsForCall []struct {
@@ -35,10 +50,10 @@ type FakeRefFinder struct {
 		result1 *refbhl.Reference
 		result2 error
 	}
-	ReferencesBHLStub        func(input.Input, config.Config) (*namerefs.NameRefs, error)
+	ReferencesBHLStub        func(*input.Input, config.Config) (*namerefs.NameRefs, error)
 	referencesBHLMutex       sync.RWMutex
 	referencesBHLArgsForCall []struct {
-		arg1 input.Input
+		arg1 *input.Input
 		arg2 config.Config
 	}
 	referencesBHLReturns struct {
@@ -106,6 +121,72 @@ func (fake *FakeRefFinder) CloseReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeRefFinder) NomenRefsByExternalID(arg1 string, arg2 string, arg3 bool) ([]*refbhl.Reference, error) {
+	fake.nomenRefsByExternalIDMutex.Lock()
+	ret, specificReturn := fake.nomenRefsByExternalIDReturnsOnCall[len(fake.nomenRefsByExternalIDArgsForCall)]
+	fake.nomenRefsByExternalIDArgsForCall = append(fake.nomenRefsByExternalIDArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 bool
+	}{arg1, arg2, arg3})
+	stub := fake.NomenRefsByExternalIDStub
+	fakeReturns := fake.nomenRefsByExternalIDReturns
+	fake.recordInvocation("NomenRefsByExternalID", []interface{}{arg1, arg2, arg3})
+	fake.nomenRefsByExternalIDMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeRefFinder) NomenRefsByExternalIDCallCount() int {
+	fake.nomenRefsByExternalIDMutex.RLock()
+	defer fake.nomenRefsByExternalIDMutex.RUnlock()
+	return len(fake.nomenRefsByExternalIDArgsForCall)
+}
+
+func (fake *FakeRefFinder) NomenRefsByExternalIDCalls(stub func(string, string, bool) ([]*refbhl.Reference, error)) {
+	fake.nomenRefsByExternalIDMutex.Lock()
+	defer fake.nomenRefsByExternalIDMutex.Unlock()
+	fake.NomenRefsByExternalIDStub = stub
+}
+
+func (fake *FakeRefFinder) NomenRefsByExternalIDArgsForCall(i int) (string, string, bool) {
+	fake.nomenRefsByExternalIDMutex.RLock()
+	defer fake.nomenRefsByExternalIDMutex.RUnlock()
+	argsForCall := fake.nomenRefsByExternalIDArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeRefFinder) NomenRefsByExternalIDReturns(result1 []*refbhl.Reference, result2 error) {
+	fake.nomenRefsByExternalIDMutex.Lock()
+	defer fake.nomenRefsByExternalIDMutex.Unlock()
+	fake.NomenRefsByExternalIDStub = nil
+	fake.nomenRefsByExternalIDReturns = struct {
+		result1 []*refbhl.Reference
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeRefFinder) NomenRefsByExternalIDReturnsOnCall(i int, result1 []*refbhl.Reference, result2 error) {
+	fake.nomenRefsByExternalIDMutex.Lock()
+	defer fake.nomenRefsByExternalIDMutex.Unlock()
+	fake.NomenRefsByExternalIDStub = nil
+	if fake.nomenRefsByExternalIDReturnsOnCall == nil {
+		fake.nomenRefsByExternalIDReturnsOnCall = make(map[int]struct {
+			result1 []*refbhl.Reference
+			result2 error
+		})
+	}
+	fake.nomenRefsByExternalIDReturnsOnCall[i] = struct {
+		result1 []*refbhl.Reference
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeRefFinder) RefByPageID(arg1 int) (*refbhl.Reference, error) {
 	fake.refByPageIDMutex.Lock()
 	ret, specificReturn := fake.refByPageIDReturnsOnCall[len(fake.refByPageIDArgsForCall)]
@@ -170,11 +251,11 @@ func (fake *FakeRefFinder) RefByPageIDReturnsOnCall(i int, result1 *refbhl.Refer
 	}{result1, result2}
 }
 
-func (fake *FakeRefFinder) ReferencesBHL(arg1 input.Input, arg2 config.Config) (*namerefs.NameRefs, error) {
+func (fake *FakeRefFinder) ReferencesBHL(arg1 *input.Input, arg2 config.Config) (*namerefs.NameRefs, error) {
 	fake.referencesBHLMutex.Lock()
 	ret, specificReturn := fake.referencesBHLReturnsOnCall[len(fake.referencesBHLArgsForCall)]
 	fake.referencesBHLArgsForCall = append(fake.referencesBHLArgsForCall, struct {
-		arg1 input.Input
+		arg1 *input.Input
 		arg2 config.Config
 	}{arg1, arg2})
 	stub := fake.ReferencesBHLStub
@@ -196,13 +277,13 @@ func (fake *FakeRefFinder) ReferencesBHLCallCount() int {
 	return len(fake.referencesBHLArgsForCall)
 }
 
-func (fake *FakeRefFinder) ReferencesBHLCalls(stub func(input.Input, config.Config) (*namerefs.NameRefs, error)) {
+func (fake *FakeRefFinder) ReferencesBHLCalls(stub func(*input.Input, config.Config) (*namerefs.NameRefs, error)) {
 	fake.referencesBHLMutex.Lock()
 	defer fake.referencesBHLMutex.Unlock()
 	fake.ReferencesBHLStub = stub
 }
 
-func (fake *FakeRefFinder) ReferencesBHLArgsForCall(i int) (input.Input, config.Config) {
+func (fake *FakeRefFinder) ReferencesBHLArgsForCall(i int) (*input.Input, config.Config) {
 	fake.referencesBHLMutex.RLock()
 	defer fake.referencesBHLMutex.RUnlock()
 	argsForCall := fake.referencesBHLArgsForCall[i]
@@ -240,6 +321,8 @@ func (fake *FakeRefFinder) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.closeMutex.RLock()
 	defer fake.closeMutex.RUnlock()
+	fake.nomenRefsByExternalIDMutex.RLock()
+	defer fake.nomenRefsByExternalIDMutex.RUnlock()
 	fake.refByPageIDMutex.RLock()
 	defer fake.refByPageIDMutex.RUnlock()
 	fake.referencesBHLMutex.RLock()

@@ -29,6 +29,15 @@ type RefFinder interface {
 	// RefByPageID returns a reference for a given pageID.
 	RefByPageID(pageID int) (*refbhl.Reference, error)
 
+	// NomenRefsByExternalID returns references for a given externalID. For example,
+	// externalID can belong to Catalogue of Life. It returns all putative
+	// nomenclarual references for a given externalID.
+	NomenRefsByExternalID(
+		dataSource,
+		id string,
+		allRefs bool,
+	) ([]*refbhl.Reference, error)
+
 	// Close cleans up all the database, key-value store, files locks and blocks,
 	// releasing resources for the next usage of the program.
 	Close() error

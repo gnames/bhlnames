@@ -72,6 +72,23 @@ func New(cfg config.Config) (reffinder.RefFinder, error) {
 	return res, nil
 }
 
+func (rf reffinderio) NomenRefsByExternalID(
+	dataSource,
+	id string,
+	allRefs bool) ([]*refbhl.Reference, error) {
+	var refs []*refbhl.Reference
+	var err error
+	if allRefs {
+		refs, err = rf.allNomenRefsByExternalID(dataSource, id)
+	} else {
+		refs, err = rf.bestNomenRefByExternalID(dataSource, id)
+	}
+	if err != nil {
+		return refs, err
+	}
+	return refs, nil
+}
+
 func (rf reffinderio) RefByPageID(pageID int) (*refbhl.Reference, error) {
 	var ref *refbhl.Reference
 	ref, err := rf.refByPageID(pageID)

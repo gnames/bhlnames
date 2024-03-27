@@ -167,7 +167,8 @@ func (bn bhlnames) NameRefs(inp *input.Input) (*namerefs.NameRefs, error) {
 	}
 
 	if ref := inp.Reference; ref == nil {
-
+		// TODO
+		return res, nil
 	}
 
 	err = bn.sortByScore(res)
@@ -276,7 +277,7 @@ func (bn bhlnames) RefsByExternalID(
 	dataSource, exiternalID string,
 	allRefs bool,
 ) ([]*refbhl.Reference, error) {
-	return nil, nil
+	return bn.RefFinder.NomenRefsByExternalID(dataSource, exiternalID, allRefs)
 }
 
 func (bn bhlnames) GetVersion() gnvers.Version {
