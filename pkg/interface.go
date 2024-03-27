@@ -35,13 +35,14 @@ type BHLnames interface {
 	// a stream of matched locations in BHL.
 	NameRefsStream(chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)
 
-	// NomenRefs takes a name and a nomenclatural reference and returns back
-	// putative locations of the nomenclatural publication in BHL.
-	NomenRefs(data input.Input) (*namerefs.NameRefs, error)
-
-	// NomenRefsStream takes a stream of names/references and returns a stream
-	// of putative locations of the nomenclatural publications in BHL.
-	NomenRefsStream(chIn <-chan input.Input, chOut chan<- *namerefs.NameRefs)
+	// RefsByExternalID returns nomenclatural references corresponding to
+	// a given data source and an external ID from it. If allRefs is true,
+	// it returns all putative nomenclatural references for the external ID,
+	// otherwise it returns only the best one.
+	RefsByExternalID(
+		dataSource, id string,
+		allRefs bool,
+	) ([]*refbhl.Reference, error)
 
 	// GetVersion returns back the version of BHLnames
 	// @Summary Get BHLnames version

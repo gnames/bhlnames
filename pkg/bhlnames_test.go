@@ -128,7 +128,8 @@ func TestNomenRefs(t *testing.T) {
 		rf.ReferencesBHLReturns(stubsRF[v.name], nil)
 		tmf.TitlesBHLReturns(stubsTM[v.ref], nil)
 		inp := input.New(gnp, opts...)
-		res, err := bn.NomenRefs(inp)
+		inp.NomenEvent = true
+		res, err := bn.NameRefs(inp)
 		assert.Nil(t, err)
 		assert.True(t, len(res.References) > 0)
 		ref := res.References[0]

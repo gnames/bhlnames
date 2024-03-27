@@ -154,6 +154,17 @@ func (bn bhlnames) RefByPageID(pageID int) (*refbhl.Reference, error) {
 	return bn.RefFinder.RefByPageID(pageID)
 }
 
+// RefsByExternalID returns cached putative nomenclatural references
+// corresponding to a given data source and an external ID from it.
+// If allRefs is true, it returns all putative nomenclatural references
+// for the external ID, otherwise it returns only the best one.
+func (bn bhlnames) RefsByExternalID(
+	dataSource, id string,
+	allRefs bool,
+) ([]*refbhl.Reference, error) {
+	return nil, nil
+}
+
 // NameRefs takes a name and optionally reference, and find matching
 // locations and references in BHL.
 func (bn bhlnames) NameRefs(inp input.Input) (*namerefs.NameRefs, error) {

@@ -32,6 +32,12 @@ definitions:
         description: |-
           Name provides data about a scientific name. Information can be
           provided by a name-string or be split into separate fields.
+      nomenEvent:
+        description: |-
+          NomenEvent is true when the result tries to get a nomenclatural event
+          for the name.
+        example: false
+        type: boolean
       reference:
         allOf:
         - $ref: '#/definitions/input.Reference'
@@ -439,7 +445,7 @@ definitions:
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: bhlnames.globalnames.org
+host: localhost:8888
 info:
   contact:
     email: dmozzherin@gmail.com
@@ -469,13 +475,81 @@ paths:
           schema:
             type: string
       summary: Information about the API documentation
+  /external_ids/{data_source}:
+    get:
+      consumes:
+      - text/plain
+      operationId: get-external-id
+      parameters:
+      - description: Data source name
+        example: '"col"'
+        in: path
+        name: data_source
+        required: true
+        type: string
+      - description: External ID
+        example: '"BKDDK"'
+        in: query
+        name: external_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Matched references for the provided external ID
+          schema:
+            $ref: '#/definitions/namerefs.NameRefs'
+      summary: Get nomenclatural event data by external ID from a data source.
+  /item_stats/{item_id}:
+    get:
+      consumes:
+      - text/plain
+      description: Get taxonomic statistics for a given item. Provides most prevalent
+        kingdoms, most prevalent taxa etc.
+      parameters:
+      - description: Item ID
+        example: '"123456"'
+        in: path
+        name: item_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Taxonomic statistics for the provided item
+          schema:
+            $ref: '#/definitions/namerefs.NameRefs'
+      summary: Get taxonomic statistics for a given item.
+  /items_by_taxon:
+    get:
+      consumes:
+      - text/plain
+      description: Get items where a given higher taxon is the most prevalent. For
+        example, if the taxon is 'Aves' it provides items where birds are the most
+        prevalent taxon.
+      parameters:
+      - description: Taxon name
+        example: '"Aves"'
+        in: path
+        name: taxon
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Items where the taxon is the most prevalent
+          schema:
+            $ref: '#/definitions/namerefs.NameRefs'
+      summary: Get items where a given taxon is the most prevalent.
   /name_refs:
     post:
       consumes:
       - application/json
-      description: |-
-        Finds BHL references for a name, does not include
-        references of synonyms.
+      description: Finds BHL references for a name, does not include references of
+        synonyms.
       operationId: post-name-refs
       parameters:
       - description: Input data
@@ -492,20 +566,31 @@ paths:
           schema:
             $ref: '#/definitions/namerefs.NameRefs'
       summary: Finds BHL references for a name
-  /nomen_refs:
-    post:
+  /name_refs/{name}:
+    get:
       consumes:
-      - application/json
-      description: Takes an input.Input with a name and nomenclatural reference and
-        returns back the putative nomenclatural event reference from BHL.
-      operationId: post-nomen-refs
+      - text/plain
+      description: Finds BHL references for a name, does not include references of
+        synonyms. There is an option to find references for the nomenclatural event
+        of a name.
+      operationId: get-name-refs
       parameters:
-      - description: Input data
-        in: body
-        name: input
+      - description: Name to find references for.
+        example: '"Pardosa moesta"'
+        in: path
+        name: name
         required: true
-        schema:
-          $ref: '#/definitions/input.Input'
+        type: string
+      - description: Reference data used to filter results.
+        example: '"Docums Mycol. 34(nos 135-136'
+        in: query
+        name: reference
+        type: string
+      - description: If true, tries to find nomenclatural event reference.
+        example: true
+        in: query
+        name: nomen_event
+        type: boolean
       produces:
       - application/json
       responses:
@@ -513,7 +598,7 @@ paths:
           description: Matched references for the provided name
           schema:
             $ref: '#/definitions/namerefs.NameRefs'
-      summary: Finds in BHL the nomenclatural event references for a name.
+      summary: Finds BHL references for a name
   /ping:
     get:
       description: Checks if the API is online and returns a simple response if it
@@ -549,12 +634,42 @@ paths:
             $ref: '#/definitions/refbhl.ReferenceNameBHL'
       summary: Get BHL reference metadata by pageID
   /taxon_refs:
+    get:
+      consumes:
+      - text/plain
+      description: Finds BHL references for a taxon, including references of synonyms.
+        There is an option to find references for the nomenclatural events for all
+        names of the taxon.
+      operationId: get-taxon-refs
+      parameters:
+      - description: Name to find references for.
+        example: '"Pardosa moesta"'
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Reference data used to filter results.
+        example: '"Docums Mycol. 34(nos 135-136'
+        in: query
+        name: reference
+        type: string
+      - description: If true, tries to find nomenclatural event reference.
+        example: true
+        in: query
+        name: nomen_event
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Matched references for the provided name
+          schema:
+            $ref: '#/definitions/namerefs.NameRefs'
+      summary: Finds BHL references for a taxon, including synonyms.
     post:
       consumes:
       - application/json
-      description: |-
-        Finds BHL references for a taxon, does include
-        references of synonyms.
+      description: Finds BHL references for a taxon, does include references of synonyms.
       operationId: post-taxon-refs
       parameters:
       - description: Input data

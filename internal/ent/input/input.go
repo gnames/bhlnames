@@ -25,6 +25,10 @@ type Input struct {
 	// mentioned. Information can be provided by a reference-string or
 	// be split into separate fields.
 	Reference `json:"reference"`
+
+	// NomenEvent is true when the result tries to get a nomenclatural event
+	// for the name.
+	NomenEvent bool `json:"nomenEvent,omitempty" example:"false"`
 }
 
 // @Description Name provides data about a scientific name.

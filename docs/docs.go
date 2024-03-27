@@ -41,9 +41,107 @@ const docTemplate = `{
                 }
             }
         },
+        "/external_ids/{data_source}": {
+            "get": {
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get nomenclatural event data by external ID from a data source.",
+                "operationId": "get-external-id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"col\"",
+                        "description": "Data source name",
+                        "name": "data_source",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"BKDDK\"",
+                        "description": "External ID",
+                        "name": "external_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Matched references for the provided external ID",
+                        "schema": {
+                            "$ref": "#/definitions/namerefs.NameRefs"
+                        }
+                    }
+                }
+            }
+        },
+        "/item_stats/{item_id}": {
+            "get": {
+                "description": "Get taxonomic statistics for a given item. Provides most prevalent kingdoms, most prevalent taxa etc.",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get taxonomic statistics for a given item.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"123456\"",
+                        "description": "Item ID",
+                        "name": "item_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Taxonomic statistics for the provided item",
+                        "schema": {
+                            "$ref": "#/definitions/namerefs.NameRefs"
+                        }
+                    }
+                }
+            }
+        },
+        "/items_by_taxon": {
+            "get": {
+                "description": "Get items where a given higher taxon is the most prevalent. For example, if the taxon is 'Aves' it provides items where birds are the most prevalent taxon.",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get items where a given taxon is the most prevalent.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"Aves\"",
+                        "description": "Taxon name",
+                        "name": "taxon",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Items where the taxon is the most prevalent",
+                        "schema": {
+                            "$ref": "#/definitions/namerefs.NameRefs"
+                        }
+                    }
+                }
+            }
+        },
         "/name_refs": {
             "post": {
-                "description": "Finds BHL references for a name, does not include\nreferences of synonyms.",
+                "description": "Finds BHL references for a name, does not include references of synonyms.",
                 "consumes": [
                     "application/json"
                 ],
@@ -73,26 +171,39 @@ const docTemplate = `{
                 }
             }
         },
-        "/nomen_refs": {
-            "post": {
-                "description": "Takes an input.Input with a name and nomenclatural reference and returns back the putative nomenclatural event reference from BHL.",
+        "/name_refs/{name}": {
+            "get": {
+                "description": "Finds BHL references for a name, does not include references of synonyms. There is an option to find references for the nomenclatural event of a name.",
                 "consumes": [
-                    "application/json"
+                    "text/plain"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Finds in BHL the nomenclatural event references for a name.",
-                "operationId": "post-nomen-refs",
+                "summary": "Finds BHL references for a name",
+                "operationId": "get-name-refs",
                 "parameters": [
                     {
-                        "description": "Input data",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/input.Input"
-                        }
+                        "type": "string",
+                        "example": "\"Pardosa moesta\"",
+                        "description": "Name to find references for.",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"Docums Mycol. 34(nos 135-136",
+                        "description": "Reference data used to filter results.",
+                        "name": "reference",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "example": true,
+                        "description": "If true, tries to find nomenclatural event reference.",
+                        "name": "nomen_event",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -155,8 +266,51 @@ const docTemplate = `{
             }
         },
         "/taxon_refs": {
+            "get": {
+                "description": "Finds BHL references for a taxon, including references of synonyms. There is an option to find references for the nomenclatural events for all names of the taxon.",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Finds BHL references for a taxon, including synonyms.",
+                "operationId": "get-taxon-refs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"Pardosa moesta\"",
+                        "description": "Name to find references for.",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"Docums Mycol. 34(nos 135-136",
+                        "description": "Reference data used to filter results.",
+                        "name": "reference",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "example": true,
+                        "description": "If true, tries to find nomenclatural event reference.",
+                        "name": "nomen_event",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Matched references for the provided name",
+                        "schema": {
+                            "$ref": "#/definitions/namerefs.NameRefs"
+                        }
+                    }
+                }
+            },
             "post": {
-                "description": "Finds BHL references for a taxon, does include\nreferences of synonyms.",
+                "description": "Finds BHL references for a taxon, does include references of synonyms.",
                 "consumes": [
                     "application/json"
                 ],
@@ -238,6 +392,11 @@ const docTemplate = `{
                             "$ref": "#/definitions/input.Name"
                         }
                     ]
+                },
+                "nomenEvent": {
+                    "description": "NomenEvent is true when the result tries to get a nomenclatural event\nfor the name.",
+                    "type": "boolean",
+                    "example": false
                 },
                 "reference": {
                     "description": "Reference provides data about a reference where the name was\nmentioned. Information can be provided by a reference-string or\nbe split into separate fields.",
@@ -703,7 +862,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "bhlnames.globalnames.org",
+	Host:             "localhost:8888",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "BHLnames API",
