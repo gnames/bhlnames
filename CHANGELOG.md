@@ -4,6 +4,8 @@
 
 ## [v0.1.8]
 
+- Add [#51]: remove Nomen methods, add their functionality to NameRefs.
+- Add [#50]: decide on API endpoints.
 - Add [#49]: switch logs to slog.
 
 ## [v0.1.7]

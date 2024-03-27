@@ -168,7 +168,12 @@ func (bn bhlnames) RefsByExternalID(
 // NameRefs takes a name and optionally reference, and find matching
 // locations and references in BHL.
 func (bn bhlnames) NameRefs(inp input.Input) (*namerefs.NameRefs, error) {
-	return bn.ReferencesBHL(inp, bn.cfg)
+	res, err := bn.ReferencesBHL(inp, bn.cfg)
+	if inp.NomenEvent {
+		bn.sortByScore(res)
+	}
+
+	return res, err
 }
 
 // NameRefsStream takes a stream of names/references and returns back
@@ -199,6 +204,11 @@ func (bn bhlnames) nameRefsWorker(
 			err = fmt.Errorf("bhlnames.nameRefsWorker: %w", err)
 			slog.Error("bhlnames.nameRefsWorker", "error", err)
 		}
+
+		if inp.NomenEvent {
+			bn.sortByScore(nameRefs)
+		}
+
 		chOut <- nameRefs
 	}
 }
