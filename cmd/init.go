@@ -43,17 +43,14 @@ publications for names.
 To separate these two processes use "bhlnames bhl" and "bhlnames names" one
 after enother. The result will be identical to "bhlnames init".`,
 	Run: func(cmd *cobra.Command, _ []string) {
-		rebuild, err := cmd.Flags().GetBool("rebuild")
-		if err != nil {
-			slog.Error("Flag rebuild failed", "error", err)
-			os.Exit(1)
-		}
-		opts = append(opts, config.OptWithRebuild(rebuild))
+		// add rebuild option
+		rebuildFlag(cmd)
+
 		cfg := config.New(opts...)
 
 		builder, err := builderio.New(cfg)
 		if err != nil {
-			slog.Error("Cannot create builder", "error", err)
+			slog.Error("Cannot create builder.", "error", err)
 			os.Exit(1)
 		}
 		bn := bhlnames.New(cfg, bhlnames.OptBuilder(builder))
@@ -61,7 +58,7 @@ after enother. The result will be identical to "bhlnames init".`,
 
 		err = bn.Initialize()
 		if err != nil {
-			slog.Error("Initialize failed", "error", err)
+			slog.Error("Initialize failed.", "error", err)
 			os.Exit(1)
 		}
 		slog.Info("Import of BHL data and names is done.")

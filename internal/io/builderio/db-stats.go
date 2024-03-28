@@ -1,23 +1,34 @@
 package builderio
 
 import (
+	"context"
 	"database/sql"
-	"fmt"
 	"log/slog"
 	"math"
 
 	"github.com/gnames/bhlnames/internal/ent/txstats"
+	"github.com/gnames/bhlnames/internal/io/dbio"
 	gnstats "github.com/gnames/gnstats/ent/stats"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5"
 )
 
-func (b builderio) itemsNum() (int, error) {
+func (b builderio) maxItemID() (int, error) {
 	var res int
-	err := b.DB.QueryRow("SELECT count(*) from items").Scan(&res)
-	return res, err
+	err := b.db.QueryRow(
+		context.Background(),
+		"SELECT max(id) from items",
+	).Scan(&res)
+	if err != nil {
+		slog.Error("Cannot find max item's id", "error", err)
+		return res, err
+	}
+	return res, nil
 }
 
-func (b builderio) addStatsToItems(chIn <-chan []txstats.ItemTaxa) error {
+func (b builderio) addStatsToItems(
+	ctx context.Context,
+	chIn <-chan []txstats.ItemTaxa,
+) error {
 	columns := []string{
 		"id", "names_total", "main_taxon", "main_taxon_rank", "main_taxon_percent",
 		"main_kingdom", "main_kingdom_percent", "animalia_num", "plantae_num",
@@ -26,15 +37,10 @@ func (b builderio) addStatsToItems(chIn <-chan []txstats.ItemTaxa) error {
 		"main_family", "main_family_percent", "main_genus", "main_genus_percent",
 	}
 
+	var count int
 	for taxa := range chIn {
-		transaction, err := b.DB.Begin()
-		if err != nil {
-			return err
-		}
-		stmt, err := transaction.Prepare(pq.CopyIn("item_stats", columns...))
-		if err != nil {
-			return err
-		}
+		rows := make([][]any, 0, len(taxa))
+		count += len(taxa)
 
 		var taxon, taxonRank, kingdom, phylum, class, order,
 			family, genus sql.NullString
@@ -52,25 +58,25 @@ func (b builderio) addStatsToItems(chIn <-chan []txstats.ItemTaxa) error {
 			taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt,
 				familyPcnt, genusPcnt = statInts(st)
 
-			_, err = stmt.Exec(
-				v.ItemID, total, taxon, taxonRank, taxonPcnt, kingdom, kingdomPcnt,
-				animNum, plantNum, fungiNum, bactNum, phylum, phylumPcnt, class,
-				classPcnt, order, orderPcnt, family, familyPcnt, genus, genusPcnt,
-			)
-			if err != nil {
-				err = fmt.Errorf("addStatsToItems: %w", err)
-				slog.Error("Cannot save item", "item_id", v.ItemID, "err", err)
-				return err
+			row := []any{
+				v.ItemID, total, taxon, taxonRank, taxonPcnt,
+				kingdom, kingdomPcnt, animNum, plantNum,
+				fungiNum, bactNum, phylum, phylumPcnt,
+				class, classPcnt, order, orderPcnt,
+				family, familyPcnt, genus, genusPcnt,
 			}
+			rows = append(rows, row)
+		}
+		_, err := dbio.InsertRows(b.db, "item_stats", columns, rows)
+		if err != nil {
+			slog.Error("Cannot insert rows to item_stats table", "error", err)
+			return err
 		}
 
-		err = stmt.Close()
-		if err != nil {
-			return err
-		}
-		err = transaction.Commit()
-		if err != nil {
-			return err
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
 		}
 	}
 	return nil
@@ -159,7 +165,7 @@ func kingdomDistribution(st gnstats.Stats) (uint, uint, uint, uint) {
 
 func (b builderio) getItemsTaxa(id, limit int) ([]txstats.ItemTaxa, error) {
 	res := make([]txstats.ItemTaxa, 0, limit)
-	var rows *sql.Rows
+	var rows pgx.Rows
 	var err error
 
 	q := `
@@ -173,9 +179,10 @@ SELECT
 GROUP BY i.id, n.classification, n.classification_ranks, n.classification_ids
 ORDER BY i.id
 `
-	rows, err = b.DB.Query(q, id, id+limit)
+	rows, err = b.db.Query(context.Background(), q, id, id+limit)
 	if err != nil {
-		return nil, fmt.Errorf("statItems: %w", err)
+		slog.Error("Cannot get Items data", "error", err)
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -188,7 +195,8 @@ ORDER BY i.id
 			&itemID, &ts.Classification, &ts.Ranks, &ts.IDs,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("statItems: %w", err)
+			slog.Error("Cannot scan Items data", "error", err)
+			return nil, err
 		}
 
 		if curItemID == 0 {

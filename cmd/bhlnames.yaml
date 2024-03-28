@@ -11,7 +11,7 @@
 # BHLDumpURL: http://opendata.globalnames.org/dumps/bhl-data.zip
 
 ## BHL name index data need to be downloaded and combined with BHL dump data.
-# BHLNamesURL: http://opendata.globalnames.org/dumps/bhlindex-latest.zip
+# BHLNamesURL: http://opendata.globalnames.org/dumps/bhl-col.zip
 
 ## The Catalogue of Life Darwin Core Archive provides nomenclatural references
 # to scientific names.

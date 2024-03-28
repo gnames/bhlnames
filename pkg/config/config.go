@@ -169,7 +169,7 @@ func OptInputDir(s string) Option {
 		s, err = gnsys.ConvertTilda(s)
 		if err != nil {
 			err = fmt.Errorf("config.OptInputDir: %#w", err)
-			slog.Error("Cannot convert tilda to path", "error", err)
+			slog.Error("Cannot convert tilda to path.", "error", err)
 			os.Exit(1)
 		}
 		cfg.InputDir = s
@@ -261,7 +261,7 @@ func InputDir() string {
 func New(opts ...Option) Config {
 	cfg := Config{
 		BHLDumpURL:          "http://opendata.globalnames.org/dumps/bhl-data.zip",
-		BHLNamesURL:         "http://opendata.globalnames.org/dumps/bhlindex-latest.zip",
+		BHLNamesURL:         "http://opendata.globalnames.org/dumps/bhl-col.zip",
 		CoLDataURL:          "https://api.checklistbank.org/dataset/3LR/export?format=dwca",
 		InputDir:            InputDir(),
 		Delimiter:           ',',
@@ -291,9 +291,6 @@ func New(opts ...Option) Config {
 	cfg.DownloadNamesFile = filepath.Join(cfg.InputDir, "bhlindex-latest.zip")
 	cfg.DownloadCoLFile = filepath.Join(cfg.InputDir, "col.zip")
 	cfg.DownloadDir = filepath.Join(cfg.InputDir, "Data")
-	cfg.PageDir = filepath.Join(cfg.InputDir, "page")
-	cfg.PageFileDir = filepath.Join(cfg.InputDir, "page-file")
-	cfg.PartDir = filepath.Join(cfg.InputDir, "part")
 	cfg.AhoCorasickDir = filepath.Join(cfg.InputDir, "ac")
 	cfg.AhoCorKeyValDir = filepath.Join(cfg.InputDir, "ackv")
 	return cfg

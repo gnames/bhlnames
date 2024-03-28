@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
-	"github.com/gnames/bhlnames/internal/io/db"
-	"github.com/lib/pq"
+	"github.com/gnames/bhlnames/internal/ent/model"
+	"github.com/gnames/bhlnames/internal/io/dbio"
 )
 
 const (
@@ -25,14 +25,18 @@ const (
 
 var yrRe = regexp.MustCompile(`\b[c]?([\d]{4})\b\s*([,/-]\s*([\d]{4})\b)?`)
 
-func (b builderio) importItem(titles map[int]*title) (map[uint]string, error) {
+// importItem reads item.txt file and imports data to the items table.
+// It takes a map of titles as input, and uses it to add title data to the item.
+// the key of the map is title id, the value contains a title data.
+func (b builderio) importItem(titles map[int]*model.Title) error {
 	slog.Info("Preparing item.txt data for db.")
 	iMap := make(map[int]struct{})
-	var res []*db.Item
-	path := filepath.Join(b.DownloadDir, "item.txt")
+	var res []*model.Item
+	path := filepath.Join(b.cfg.DownloadDir, "item.txt")
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		slog.Error("Cannot open item.txt.", "path", path, "error", err)
+		return err
 	}
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
@@ -49,7 +53,8 @@ func (b builderio) importItem(titles map[int]*title) (map[uint]string, error) {
 
 		id, err = strconv.Atoi(fields[itemIDF])
 		if err != nil {
-			return nil, err
+			slog.Error("Cannot convert item id to int.", "id", fields[itemIDF])
+			return err
 		}
 		if _, ok := iMap[id]; ok {
 			continue
@@ -58,7 +63,8 @@ func (b builderio) importItem(titles map[int]*title) (map[uint]string, error) {
 		}
 		titleID, err = strconv.Atoi(fields[itemTitleIDF])
 		if err != nil {
-			return nil, err
+			slog.Error("Cannot convert title id to int.", "id", fields[itemTitleIDF])
+			return err
 		}
 
 		barCode := fields[itemBarCodeF]
@@ -66,9 +72,9 @@ func (b builderio) importItem(titles map[int]*title) (map[uint]string, error) {
 		yearStart, yearEnd := itemYears(fields[itemYearsF])
 		t := titles[titleID]
 		if t == nil {
-			t = &title{}
+			t = &model.Title{}
 		}
-		item := db.Item{ID: uint(id), TitleID: uint(titleID), TitleDOI: t.DOI,
+		item := model.Item{ID: uint(id), TitleID: uint(titleID), TitleDOI: t.DOI,
 			BarCode: barCode, Vol: vol, YearStart: yearStart, YearEnd: yearEnd,
 			TitleName: t.Name, TitleYearStart: t.YearStart, TitleYearEnd: t.YearEnd,
 			TitleLang: t.Language}
@@ -76,56 +82,37 @@ func (b builderio) importItem(titles map[int]*title) (map[uint]string, error) {
 	}
 
 	if err = scanner.Err(); err != nil {
-		return nil, err
+		slog.Error("Error reading item.txt.", "error", err)
+		return err
 	}
-	var itemMap map[uint]string
-	itemMap, err = b.importItems(res)
+
+	err = b.importItems(res)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return itemMap, nil
+	return nil
 }
 
-func (b builderio) importItems(items []*db.Item) (map[uint]string, error) {
+func (b builderio) importItems(items []*model.Item) error {
 	slog.Info("Importing records to items table", "records-num", humanize.Comma(int64(len(items))))
 	columns := []string{"id", "bar_code", "vol", "year_start", "year_end",
 		"title_id", "title_doi", "title_name", "title_year_start", "title_year_end",
 		"title_lang"}
-	transaction, err := b.DB.Begin()
-	if err != nil {
-		return nil, err
-	}
 
-	stmt, err := transaction.Prepare(pq.CopyIn("items", columns...))
-	if err != nil {
-		return nil, err
-	}
-
-	itemMap := make(map[uint]string)
-	for _, v := range items {
-		itemMap[v.ID] = v.BarCode
-		_, err = stmt.Exec(v.ID, v.BarCode, v.Vol, v.YearStart, v.YearEnd,
+	rows := make([][]any, len(items))
+	for i, v := range items {
+		row := []any{v.ID, v.BarCode, v.Vol, v.YearStart, v.YearEnd,
 			v.TitleID, v.TitleDOI, v.TitleName, v.TitleYearStart, v.TitleYearEnd,
-			v.TitleLang)
-		if err != nil {
-			return nil, err
-		}
+			v.TitleLang}
+		rows[i] = row
+	}
+	_, err := dbio.InsertRows(b.db, "items", columns, rows)
+	if err != nil {
+		slog.Error("Cannot insert items.", "error", err)
+		return err
 	}
 
-	_, err = stmt.Exec()
-	if err != nil {
-		return nil, err
-	}
-
-	err = stmt.Close()
-	if err != nil {
-		return nil, err
-	}
-	err = transaction.Commit()
-	if err != nil {
-		return nil, err
-	}
-	return itemMap, nil
+	return nil
 }
 
 func itemYears(years string) (sql.NullInt32, sql.NullInt32) {

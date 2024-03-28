@@ -108,7 +108,7 @@ func TestDeriv(t *testing.T) {
 		{"adkkd", []string{"adkkd", "adkk"}},
 	}
 	for _, v := range tests {
-		der := abbr.Derivatives(v.abbr)
+		der := abbr.ShorterStrings(v.abbr)
 		assert.Equal(t, der, v.deriv, v.abbr)
 	}
 }

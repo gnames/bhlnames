@@ -10,6 +10,11 @@ import (
 	"github.com/gnames/gner/ent/token"
 )
 
+// Patterns returns a list of possible abbreviations of a string. It uses two
+// methods to abbreviate the string: Abbr and AbbrMax. The first method
+// abbreviates the string without any restrictions, while the second method
+// ignores common short words. The result is a list of abbreviations and their
+// derivatives.
 func Patterns(s string, d map[string]struct{}) []string {
 	res1 := Abbr(s)
 	if len(res1) > 10 {
@@ -19,12 +24,12 @@ func Patterns(s string, d map[string]struct{}) []string {
 	if len(res2) > 10 {
 		res2 = res1[0:10]
 	}
-	der1 := Derivatives(res1)
+	der1 := ShorterStrings(res1)
 	if res1 == res2 {
 		return der1
 	}
 
-	der2 := Derivatives(res2)
+	der2 := ShorterStrings(res2)
 	derMap := make(map[string]struct{})
 	for i := range der1 {
 		derMap[der1[i]] = struct{}{}
@@ -65,8 +70,10 @@ func AbbrMax(s string, shortWords map[string]struct{}) string {
 	return abbr(s, shortWords)
 }
 
-// Derivatives returns shortened versions of a string.
-func Derivatives(s string) []string {
+// ShorterStrings adds appropriate shortened versions of a string.
+// It is helpful for matching shortened versions of titles from
+// references.
+func ShorterStrings(s string) []string {
 	if len(s) < 5 {
 		return []string{s}
 	}

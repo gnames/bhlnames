@@ -1,6 +1,7 @@
 package namesbhlio
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -8,63 +9,56 @@ import (
 
 	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/dustin/go-humanize"
-	"github.com/gnames/bhlnames/internal/io/db"
-	"github.com/lib/pq"
+	"github.com/gnames/bhlnames/internal/ent/model"
+	"github.com/gnames/bhlnames/internal/io/dbio"
 )
 
 func (n namesbhlio) saveOcurrences(
-	chIn <-chan []db.NameOccurrence,
+	ctx context.Context,
+	chIn <-chan []model.NameOccurrence,
 	blf *bloom.BloomFilter,
 ) error {
+	var i int
 	columns := []string{"page_id", "name_string_id", "offset_start",
 		"offset_end", "odds_log10", "annot_nomen"}
 	var count, missing int
 	for ocs := range chIn {
-		transaction, err := n.db.Begin()
-		if err != nil {
-			return err
-		}
-		stmt, err := transaction.Prepare(pq.CopyIn("name_occurrences", columns...))
-		if err != nil {
-			return err
-		}
-
-		for i := range ocs {
+		rows := make([][]any, 0, len(ocs))
+		for i = range ocs {
 			// do not save occurrences for which there is no verified name saved
 			if !blf.Test([]byte(ocs[i].NameStringID)) {
+				missing++
 				continue
 			}
 
-			_, err = stmt.Exec(ocs[i].PageID, ocs[i].NameStringID,
+			row := []any{ocs[i].PageID, ocs[i].NameStringID,
 				ocs[i].OffsetStart, ocs[i].OffsetEnd, ocs[i].OddsLog10,
-				ocs[i].AnnotNomen)
-			if err != nil {
-				return err
+				ocs[i].AnnotNomen}
+
+			rows = append(rows, row)
+		}
+
+		_, err := dbio.InsertRows(n.db, "name_occurrences", columns, rows)
+		if err != nil {
+			slog.Error("Cannot insert rows to name_occurrences table", "error", err)
+			for range chIn {
 			}
-		}
-
-		count += len(ocs)
-		missing += occurBatchSize - len(ocs)
-		fmt.Fprintf(os.Stderr, "\r%s", strings.Repeat(" ", 47))
-		fmt.Fprintf(os.Stderr, "\rImported %s occurrences.", humanize.Comma(int64(count)))
-
-		err = stmt.Close()
-		if err != nil {
 			return err
 		}
-
-		err = transaction.Commit()
-		if err != nil {
-			return err
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			count += len(rows)
+			fmt.Fprintf(os.Stderr, "\r%s", strings.Repeat(" ", 47))
+			fmt.Fprintf(os.Stderr, "\rImported %s occurrences.", humanize.Comma(int64(count)))
 		}
 	}
-	fmt.Fprintln(os.Stderr)
-	str := fmt.Sprintf(
-		"Imported %s name occurrences, %s occurrences ignored (no page reference).",
-		humanize.Comma(int64(count)),
-		humanize.Comma(int64(missing)),
+	fmt.Fprintf(os.Stderr, "\r%s\r", strings.Repeat(" ", 47))
+	slog.Info("Imported name occurrences.",
+		"records-num", humanize.Comma(int64(count)),
+		"ignored-num", humanize.Comma(int64(missing)),
 	)
-	slog.Info(str)
 
 	return nil
 }

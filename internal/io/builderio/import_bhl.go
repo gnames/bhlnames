@@ -1,44 +1,67 @@
 package builderio
 
 import (
-	"github.com/gnames/bhlnames/internal/io/db"
+	"github.com/gnames/bhlnames/internal/ent/model"
+	"github.com/gnames/bhlnames/internal/io/acstorio"
+	"github.com/gnames/bhlnames/internal/io/dbio"
 )
 
 func (b builderio) importDataBHL() error {
 	var err error
-	var titlesMap map[int]*title
+	// titleMap has titleID as a key, and Title data as a value.
+	var titlesMap map[int]*model.Title
 	var partDOImap map[int]string
-	var itemMap map[uint]string
 	var titleDOImap map[int]string
 
-	err = db.Truncate(b.DB, []string{"items", "pages", "parts"})
-
-	if err == nil {
-		titleDOImap, partDOImap, err = b.prepareDOI()
+	err = dbio.Truncate(b.db, []string{"items", "pages", "parts", "page_parts"})
+	if err != nil {
+		return err
 	}
 
-	if err == nil {
-		titlesMap, err = b.prepareTitle(titleDOImap)
+	// DOI can belong to either a title or a part, so we need to prepare two
+	// lookup maps for the next steps: one for titles and one for parts.
+	titleDOImap, partDOImap, err = b.prepareDOI()
+	if err != nil {
+		return err
 	}
 
-	if err == nil {
-		itemMap, err = b.importItem(titlesMap)
+	// title data is needed for items, so we prepare it first.
+	titlesMap, err = b.prepareTitle(titleDOImap)
+	if err != nil {
+		return err
 	}
 
-	if err == nil {
-		err = b.importPart(partDOImap)
+	err = b.importItem(titlesMap)
+	if err != nil {
+		return err
 	}
 
-	if err == nil {
-		err = b.importPage(itemMap)
+	err = b.importPart(partDOImap)
+	if err != nil {
+		return err
 	}
 
-	if err == nil {
-		ts, err := newTitleStore(b.Config, titlesMap)
-		if err != nil {
-			return err
-		}
-		return ts.setup()
+	err = b.importPage()
+	if err != nil {
+		return err
+	}
+
+	err = b.assignPartsToPages()
+	if err != nil {
+		return err
+	}
+
+	ac, err := acstorio.New(b.cfg, titlesMap)
+	if err != nil {
+		return err
+	}
+
+	// Create AhoCorasickStore where abbreviated titles point to title IDs.
+	// It also creates a file with all found abbreviations, that is used
+	// lately to get Aho-Coarsick trie.
+	err = ac.Setup()
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -48,14 +48,14 @@ func main() {
 
 	gold, err := os.ReadFile(goldFile)
 	if err != nil {
-		slog.Error("Cannot read gold file", "error", err)
+		slog.Error("Cannot read gold file.", "error", err)
 		os.Exit(1)
 	}
 	var nrs []*namerefs.NameRefs
 	enc := gnfmt.GNjson{Pretty: true}
 	err = enc.Decode(gold, &nrs)
 	if err != nil {
-		slog.Error("Cannot decode gold file", "error", err)
+		slog.Error("Cannot decode gold file.", "error", err)
 		os.Exit(1)
 	}
 	sts := new(stats)
@@ -155,12 +155,12 @@ func output(nrs []*namerefs.NameRefs) {
 	}
 	bs, err := enc.Encode(res)
 	if err != nil {
-		slog.Error("Cannot encode results", "error", err)
+		slog.Error("Cannot encode results.", "error", err)
 		os.Exit(1)
 	}
 	err = os.WriteFile(resFile, bs, 0644)
 	if err != nil {
-		slog.Error("Cannot write results", "error", err)
+		slog.Error("Cannot write results.", "error", err)
 		os.Exit(1)
 	}
 }

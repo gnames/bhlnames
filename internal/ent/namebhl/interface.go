@@ -8,7 +8,7 @@ import "github.com/bits-and-blooms/bloom/v3"
 type NameBHL interface {
 	// ImportNames imports unique verified names from BHLindex.
 	ImportNames() (*bloom.BloomFilter, error)
-	
+
 	// ImportOccurrences imports occurrences of names found by BHLindex.
 	ImportOccurrences(*bloom.BloomFilter) error
 }

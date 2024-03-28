@@ -29,7 +29,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	bhlnames "github.com/gnames/bhlnames/pkg"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnsys"
 	"github.com/spf13/viper"
@@ -39,8 +38,7 @@ import (
 var configText string
 
 var (
-	cfgFile string
-	opts    []config.Option
+	opts []config.Option
 )
 
 // fConfig purpose is to achieve automatic import of data from the
@@ -66,15 +64,7 @@ var rootCmd = &cobra.Command{
 metadata to build a local database. It Uses this database to return all
 usages found at BHL for a scientific name.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		version, err := cmd.Flags().GetBool("version")
-		if err != nil {
-			slog.Error("Flag version failed", "error", err)
-			os.Exit(1)
-		}
-		if version {
-			fmt.Printf("\nversion: %s\nbuild: %s\n\n", bhlnames.Version, bhlnames.Build)
-			os.Exit(0)
-		}
+		versionFlag(cmd)
 
 		if len(args) == 0 {
 			_ = cmd.Help()
@@ -86,9 +76,8 @@ usages found at BHL for a scientific name.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		slog.Error("Bootstrap command failed.", "error", err)
 		os.Exit(1)
 	}
 }
@@ -96,15 +85,6 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	rootCmd.PersistentFlags().
-		StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/bhlnames.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.Flags().BoolP("version", "V", false, "Returns version and build date")
 }
 
@@ -113,7 +93,7 @@ func initConfig() {
 	configFile := "bhlnames"
 	configDir, err := os.UserConfigDir()
 	if err != nil {
-		slog.Error("Cannot find user config dir", "error", err)
+		slog.Error("Cannot find user's config directory.", "error", err)
 		os.Exit(1)
 	}
 	viper.AddConfigPath(configDir)
@@ -130,14 +110,14 @@ func initConfig() {
 	viper.BindEnv("DbName", "BHL_NAMES_DATABASE")
 	viper.BindEnv("JobsNum", "BHL_NAMES_JOBS_NUM")
 	viper.BindEnv("PortREST", "BHL_NAMES_PORT_REST")
-	viper.AutomaticEnv() // read in environment variables that match
+	viper.AutomaticEnv()
 
 	configPath := filepath.Join(configDir, fmt.Sprintf("%s.yaml", configFile))
 	touchConfigFile(configPath)
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		slog.Info("Using config file", "file", viper.ConfigFileUsed())
+		slog.Info("Using config file.", "file", viper.ConfigFileUsed())
 	}
 
 	opts = getOpts()
@@ -150,7 +130,7 @@ func getOpts() []config.Option {
 	cfg := &fConfig{}
 	err := viper.Unmarshal(cfg)
 	if err != nil {
-		slog.Error("Cannot unmarshal config", "error", err)
+		slog.Error("Cannot unmarshal config.", "error", err)
 		os.Exit(1)
 	}
 
@@ -194,7 +174,7 @@ func touchConfigFile(configPath string) {
 		return
 	}
 
-	slog.Info("Creating config file", "file", configPath)
+	slog.Info("Creating config file.", "file", configPath)
 	createConfig(configPath)
 }
 
@@ -202,13 +182,13 @@ func touchConfigFile(configPath string) {
 func createConfig(path string) {
 	err := gnsys.MakeDir(filepath.Dir(path))
 	if err != nil {
-		slog.Error("Cannot create config dir", "error", err)
+		slog.Error("Cannot create config dir.", "error", err)
 		os.Exit(1)
 	}
 
 	err = os.WriteFile(path, []byte(configText), 0644)
 	if err != nil {
-		slog.Error("Cannot create config file", "error", err)
+		slog.Error("Cannot create config file.", "error", err)
 		os.Exit(1)
 	}
 }

@@ -12,7 +12,7 @@ import (
 func TestDefaultConfig(t *testing.T) {
 	test := config.Config{
 		BHLDumpURL:   "http://opendata.globalnames.org/dumps/bhl-data.zip",
-		BHLNamesURL:  "http://opendata.globalnames.org/dumps/bhlindex-latest.zip",
+		BHLNamesURL:  "http://opendata.globalnames.org/dumps/bhl-col.zip",
 		CoLDataURL:   "https://api.checklistbank.org/dataset/3LR/export?format=dwca",
 		InputDir:     config.InputDir(),
 		Delimiter:    ',',
@@ -29,9 +29,6 @@ func TestDefaultConfig(t *testing.T) {
 	test.DownloadNamesFile = filepath.Join(test.InputDir, "bhlindex-latest.zip")
 	test.DownloadCoLFile = filepath.Join(test.InputDir, "col.zip")
 	test.DownloadDir = filepath.Join(test.InputDir, "Data")
-	test.PageDir = filepath.Join(test.InputDir, "page")
-	test.PageFileDir = filepath.Join(test.InputDir, "page-file")
-	test.PartDir = filepath.Join(test.InputDir, "part")
 	test.AhoCorasickDir = filepath.Join(test.InputDir, "ac")
 	test.AhoCorKeyValDir = filepath.Join(test.InputDir, "ackv")
 
@@ -64,9 +61,6 @@ func TestModifiedConfig(t *testing.T) {
 	test.DownloadNamesFile = filepath.Join(test.InputDir, "bhlindex-latest.zip")
 	test.DownloadCoLFile = filepath.Join(test.InputDir, "col.zip")
 	test.DownloadDir = filepath.Join(test.InputDir, "Data")
-	test.PageDir = filepath.Join(test.InputDir, "page")
-	test.PageFileDir = filepath.Join(test.InputDir, "page-file")
-	test.PartDir = filepath.Join(test.InputDir, "part")
 	test.AhoCorasickDir = filepath.Join(test.InputDir, "ac")
 	test.AhoCorKeyValDir = filepath.Join(test.InputDir, "ackv")
 	cfg := modConfig()

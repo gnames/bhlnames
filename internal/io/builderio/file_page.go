@@ -10,10 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	badger "github.com/dgraph-io/badger/v2"
 	"github.com/dustin/go-humanize"
-	"github.com/gnames/bhlnames/internal/io/db"
-	"github.com/lib/pq"
+	"github.com/gnames/bhlnames/internal/ent/model"
+	"github.com/gnames/bhlnames/internal/io/dbio"
 )
 
 const (
@@ -34,29 +33,21 @@ const (
 
 const BatchSize = 100_000
 
-func (b builderio) importPage(itemMap map[uint]string) error {
+func (b builderio) importPage() error {
 	var err error
 	var id, itemID, fileNum, pageNum int
 	slog.Info("Importing page.txt data to db.")
-	err = db.ResetKeyVal(b.PageDir)
-	if err != nil {
-		return err
-	}
-	kv, err := db.InitKeyVal(b.PageDir)
-	if err != nil {
-		return err
-	}
 
 	total := 0
 	pMap := make(map[int]struct{})
-	res := make([]*db.Page, 0, BatchSize)
-	path := filepath.Join(b.DownloadDir, "page.txt")
+	res := make([]*model.Page, 0, BatchSize)
+	path := filepath.Join(b.cfg.DownloadDir, "page.txt")
 	f, err := os.Open(path)
 	if err != nil {
+		slog.Error("Cannot open page.txt.", "path", path, "error", err)
 		return err
 	}
 	defer f.Close()
-	defer kv.Close()
 
 	scanner := bufio.NewScanner(f)
 	count := 0
@@ -71,6 +62,7 @@ func (b builderio) importPage(itemMap map[uint]string) error {
 
 		id, err = strconv.Atoi(fields[pageIDF])
 		if err != nil {
+			slog.Error("Cannot convert page id to int.", "id", fields[pageIDF])
 			return err
 		}
 
@@ -80,16 +72,21 @@ func (b builderio) importPage(itemMap map[uint]string) error {
 			pMap[id] = struct{}{}
 		}
 		count++
-		page := &db.Page{ID: uint(id)}
+		page := &model.Page{ID: uint(id)}
 
 		itemID, err = strconv.Atoi(fields[pageItemIDF])
 		if err != nil {
+			slog.Error("Cannot convert item id to int.", "id", fields[pageItemIDF])
 			return err
 		}
 		page.ItemID = uint(itemID)
 
 		fileNum, err = strconv.Atoi(fields[pageFileNumF])
 		if err != nil {
+			slog.Error(
+				"Cannot convert file number to int.",
+				"file number", fields[pageFileNumF],
+			)
 			return err
 		}
 		page.SequenceOrder = uint(fileNum)
@@ -103,89 +100,49 @@ func (b builderio) importPage(itemMap map[uint]string) error {
 		if count >= BatchSize {
 			count = 0
 			total += len(res)
-			pages := make([]*db.Page, len(res))
+			pages := make([]*model.Page, len(res))
 			copy(pages, res)
-			err = b.processPages(kv, itemMap, pages, total)
+			err = b.processPages(pages, total)
 			if err != nil {
 				return err
 			}
-			res = res[:0]
-
+			res = make([]*model.Page, 0, BatchSize)
 		}
 	}
 	total += len(res)
-	err = b.processPages(kv, itemMap, res, total)
-	fmt.Fprintln(os.Stderr)
-	return err
+	err = b.processPages(res, total)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(os.Stderr, "\r%s\r", strings.Repeat(" ", 35))
+	slog.Info(
+		"Imported page.txt data to db.",
+		"records-num", humanize.Comma(int64(total)),
+	)
+	return nil
 }
 
 func (b builderio) processPages(
-	kv *badger.DB,
-	itemMap map[uint]string,
-	pages []*db.Page,
+	pages []*model.Page,
 	total int,
 ) error {
+	var err error
 	columns := []string{"id", "item_id", "sequence_order", "page_num"}
-	transaction, err := b.DB.Begin()
+	rows := make([][]any, len(pages))
+
+	for i, v := range pages {
+		row := []any{v.ID, v.ItemID, v.SequenceOrder, v.PageNum}
+		rows[i] = row
+	}
+
+	_, err = dbio.InsertRows(b.db, "pages", columns, rows)
 	if err != nil {
+		slog.Error("Error inserting rows to pages table.", "error", err)
 		return err
 	}
 
-	stmt, err := transaction.Prepare(pq.CopyIn("pages", columns...))
-	if err != nil {
-		return err
-	}
-	kvTxn := kv.NewTransaction(true)
-
-	// we create a dataset with the following schema:
-	// key: "page sequence number|itemBarcode". For example "13|tropicosabc-3"
-	// value pageID (from the database)
-	//
-	// If we have an item from BHL filesystem with pages, we can calculate
-	// more or less accurate which page corresponds to which pageID by
-	// sorting pages according to filenames, and figuring out which number
-	// taken from the file-name corresponds to which pageID.
-	//
-	// This method is not perfect, but is good for most of the items. A better
-	// way would be to have the number exctracted from file in the page.txt
-	// dump.
-	for _, v := range pages {
-		key := fmt.Sprintf("%d|%s", v.SequenceOrder, itemMap[v.ItemID])
-		val := strconv.Itoa(int(v.ID))
-		if err = kvTxn.Set([]byte(key), []byte(val)); err == badger.ErrTxnTooBig {
-			err = kvTxn.Commit()
-			if err != nil {
-				return err
-			}
-
-			kvTxn = kv.NewTransaction(true)
-			err = kvTxn.Set([]byte(key), []byte(val))
-			if err != nil {
-				return err
-			}
-		}
-
-		_, err = stmt.Exec(v.ID, v.ItemID, v.SequenceOrder, v.PageNum)
-		if err != nil {
-			return err
-		}
-	}
-
-	err = kvTxn.Commit()
-	if err != nil {
-		return err
-	}
-
-	_, err = stmt.Exec()
-	if err != nil {
-		return err
-	}
-
-	err = stmt.Close()
-	if err != nil {
-		return err
-	}
 	fmt.Fprintf(os.Stderr, "\r%s", strings.Repeat(" ", 35))
 	fmt.Fprintf(os.Stderr, "\rImported %s pages to db", humanize.Comma(int64(total)))
-	return transaction.Commit()
+	return nil
 }

@@ -25,14 +25,14 @@ func (l label) String() string {
 func main() {
 	gold, err := os.ReadFile(goldFile)
 	if err != nil {
-		slog.Error("Cannot read gold file", "error", err)
+		slog.Error("Cannot read gold file.", "error", err)
 		os.Exit(1)
 	}
 	var data []*namerefs.NameRefs
 	enc := gnfmt.GNjson{Pretty: true}
 	err = enc.Decode(gold, &data)
 	if err != nil {
-		slog.Error("Cannot decode gold file", "error", err)
+		slog.Error("Cannot decode gold file.", "error", err)
 		os.Exit(1)
 	}
 	var lfs []ft.ClassFeatures
@@ -43,12 +43,12 @@ func main() {
 	nb.Train(lfs)
 	nbDump, err := nb.Dump()
 	if err != nil {
-		slog.Error("Cannot dump bayes", "error", err)
+		slog.Error("Cannot dump bayes.", "error", err)
 		os.Exit(1)
 	}
 	err = os.WriteFile(outputFile, nbDump, 0644)
 	if err != nil {
-		slog.Error("Cannot write bayes", "error", err)
+		slog.Error("Cannot write bayes.", "error", err)
 		os.Exit(1)
 	}
 }

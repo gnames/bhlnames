@@ -10,10 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	badger "github.com/dgraph-io/badger/v2"
 	"github.com/dustin/go-humanize"
-	"github.com/gnames/bhlnames/internal/io/db"
-	"github.com/lib/pq"
+	"github.com/gnames/bhlnames/internal/ent/model"
+	"github.com/gnames/bhlnames/internal/io/dbio"
 )
 
 const (
@@ -54,23 +53,15 @@ func (b builderio) importPart(doiMap map[int]string) error {
 	slog.Info("Preparing part.txt data for db.")
 	//keeps unique IDs of the parts
 	pMap := make(map[int]struct{})
-	var res []*db.Part
-	path := filepath.Join(b.DownloadDir, "part.txt")
+	var res []*model.Part
+	path := filepath.Join(b.cfg.DownloadDir, "part.txt")
 	f, err := os.Open(path)
 	if err != nil {
-		return err
-	}
-	err = db.ResetKeyVal(b.PartDir)
-	if err != nil {
-		return err
-	}
-	kv, err := db.InitKeyVal(b.PartDir)
-	if err != nil {
+		slog.Error("Cannot open part.txt.", "path", path, "error", err)
 		return err
 	}
 
 	defer f.Close()
-	defer kv.Close()
 	scanner := bufio.NewScanner(f)
 	header := true
 	for scanner.Scan() {
@@ -78,12 +69,13 @@ func (b builderio) importPart(doiMap map[int]string) error {
 			header = false
 			continue
 		}
-		part := db.Part{}
+		part := model.Part{}
 		l := scanner.Text()
 		fields := strings.Split(l, "\t")
 
 		id, err := strconv.Atoi(fields[partIDF])
 		if err != nil {
+			slog.Error("Cannot convert part id to int.", "id", fields[partIDF])
 			return err
 		}
 		if _, ok := pMap[id]; ok {
@@ -131,72 +123,51 @@ func (b builderio) importPart(doiMap map[int]string) error {
 		part.Length = pages.length
 
 		res = append(res, &part)
+
+		if err != nil {
+			slog.Error("Error converting part data.", "error", err)
+		}
 	}
-	return b.importParts(kv, res)
+	return b.importParts(res)
 }
 
-func (b builderio) importParts(kv *badger.DB, items []*db.Part) error {
-	slog.Info("Importing records to parts table", "records-num", humanize.Comma(int64(len(items))))
+func (b builderio) importParts(parts []*model.Part) error {
+	// Part has PageID for the first page of the part.
+	// It has page rage, with start and end page numbers provided by publisher.
+	// PageID and page range might be empty, or badly formed.
+	// We try our best to give PageID and Length, which gives us a range of
+	// pages for the part.
+
+	// Additional complication is that PageIDs do not always go in sequence,
+	// pages have sequence number, which allows to provide correct PageIDs.
+	var err error
+	slog.Info(
+		"Importing records to parts table",
+		"records-num", humanize.Comma(int64(len(parts))),
+	)
 	columns := []string{"id", "page_id", "item_id", "length", "doi",
 		"contributor_name", "sequence_order", "segment_type", "title",
 		"container_title", "publication_details", "volume", "series",
 		"issue", "date", "year", "year_end", "month", "day", "page_num_start",
 		"page_num_end", "language"}
-	transaction, err := b.DB.Begin()
-	if err != nil {
-		return err
-	}
-	kvTxn := kv.NewTransaction(true)
+	rows := make([][]any, len(parts))
 
-	stmt, err := transaction.Prepare(pq.CopyIn("parts", columns...))
-	if err != nil {
-		return err
-	}
-
-	for _, v := range items {
-		if v.PageID.Valid {
-			length := int(v.Length.Int32)
-			for i := 0; i <= length; i++ {
-				key := strconv.Itoa(int(v.PageID.Int32) + i)
-				val := strconv.Itoa(int(v.ID))
-				if err = kvTxn.Set([]byte(key), []byte(val)); err == badger.ErrTxnTooBig {
-					err = kvTxn.Commit()
-					if err != nil {
-						return err
-					}
-
-					kvTxn = kv.NewTransaction(true)
-					err = kvTxn.Set([]byte(key), []byte(val))
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
-		_, err = stmt.Exec(v.ID, v.PageID, v.ItemID, v.Length, v.DOI,
+	for i, v := range parts {
+		row := []any{v.ID, v.PageID, v.ItemID, v.Length, v.DOI,
 			v.ContributorName, v.SequenceOrder, v.SegmentType, v.Title,
 			v.ContainerTitle, v.PublicationDetails, v.Volume, v.Series,
 			v.Issue, v.Date, v.Year, v.YearEnd, v.Month, v.Day,
-			v.PageNumStart, v.PageNumEnd, v.Language)
-		if err != nil {
-			return err
-		}
+			v.PageNumStart, v.PageNumEnd, v.Language}
+		rows[i] = row
 	}
 
-	err = kvTxn.Commit()
+	_, err = dbio.InsertRows(b.db, "parts", columns, rows)
 	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec()
-	if err != nil {
+		slog.Error("Error inserting rows to parts table.", "error", err)
 		return err
 	}
 
-	err = stmt.Close()
-	if err != nil {
-		return err
-	}
-	return transaction.Commit()
+	return nil
 }
 
 func parsePages(pgs string) partPages {

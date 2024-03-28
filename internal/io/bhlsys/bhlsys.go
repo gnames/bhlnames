@@ -5,13 +5,11 @@ import (
 	"errors"
 	"io"
 	"log/slog"
-	"net/http"
 	"os"
 	"path/filepath"
 
 	"code.cloudfoundry.org/bytefmt"
 	"github.com/gnames/gnsys"
-	progressbar "github.com/schollz/progressbar/v3"
 )
 
 var files = map[string]struct{}{
@@ -64,7 +62,7 @@ func unzip(path, dlDir string, rebuild bool) error {
 		fpath := filepath.Join(dlDir, filepath.Base(f.Name))
 		exists, _ := gnsys.FileExists(fpath)
 		if !rebuild && exists {
-			slog.Info("Skipping unzip, file already exists", "file", fpath)
+			slog.Info("Skipping unzip, file already exists.", "file", fpath)
 			continue
 		}
 
@@ -79,7 +77,7 @@ func unzip(path, dlDir string, rebuild bool) error {
 		}
 		size := f.UncompressedSize64
 		slog.Info(
-			"Extracting",
+			"Extracting file from BHL dump.",
 			"file", f.Name, "bytes-size", bytefmt.ByteSize(size),
 		)
 		_, err = io.Copy(outFile, rc)
@@ -104,32 +102,15 @@ func Download(path, url string, rebuild bool) error {
 		slog.Info("File already exists, skipping download.", "file", path)
 		return nil
 	}
-	out, err := os.Create(path + ".tmp")
-	if err != nil {
-		return err
-	}
-	defer out.Close()
 
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return err
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+	dir := filepath.Dir(path)
 
-	bar := progressbar.DefaultBytes(
-		resp.ContentLength,
-		"downloading",
-	)
-	io.Copy(io.MultiWriter(out, bar), resp.Body)
-
-	err = os.Rename(path+".tmp", path)
+	localPath, err := gnsys.Download(url, dir, true)
 	if err != nil {
 		return err
 	}
-	slog.Info("Download finished")
+	os.Rename(localPath, path)
+
+	slog.Info("Download finished.")
 	return nil
 }

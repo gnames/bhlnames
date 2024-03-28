@@ -9,54 +9,54 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/gnames/bhlnames/internal/ent/txstats"
-	"github.com/gnames/bhlnames/internal/io/db"
+	"github.com/gnames/bhlnames/internal/io/dbio"
 	"golang.org/x/sync/errgroup"
 )
 
 func (b builderio) CalculateTxStats() error {
 	var err error
-	var itemsTotal int
+	var maxID int
 	var itx []txstats.ItemTaxa
 	slog.Info("Truncating item_stats table.")
-	db.Truncate(b.DB, []string{"item_stats"})
-	slog.Info("Calclulating taxonomic statistics for items.")
-	itemsTotal, err = b.itemsNum()
+	dbio.Truncate(b.db, []string{"item_stats"})
+
+	maxID, err = b.maxItemID()
 	if err != nil {
-		return fmt.Errorf("calculateStats: %w", err)
+		return err
 	}
+
+	slog.Info("Calclulating taxonomic statistics for items.")
 	chIn := make(chan []txstats.ItemTaxa)
-	g, ctx := errgroup.WithContext(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
-		return b.addStatsToItems(chIn)
+		return b.addStatsToItems(ctx, chIn)
 	})
 
 	itemID := 1
-	limit := 1000
+	limit := 5000
 	var count int
-	for itemID <= itemsTotal {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-			itx, err = b.getItemsTaxa(itemID, limit)
-
-			if err != nil {
-				err = fmt.Errorf("calculateStats: %w", err)
-				return err
+	for itemID <= maxID {
+		itx, err = b.getItemsTaxa(itemID, limit)
+		if err != nil {
+			for range chIn {
 			}
-			chIn <- itx
-			count += limit
-			itemID += limit
-			if count%25_000 == 0 {
-				fmt.Fprint(os.Stderr, "\r")
-				slog.Info("Calculated stats for items.", "items-num", humanize.Comma(int64(count)))
-			} else {
-				fmt.Fprintf(os.Stderr, "\r%s", strings.Repeat(" ", 35))
-				fmt.Fprintf(os.Stderr, "\rCalculated taxonomic stats for %s items.",
-					humanize.Comma(int64(count)))
-			}
+			slog.Error("Failed to get items taxa.", "error", err)
+			return err
 		}
+
+		chIn <- itx
+		count += len(itx)
+		itemID += limit
+
+		fmt.Fprintf(os.Stderr, "\r%s", strings.Repeat(" ", 35))
+		fmt.Fprintf(
+			os.Stderr,
+			"\rCalculated taxonomic stats for %s items.",
+			humanize.Comma(int64(count)),
+		)
 	}
 	close(chIn)
 
@@ -64,7 +64,11 @@ func (b builderio) CalculateTxStats() error {
 		err = fmt.Errorf("calculateStats: %w", err)
 		return err
 	}
-	fmt.Fprintln(os.Stderr)
-	slog.Info("Finished calculation of taxonomic stats for items.")
+
+	fmt.Fprintf(os.Stderr, "\r%s\r", strings.Repeat(" ", 35))
+	slog.Info(
+		"Calculated taxonomic stats for items.",
+		"records-num", humanize.Comma(int64(count)),
+	)
 	return nil
 }
