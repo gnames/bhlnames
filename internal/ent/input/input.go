@@ -26,9 +26,29 @@ type Input struct {
 	// be split into separate fields.
 	Reference `json:"reference"`
 
-	// NomenEvent is true when the result tries to get a nomenclatural event
+	Params `json:"params"`
+}
+
+type Params struct {
+	// WithNomenEvent is true when the result tries to get a nomenclatural event
 	// for the name.
-	NomenEvent bool `json:"nomenEvent,omitempty" example:"false"`
+	WithNomenEvent bool `json:"nomenEvent,omitempty" example:"false"`
+
+	WithTaxon bool `json:"taxon,omitempty" example:"false"`
+
+	// WithShortenedOutput determines if references details will be provided.
+	// If it is `true`, found references are not provided, only the metadata
+	// about them.
+	WithShortenedOutput bool `json:"shortenedOutput,omitempty" example:"false"`
+
+	// SortDesc determines the order of sorting the output data. If `true`
+	// data are sorted by year from latest to earliest. If `false` then from
+	// earliest to latest.
+	SortDesc bool `json:"sortDesc,omitempty" example:"true"`
+
+	// RefsLimit provides the maximum number of references to return for each
+	// name.
+	RefsLimit int `json:"refsLimit,omitempty" example:"3"`
 }
 
 // @Description Name provides data about a scientific name.
@@ -105,7 +125,40 @@ func OptRefString(s string) Option {
 	}
 }
 
-func New(gnp gnparser.GNparser, opts ...Option) Input {
+func OptRefsLimit(i int) Option {
+	return func(cfg *Input) {
+		cfg.RefsLimit = i
+	}
+}
+
+func OptSortDesc(b bool) Option {
+	return func(cfg *Input) {
+		cfg.SortDesc = b
+	}
+}
+
+func OptWithNomenEvent(b bool) Option {
+	return func(cfg *Input) {
+		cfg.WithNomenEvent = b
+	}
+}
+
+func OptWithShortenedOutput(b bool) Option {
+	return func(cfg *Input) {
+		cfg.WithShortenedOutput = b
+	}
+}
+
+func OptWithTaxon(b bool) Option {
+	return func(cfg *Input) {
+		cfg.WithTaxon = b
+	}
+}
+
+func New(parsers chan gnparser.GNparser, opts ...Option) Input {
+	gnp := <-parsers
+	defer func() { parsers <- gnp }()
+
 	res := Input{}
 	for i := range opts {
 		opts[i](&res)
@@ -121,6 +174,12 @@ func New(gnp gnparser.GNparser, opts ...Option) Input {
 	if res.RefString != "" {
 		parseRefString(&res)
 	}
+
+	// don't return many references if nomenclatural event is requested
+	if res.WithNomenEvent && res.RefsLimit == 0 {
+		res.RefsLimit = 3
+	}
+
 	return res
 }
 

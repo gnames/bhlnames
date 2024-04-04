@@ -14,7 +14,7 @@ FLAGS_LD = -ldflags "-X github.com/gnames/$(PROJ_NAME)/pkg.Build=${DATE} \
                   -X github.com/gnames/$(PROJ_NAME)/pkg.Version=${VERSION}"
 FLAGS_REL = -trimpath -ldflags "-s -w -X github.com/gnames/$(PROJ_NAME)/pkg.Build=$(DATE)"
 RELEASE_DIR = /tmp
-TEST_OPTS =  -p 1 -shuffle=on ./internal/ent/input ./internal/ent/score ./internal/io/dictio ./pkg
+TEST_OPTS =  -p 1 -shuffle=on  ./internal/ent/input ./internal/ent/score ./internal/io/dictio ./pkg ./pkg/config
 
 
 GOCMD = go

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strconv"
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/gnames/gnsys"
@@ -22,6 +23,39 @@ func InitKeyVal(dir string, readonly bool) (*badger.DB, error) {
 		return nil, err
 	}
 	return bdb, nil
+}
+
+func GetValue(kv *badger.DB, key string) (int, error) {
+	txn := kv.NewTransaction(false)
+	val, err := txn.Get([]byte(key))
+	if err == badger.ErrKeyNotFound {
+		return 0, nil
+	} else if err != nil {
+		err = fmt.Errorf("db.GetValue: %w", err)
+		slog.Error("Cannot get value", "error", err)
+		return 0, err
+	}
+	var res []byte
+	res, err = val.ValueCopy(res)
+	if err != nil {
+		err = fmt.Errorf("db.GetValue: %w", err)
+		slog.Error("Cannot copy value", "error", err)
+		return 0, err
+	}
+	id, err := strconv.Atoi(string(res))
+	if err != nil {
+		err = fmt.Errorf("db.GetValue: %w", err)
+		slog.Error("Cannot convert value to int", "error", err)
+		return 0, err
+	}
+	err = txn.Commit()
+	if err != nil {
+		err = fmt.Errorf("db.GetValue: %w", err)
+		slog.Error("Cannot commit transaction", "error", err)
+		return id, err
+	}
+
+	return id, nil
 }
 
 func GetValues(kv *badger.DB, keys []string) (map[string][]byte, error) {

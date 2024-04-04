@@ -8,10 +8,11 @@ import (
 )
 
 func TestRemovableWords(t *testing.T) {
+	assert := assert.New(t)
 	d := dictio.New()
 	excl, err := d.ShortWords()
-	assert.Nil(t, err)
-	assert.True(t, len(excl) > 100)
+	assert.Nil(err)
+	assert.True(len(excl) > 100)
 	_, ok := excl["der"]
-	assert.True(t, ok)
+	assert.True(ok)
 }

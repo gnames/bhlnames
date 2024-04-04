@@ -49,10 +49,12 @@ additional data about names and their connection to references.`,
 			slog.Error("Cannot create builder.", "error", err)
 			os.Exit(1)
 		}
-		bn := bhlnames.New(cfg, bhlnames.OptBuilder(builder))
+		defer builder.Close()
+
+		bn := bhlnames.New(cfg)
 		defer bn.Close()
 
-		err = bn.Initialize()
+		err = bn.Initialize(builder)
 		if err != nil {
 			slog.Error("Initialize failed.", "error", err)
 			os.Exit(1)

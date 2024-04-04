@@ -2,23 +2,27 @@ package bhl
 
 import bout "github.com/gnames/bayes/ent/output"
 
-// @Description ReferenceNameBHL represents a BHL entity that
+// @Description ReferenceName represents a BHL entity that
 // @Description includes a matched scientific name and the reference where
 // @Description this name was discovered.
-type ReferenceNameBHL struct {
+type ReferenceName struct {
 	// Reference is the BHL reference where the name was detected.
 	Reference `json:"reference"`
 
 	// NameData contains detailed information about the scientific name.
 	*NameData `json:"name,omitempty"`
 
-	// IsNomenRef states is the reference likely contains
+	// IsNomenRef states if the reference likely contains
 	// a nomenclatural event for the name.
-	IsNomenRef bool `json:"isNomenRef" example:"true"`
+	IsNomenRef bool `json:"-"`
+
+	// RefMatchQuality provides a number between 0 and 5 to indicate if
+	// the reference is a good match for the input.
+	RefMatchQuality int `json:"refMatchQuality,omitempty"`
 
 	// Score is the overall score of the match between the reference and
 	// a name-string or a reference-string.
-	Score `json:"score"`
+	*Score `json:"score,omitempty"`
 }
 
 // @Description NameData contains details about a scientific name

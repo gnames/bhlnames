@@ -9,6 +9,7 @@ import (
 )
 
 func Test(t *testing.T) {
+	assert := assert.New(t)
 	tests := []struct {
 		msg, title string
 		abbrs      []string
@@ -49,14 +50,15 @@ func Test(t *testing.T) {
 
 	d := dictio.New()
 	shortWords, err := d.ShortWords()
-	assert.Nil(t, err)
+	assert.Nil(err)
 	for _, v := range tests {
 		n := abbr.Patterns(v.title, shortWords)
-		assert.Equal(t, n, v.abbrs, v.msg)
+		assert.Equal(n, v.abbrs, v.msg)
 	}
 }
 
 func TestAbbr(t *testing.T) {
+	assert := assert.New(t)
 	tests := []struct {
 		msg, title, abbr, abbrMax string
 	}{
@@ -87,18 +89,19 @@ func TestAbbr(t *testing.T) {
 
 	d := dictio.New()
 	shortWords, err := d.ShortWords()
-	assert.Nil(t, err)
+	assert.Nil(err)
 
 	for _, v := range tests {
 		n := abbr.Abbr(v.title)
 		ns := abbr.AbbrMax(v.title, shortWords)
 
-		assert.Equal(t, n, v.abbr, v.msg)
-		assert.Equal(t, ns, v.abbrMax, v.msg)
+		assert.Equal(n, v.abbr, v.msg)
+		assert.Equal(ns, v.abbrMax, v.msg)
 	}
 }
 
 func TestDeriv(t *testing.T) {
+	assert := assert.New(t)
 	tests := []struct {
 		abbr  string
 		deriv []string
@@ -109,6 +112,6 @@ func TestDeriv(t *testing.T) {
 	}
 	for _, v := range tests {
 		der := abbr.ShorterStrings(v.abbr)
-		assert.Equal(t, der, v.deriv, v.abbr)
+		assert.Equal(der, v.deriv, v.abbr)
 	}
 }

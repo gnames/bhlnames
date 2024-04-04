@@ -1,0 +1,105 @@
+{
+  "classes": [
+    "isNomen",
+    "notNomen"
+  ],
+  "casesTotal": 3479,
+  "classCases": {
+    "isNomen": 486,
+    "notNomen": 2993
+  },
+  "featureCases": {
+    "annot": {
+      "exact": {
+        "isNomen": 171,
+        "notNomen": 192
+      },
+      "none": {
+        "isNomen": 315,
+        "notNomen": 2801
+      }
+    },
+    "bestRes": {
+      "false": {
+        "isNomen": 65,
+        "notNomen": 2459
+      },
+      "true": {
+        "isNomen": 421,
+        "notNomen": 534
+      }
+    },
+    "resNum": {
+      "few": {
+        "isNomen": 243,
+        "notNomen": 421
+      },
+      "many": {
+        "isNomen": 243,
+        "notNomen": 2572
+      }
+    },
+    "title": {
+      "long": {
+        "isNomen": 33,
+        "notNomen": 11
+      },
+      "medium": {
+        "isNomen": 89,
+        "notNomen": 34
+      },
+      "none": {
+        "isNomen": 210,
+        "notNomen": 2865
+      },
+      "short": {
+        "isNomen": 154,
+        "notNomen": 83
+      }
+    },
+    "vol": {
+      "match": {
+        "isNomen": 380,
+        "notNomen": 865
+      },
+      "none": {
+        "isNomen": 106,
+        "notNomen": 2128
+      }
+    },
+    "yrPage": {
+      "exact|false": {
+        "isNomen": 122,
+        "notNomen": 302
+      },
+      "exact|true": {
+        "isNomen": 230,
+        "notNomen": 27
+      },
+      "far|false": {
+        "isNomen": 12,
+        "notNomen": 806
+      },
+      "far|true": {
+        "isNomen": 25,
+        "notNomen": 51
+      },
+      "near|false": {
+        "isNomen": 25,
+        "notNomen": 364
+      },
+      "near|true": {
+        "isNomen": 53,
+        "notNomen": 24
+      },
+      "none|false": {
+        "isNomen": 8,
+        "notNomen": 886
+      },
+      "none|true": {
+        "isNomen": 11,
+        "notNomen": 533
+      }
+    }
+  }
+}

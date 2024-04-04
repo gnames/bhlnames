@@ -22,42 +22,51 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 
-	"github.com/gnames/bhlnames/internal/io/reffinderio"
-	"github.com/gnames/bhlnames/internal/io/titlemio"
+	"github.com/gnames/bhlnames/internal/ent/input"
+	"github.com/gnames/bhlnames/internal/io/bayesio"
+	"github.com/gnames/bhlnames/internal/io/reffndio"
+	"github.com/gnames/bhlnames/internal/io/ttlmchio"
 	bhlnames "github.com/gnames/bhlnames/pkg"
 	"github.com/gnames/bhlnames/pkg/config"
+	"github.com/gnames/gnfmt"
 	"github.com/spf13/cobra"
 )
+
+var inpOpts []input.Option
 
 // namerefCmd represents the nameref command
 var namerefCmd = &cobra.Command{
 	Use:   "nameref",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "nameref finds references for a name-string in BHL.",
+	Long: `The nameref command finds points in BHL where a name-string was
+	mentioned. The list of results can be filtered by providing a information
+	about a reference that should be found.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	There are additional options that allow to return not only results for a
+	particular name-string, but for all synonyms of a taxon. It is also possible
+	to find nomenclatural events.
+	`,
+
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, flag := range []flagFunc{
-			formatFlag, jobsFlag, descFlag, shortFlag, noSynonymsFlag,
+			jobsFlag, descFlag, shortFlag, taxonFlag, refsLimitFlag,
+			nomenFlag,
 		} {
 			flag(cmd)
 		}
 
 		cfg := config.New(opts...)
-
-		rf, err := reffinderio.New(cfg)
+		rf, err := reffndio.New(cfg)
 		if err != nil {
-			slog.Error("Cannot create reffinder", "error", err)
+			slog.Error("Cannot create reference finder", "error", err)
 			os.Exit(1)
 		}
 
-		tm, err := titlemio.New(cfg)
+		tm, err := ttlmchio.New(cfg)
 		if err != nil {
 			slog.Error("Cannot create title matcher", "error", err)
 			os.Exit(1)
@@ -66,24 +75,78 @@ to quickly create a Cobra application.`,
 		bnOpts := []bhlnames.Option{
 			bhlnames.OptRefFinder(rf),
 			bhlnames.OptTitleMatcher(tm),
+			bhlnames.OptNLP(bayesio.New()),
 		}
 
 		bn := bhlnames.New(cfg, bnOpts...)
 		defer bn.Close()
 
+		argData := readArgs(cmd, args)
+		name(bn, argData)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(namerefCmd)
 
-	// Here you will define your flags and configuration settings.
+	namerefCmd.Flags().StringP("format", "f", "compact",
+		"JSON output format can be 'compact' or 'pretty.")
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// namerefCmd.PersistentFlags().String("foo", "", "A help for foo")
+	namerefCmd.Flags().IntP("jobs", "j", 0,
+		"Number of parallel jobs to get references.")
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// namerefCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	namerefCmd.Flags().BoolP("sort_desc", "d", false,
+		"Sort references by year in descending order.")
+
+	namerefCmd.Flags().BoolP("short_output", "s", false,
+		"Return only summary (no references data).")
+
+	namerefCmd.Flags().BoolP("taxon", "t", false,
+		"Find references for taxon (with name synonyms).")
+
+	namerefCmd.Flags().BoolP("nomen_event", "n", false,
+		"Find nomenclatural events.")
+
+	namerefCmd.Flags().IntP("refs_limit", "l", 0,
+		"Limit number of returned references")
+
+	namerefCmd.Flags().StringP("delimiter", "D", ",",
+		"Delimiter for reading CSV files, default is comma.")
+}
+
+type data struct {
+	name, ref string
+}
+
+func readArgs(cmd *cobra.Command, args []string) data {
+	var res data
+	switch len(args) {
+	case 1:
+		res.name = args[0]
+	case 2:
+		res.name = args[0]
+		res.ref = args[1]
+
+	default:
+		_ = cmd.Help()
+		os.Exit(0)
+	}
+	return res
+}
+
+func name(bn bhlnames.BHLnames, args data) {
+	inpOpts = append(inpOpts, input.OptNameString(args.name))
+	if args.ref != "" {
+		inpOpts = append(inpOpts, input.OptRefString(args.ref))
+	}
+
+	inp := input.New(bn.ParserPool(), inpOpts...)
+	enc := gnfmt.GNjson{}
+	res, err := bn.NameRefs(inp)
+	if err != nil {
+		slog.Error("Cannot get names with references", "error", err)
+		os.Exit(1)
+	}
+	out := enc.Output(res, gnfmt.CompactJSON)
+	fmt.Println(out)
 }

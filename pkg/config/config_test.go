@@ -5,25 +5,22 @@ import (
 	"testing"
 
 	"github.com/gnames/bhlnames/pkg/config"
-	"github.com/gnames/gnfmt"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDefaultConfig(t *testing.T) {
+	assert := assert.New(t)
 	test := config.Config{
-		BHLDumpURL:   "http://opendata.globalnames.org/dumps/bhl-data.zip",
-		BHLNamesURL:  "http://opendata.globalnames.org/dumps/bhl-col.zip",
-		CoLDataURL:   "https://api.checklistbank.org/dataset/3LR/export?format=dwca",
-		InputDir:     config.InputDir(),
-		Delimiter:    ',',
-		DbHost:       "0.0.0.0",
-		DbUser:       "postgres",
-		DbPass:       "postgres",
-		DbDatabase:   "bhlnames",
-		JobsNum:      4,
-		PortREST:     8888,
-		Format:       gnfmt.CSV,
-		WithSynonyms: true,
+		BHLDumpURL:  "http://opendata.globalnames.org/dumps/bhl-data.zip",
+		BHLNamesURL: "http://opendata.globalnames.org/dumps/bhl-col.zip",
+		CoLDataURL:  "https://api.checklistbank.org/dataset/3LR/export?format=dwca",
+		InputDir:    config.InputDir(),
+		DbHost:      "0.0.0.0",
+		DbUser:      "postgres",
+		DbPass:      "postgres",
+		DbDatabase:  "bhlnames",
+		JobsNum:     4,
+		PortREST:    8888,
 	}
 	test.DownloadBHLFile = filepath.Join(test.InputDir, "bhl-data.zip")
 	test.DownloadNamesFile = filepath.Join(test.InputDir, "bhlindex-latest.zip")
@@ -33,28 +30,24 @@ func TestDefaultConfig(t *testing.T) {
 	test.AhoCorKeyValDir = filepath.Join(test.InputDir, "ackv")
 
 	cfg := config.New()
-	assert.Equal(t, test, cfg)
+	assert.Equal(test, cfg)
 }
 
 func TestModifiedConfig(t *testing.T) {
+	assert := assert.New(t)
 	test := config.Config{
-		BHLDumpURL:          "https://example.org",
-		BHLNamesURL:         "https://example.org",
-		CoLDataURL:          "https://example.org",
-		InputDir:            "/tmp",
-		Delimiter:           '\t',
-		DbHost:              "10.0.0.10",
-		DbUser:              "john",
-		DbPass:              "doe",
-		DbDatabase:          "bhl",
-		JobsNum:             100,
-		PortREST:            80,
-		Format:              gnfmt.CompactJSON,
-		WithSynonyms:        false,
-		WithRebuild:         true,
-		WithCoLRecalc:       true,
-		SortDesc:            true,
-		WithShortenedOutput: true,
+		BHLDumpURL:    "https://example.org",
+		BHLNamesURL:   "https://example.org",
+		CoLDataURL:    "https://example.org",
+		InputDir:      "/tmp",
+		DbHost:        "10.0.0.10",
+		DbUser:        "john",
+		DbPass:        "doe",
+		DbDatabase:    "bhl",
+		JobsNum:       100,
+		PortREST:      80,
+		WithRebuild:   true,
+		WithCoLRecalc: true,
 	}
 
 	test.DownloadBHLFile = filepath.Join(test.InputDir, "bhl-data.zip")
@@ -64,7 +57,7 @@ func TestModifiedConfig(t *testing.T) {
 	test.AhoCorasickDir = filepath.Join(test.InputDir, "ac")
 	test.AhoCorKeyValDir = filepath.Join(test.InputDir, "ackv")
 	cfg := modConfig()
-	assert.Equal(t, test, cfg)
+	assert.Equal(test, cfg)
 }
 
 func modConfig() config.Config {
@@ -76,15 +69,10 @@ func modConfig() config.Config {
 		config.OptDbHost("10.0.0.10"),
 		config.OptDbUser("john"),
 		config.OptDbPass("doe"),
-		config.OptDelimiter('\t'),
 		config.OptDbName("bhl"),
 		config.OptJobsNum(100),
 		config.OptPortREST(80),
-		config.OptFormat(gnfmt.CompactJSON),
-		config.OptWithSynonyms(false),
 		config.OptWithRebuild(true),
-		config.OptSortDesc(true),
-		config.OptWithShortenedOutput(true),
 	}
 	return config.New(opts...)
 }

@@ -75,7 +75,7 @@ func main() {
 			score.RefPages:  4,
 		}
 		sc := score.New(prec)
-		sc.Calculate(nrs[i], tm, nb)
+		sc.Calculate(nrs[i], tm, nb, true)
 		if nrs[i].References[0].Score.Odds >= 10 {
 			if hasNomenRef {
 				sts.distr.score10.isNomen++

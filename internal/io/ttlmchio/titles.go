@@ -1,0 +1,50 @@
+package ttlmchio
+
+import (
+	"cmp"
+	"slices"
+
+	"github.com/gnames/bhlnames/internal/io/dbio"
+	"github.com/gnames/bhlnames/pkg/ent/abbr"
+	"github.com/gnames/gnfmt"
+)
+
+func (tm *ttlmchio) TitlesBHL(refString string) (map[int][]string, error) {
+	refAbbr := abbr.Abbr(refString)
+	matches := tm.Search(refAbbr)
+
+	abbrs := make([]string, len(matches))
+	for i := range matches {
+		abbrs[i] = matches[i].Pattern
+	}
+	return tm.abbrsToTitleIDs(abbrs)
+}
+
+func (tm *ttlmchio) abbrsToTitleIDs(abbrs []string) (map[int][]string, error) {
+	res := make(map[int][]string)
+	enc := gnfmt.GNgob{}
+
+	vals, err := dbio.GetValues(tm.TitleKV, abbrs)
+	if err != nil {
+		return res, err
+	}
+
+	for k, v := range vals {
+		var ids []int
+		err = enc.Decode(v, &ids)
+		if err != nil {
+			return res, err
+		}
+		for i := range ids {
+			res[ids[i]] = append(res[ids[i]], k)
+		}
+	}
+
+	for k, v := range res {
+		slices.SortFunc(v, func(a, b string) int {
+			return cmp.Compare(len(b), len(a))
+		})
+		res[k] = v
+	}
+	return res, nil
+}
