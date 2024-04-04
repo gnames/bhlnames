@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 Dmitry Mozzherin <dmozzherin@gmail.com>
+Copyright © 2020-2024 Dmitry Mozzherin <dmozzherin@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,19 +35,15 @@ import (
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Creates database for bhlnames",
-	Long: `Downloads BHL metadata and uses it to create local BHL database. Then it
-uses bhlindex grpc service to build additional data about names. When the
-process is finished, the program can be used for generating list of
-publications for names.
-
-To separate these two processes use "bhlnames bhl" and "bhlnames names" one
-after enother. The result will be identical to "bhlnames init".`,
+	Long: `Downloads database data from BHL, BHLIndex dump and uses them to build
+additional data about names and their connection to references.`,
 	Run: func(cmd *cobra.Command, _ []string) {
-		// add rebuild option
+		// add rebuild option. If true, all data will be deleted and redownloaded.
 		rebuildFlag(cmd)
 
 		cfg := config.New(opts...)
 
+		// builder is used exclusively for initialization
 		builder, err := builderio.New(cfg)
 		if err != nil {
 			slog.Error("Cannot create builder.", "error", err)
@@ -68,13 +64,5 @@ after enother. The result will be identical to "bhlnames init".`,
 func init() {
 	rootCmd.AddCommand(initCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// initCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 	initCmd.Flags().BoolP("rebuild", "r", false, "Delete data and rebuild")
 }

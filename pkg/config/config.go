@@ -224,12 +224,6 @@ func OptSortDesc(b bool) Option {
 	}
 }
 
-func OptShort(b bool) Option {
-	return func(cfg *Config) {
-		cfg.WithShortenedOutput = b
-	}
-}
-
 func OptWithSynonyms(b bool) Option {
 	return func(cfg *Config) {
 		cfg.WithSynonyms = b
