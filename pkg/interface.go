@@ -32,5 +32,5 @@ type BHLnames interface {
 	ParserPool() chan gnparser.GNparser
 
 	// Close terminates connections to databases and key-value stores.
-	Close() error
+	Close()
 }

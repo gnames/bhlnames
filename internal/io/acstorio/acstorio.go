@@ -1,22 +1,17 @@
 package acstorio
 
 import (
-	"cmp"
+	"context"
 	"errors"
 	"log/slog"
-	"os"
-	"path/filepath"
-	"slices"
-	"strings"
 
-	"github.com/dgraph-io/badger/v2"
 	"github.com/gnames/bhlnames/internal/ent/acstor"
 	"github.com/gnames/bhlnames/internal/ent/model"
 	"github.com/gnames/bhlnames/internal/io/dbio"
 	"github.com/gnames/bhlnames/internal/io/dictio"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/bhlnames/pkg/ent/abbr"
-	"github.com/gnames/gnfmt"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type acstorio struct {
@@ -24,12 +19,13 @@ type acstorio struct {
 	titles     map[int]*model.Title
 	shortWords map[string]struct{}
 	abbrMap    map[string][]int
-	db         *badger.DB
+	db         *pgxpool.Pool
 }
 
 // New creates a new instance of AhoCorasickStore.
 func New(
 	cfg config.Config,
+	db *pgxpool.Pool,
 	titleMap map[int]*model.Title,
 ) (acstor.AhoCorasickStore, error) {
 	d := dictio.New()
@@ -38,10 +34,12 @@ func New(
 		slog.Error("Cannot generate short words for AhoCoraickStore", "error", err)
 		return nil, err
 	}
+
 	res := acstorio{
 		cfg:        cfg,
 		titles:     titleMap,
 		shortWords: shortWords,
+		db:         db,
 	}
 	return &res, nil
 }
@@ -70,106 +68,83 @@ func (a *acstorio) Setup() error {
 	return a.save(abbrMap)
 }
 
-// Open opens the AhoCorasickStore for use.
-func (a *acstorio) Open() error {
-	slog.Info("Opening AhoCorasickStore.")
-	db, err := dbio.InitKeyVal(a.cfg.AhoCorKeyValDir, true)
-	if err != nil {
-		slog.Error("Cannot open key-value for AhoCorasickStore", "error", err)
-		return err
-	}
-	a.db = db
-
-	return nil
-}
-
 // Get returns a list of title IDs that contain the key.
 func (a *acstorio) Get(abbr string) ([]int, error) {
-	vals, err := dbio.GetValues(a.db, []string{abbr})
+	var res []int
+	ctx := context.Background()
+	q := `SELECT title_id FROM abbr_titles WHERE abbr = $1`
+	rows, err := a.db.Query(ctx, q, abbr)
 	if err != nil {
-		slog.Error("Cannot get values from AhoCorasickStore", "error", err)
+		slog.Error("Cannot get title IDs for abbreviation",
+			"abbr", abbr,
+			"error", err,
+		)
 		return nil, err
 	}
-	if titleIDsGob, ok := vals[abbr]; ok {
-		var titleIDs []int
-		enc := gnfmt.GNgob{}
-		err = enc.Decode(titleIDsGob, &titleIDs)
+	defer rows.Close()
+	for rows.Next() {
+		var id int
+		err = rows.Scan(&id)
 		if err != nil {
-			slog.Error("Cannot decode values from AhoCorasickStore", "error", err)
+			slog.Error("Cannot scan title ID for abbreviation",
+				"abbr", abbr,
+				"error", err,
+			)
 			return nil, err
 		}
-		return titleIDs, nil
+		res = append(res, id)
 	}
-	return nil, nil
+	return res, nil
 }
 
 // save stores a map of abbreviasions as keys and title IDs as values
 // in a key-value store. It also saves the list of all abbreviations
 // in a file. This file is used later to generate an Aho-Corasick trie.
 func (a *acstorio) save(abbrMap map[string][]int) error {
-	var err error
-	kv, err := dbio.InitKeyVal(a.cfg.AhoCorKeyValDir, false)
+	err := a.saveAbbrTitle(abbrMap)
 	if err != nil {
-		slog.Error("Cannot open key-value for AhoCorasickStore", "error", err)
+		slog.Error("Cannot save abbreviations to DB", "error", err)
 		return err
 	}
-	defer kv.Close()
 
-	kvTxn := kv.NewTransaction(true)
-	enc := gnfmt.GNgob{}
+	err = a.saveAbbr(abbrMap)
+	if err != nil {
+		slog.Error("Cannot save abbreviations to file", "error", err)
+		return err
+	}
+	return nil
+}
 
+func (a *acstorio) saveAbbrTitle(abbrMap map[string][]int) error {
+	slog.Info("Saving maps of abbreviations to titles.")
+	columns := []string{"abbr", "title_id"}
+	var rows [][]interface{}
 	for k, v := range abbrMap {
-		var bs []byte
-		bs, err = enc.Encode(v)
-		if err != nil {
-			return err
-		}
-		if err = kvTxn.Set([]byte(k), bs); err == badger.ErrTxnTooBig {
-			err = kvTxn.Commit()
-			if err != nil {
-				slog.Error(
-					"Cannot commit intermediate transaction for AhoCorasickStore",
-					"error", err,
-				)
-				return err
-			}
-
-			kvTxn = kv.NewTransaction(true)
-			err = kvTxn.Set([]byte(k), bs)
-			if err != nil {
-				slog.Error("Cannot set key-value for AhoCorasickStore", "error", err)
-				return err
-			}
+		for i := range v {
+			rows = append(rows, []interface{}{k, v[i]})
 		}
 	}
-	err = kvTxn.Commit()
+	_, err := dbio.InsertRows(a.db, "abbr_titles", columns, rows)
 	if err != nil {
-		slog.Error(
-			"Cannot commit transaction for AhoCorasickStore",
-			"error", err,
-		)
+		slog.Error("Cannot save abbreviations to DB", "error", err)
 		return err
 	}
+	return nil
+}
 
-	abbrs := make([]string, len(abbrMap))
+func (a *acstorio) saveAbbr(abbrMap map[string][]int) error {
+	slog.Info("Saving stand-alone abbreviations.")
+	columns := []string{"abbr"}
+	rows := make([][]interface{}, len(abbrMap))
 	var count int
 	for k := range abbrMap {
-		abbrs[count] = k
-		count += 1
+		rows[count] = []interface{}{k}
+		count++
 	}
-
-	slices.SortFunc(abbrs, func(a, b string) int {
-		return cmp.Compare(len(b), len(a))
-	})
-
-	// create a file with all abbreviations for Aho-Corasick trie generation
-	tmp := strings.Join(abbrs, "\n")
-	path := filepath.Join(a.cfg.AhoCorasickDir, "patterns.txt")
-	err = os.WriteFile(path, []byte(tmp), 0644)
+	_, err := dbio.InsertRows(a.db, "abbrs", columns, rows)
 	if err != nil {
-		slog.Error("Cannot write patterns.txt for AhoCorasickStore", "error", err)
+		slog.Error("Cannot save abbreviations to DB", "error", err)
 		return err
 	}
-
 	return nil
 }

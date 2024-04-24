@@ -67,7 +67,7 @@ func (rf reffndio) ReferencesByName(
 		}
 	}
 	res.ImagesURL = imagesUrl(res.CurrentCanonical)
-	rf.updateOutput(inp, res, refRecs)
+	rf.deduplicateResults(inp, res, refRecs)
 	return res, nil
 }
 

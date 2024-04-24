@@ -380,6 +380,17 @@ type NameOccurrence struct {
 	AnnotNomen string `gorm:"type:varchar(50);index:annot"`
 }
 
+// Abbr contains all abbreviations strings generated from titles.
+type Abbr struct {
+	Abbr string `gorm:"type:varchar(10);primary_key"`
+}
+
+// AbbrTitle maps abbreviations to title IDs.
+type AbbrTitle struct {
+	Abbr    string `gorm:"type:varchar(10);primary_key"`
+	TitleID uint   `gorm:"primary_key"`
+}
+
 // ColNomenRef contains
 type ColNomenRef struct {
 	// ID is automatically generated.
@@ -483,6 +494,8 @@ func Migrate(grm *gorm.DB) error {
 		&PagePart{},
 		&NameString{},
 		&NameOccurrence{},
+		&Abbr{},
+		&AbbrTitle{},
 		&ColNomenRef{},
 		&ColBhlRefs{},
 	)

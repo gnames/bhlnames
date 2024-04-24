@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/gnames/bhlnames/internal/ent/model"
-	"github.com/gnames/bhlnames/internal/io/dbio"
 	"github.com/gnames/gnsys"
 )
 
@@ -40,22 +39,12 @@ COMMENT ON SCHEMA public IS 'standard public schema'`
 func (b builderio) resetDirs() error {
 	err := gnsys.CleanDir(b.cfg.InputDir)
 	if err != nil {
-		slog.Error("Cannot clean input directory.", "err", err)
-		return err
+		slog.Warn("Cannot clean input directory.", "err", err)
+		slog.Info("Trying to create input directory.")
 	}
 	err = os.MkdirAll(b.cfg.DownloadDir, 0755)
 	if err != nil {
 		slog.Error("Cannot create download directory.", "err", err)
-		return err
-	}
-	err = os.MkdirAll(b.cfg.AhoCorasickDir, 0755)
-	if err != nil {
-		slog.Error("Cannot create AhoCorasick directory.", "err", err)
-		return err
-	}
-	err = dbio.ResetKeyVal(b.cfg.AhoCorKeyValDir)
-	if err != nil {
-		slog.Error("Cannot reset AhoCorasick key-value store.", "err", err)
 		return err
 	}
 	return nil

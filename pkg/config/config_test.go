@@ -26,8 +26,6 @@ func TestDefaultConfig(t *testing.T) {
 	test.DownloadNamesFile = filepath.Join(test.InputDir, "bhlindex-latest.zip")
 	test.DownloadCoLFile = filepath.Join(test.InputDir, "col.zip")
 	test.DownloadDir = filepath.Join(test.InputDir, "Data")
-	test.AhoCorasickDir = filepath.Join(test.InputDir, "ac")
-	test.AhoCorKeyValDir = filepath.Join(test.InputDir, "ackv")
 
 	cfg := config.New()
 	assert.Equal(test, cfg)
@@ -54,8 +52,6 @@ func TestModifiedConfig(t *testing.T) {
 	test.DownloadNamesFile = filepath.Join(test.InputDir, "bhlindex-latest.zip")
 	test.DownloadCoLFile = filepath.Join(test.InputDir, "col.zip")
 	test.DownloadDir = filepath.Join(test.InputDir, "Data")
-	test.AhoCorasickDir = filepath.Join(test.InputDir, "ac")
-	test.AhoCorKeyValDir = filepath.Join(test.InputDir, "ackv")
 	cfg := modConfig()
 	assert.Equal(test, cfg)
 }

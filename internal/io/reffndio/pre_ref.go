@@ -7,16 +7,14 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/dgraph-io/badger/v2"
 	"github.com/gnames/bhlnames/internal/ent/bhl"
 	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/internal/ent/model"
-	"github.com/gnames/bhlnames/internal/io/dbio"
 )
 
-// updateOutput makes sure that every item part and title get only one unique
+// deduplicateResults makes sure that every item part and title get only one unique
 // name to avoid information overload.
-func (rf reffndio) updateOutput(
+func (rf reffndio) deduplicateResults(
 	inp input.Input,
 	o *bhl.RefsByName,
 	raw []*refRec,
@@ -102,13 +100,6 @@ func getSynonyms(refs []*bhl.ReferenceName, current string) []string {
 	}
 	slices.Sort(res)
 	return res
-}
-
-// checks if a page ID is included into any parts. All pageIDs that correspond
-// to a particular `part` are saved to key-value store. So if a pageID is not
-// found in the store, it means it is not associated with any `parts`. In such case we return 0.
-func findPart(kv *badger.DB, pageID int) (int, error) {
-	return dbio.GetValue(kv, strconv.Itoa(pageID))
 }
 
 func getURL(pageID int) string {

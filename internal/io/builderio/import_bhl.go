@@ -51,7 +51,7 @@ func (b builderio) importDataBHL() error {
 		return err
 	}
 
-	ac, err := acstorio.New(b.cfg, titlesMap)
+	ac, err := acstorio.New(b.cfg, b.db, titlesMap)
 	if err != nil {
 		return err
 	}

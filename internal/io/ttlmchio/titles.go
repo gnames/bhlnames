@@ -1,12 +1,11 @@
 package ttlmchio
 
 import (
-	"cmp"
-	"slices"
+	"context"
+	"errors"
+	"log/slog"
 
-	"github.com/gnames/bhlnames/internal/io/dbio"
 	"github.com/gnames/bhlnames/pkg/ent/abbr"
-	"github.com/gnames/gnfmt"
 )
 
 func (tm *ttlmchio) TitlesBHL(refString string) (map[int][]string, error) {
@@ -22,29 +21,58 @@ func (tm *ttlmchio) TitlesBHL(refString string) (map[int][]string, error) {
 
 func (tm *ttlmchio) abbrsToTitleIDs(abbrs []string) (map[int][]string, error) {
 	res := make(map[int][]string)
-	enc := gnfmt.GNgob{}
+	q := `
+SELECT  DISTINCT i.title_id, title_name
+  FROM abbr_titles attl
+    JOIN items i
+      ON i.title_id = attl.title_id
+	WHERE attl.abbr = ANY($1)
+`
+	abbrMap := make(map[string]struct{})
+	for _, abbr := range abbrs {
+		abbrMap[abbr] = struct{}{}
+	}
 
-	vals, err := dbio.GetValues(tm.TitleKV, abbrs)
+	rows, err := tm.db.Query(context.Background(), q, abbrs)
 	if err != nil {
-		return res, err
+		slog.Error("Cannot get titles from abbreviations", "error", err)
+		return nil, err
 	}
+	defer rows.Close()
 
-	for k, v := range vals {
-		var ids []int
-		err = enc.Decode(v, &ids)
+	for rows.Next() {
+		var id int
+		var name string
+		err := rows.Scan(&id, &name)
 		if err != nil {
-			return res, err
+			slog.Error("Cannot scan title from abbreviation", "error", err)
+			return nil, err
 		}
-		for i := range ids {
-			res[ids[i]] = append(res[ids[i]], k)
+		abbrStr := nameToAbbr(name, abbrMap, tm.shortWords)
+		if len(abbrStr) > 0 {
+			res[id] = abbrStr
+		} else {
+			err := errors.New("title not found")
+			slog.Error("Title not found for abbreviation", "abbr", name, "err", err)
+			return nil, err
 		}
 	}
 
-	for k, v := range res {
-		slices.SortFunc(v, func(a, b string) int {
-			return cmp.Compare(len(b), len(a))
-		})
-		res[k] = v
-	}
 	return res, nil
+}
+
+func nameToAbbr(
+	name string,
+	abbrMap map[string]struct{},
+	shortWords map[string]struct{},
+) []string {
+	var res []string
+
+	abbrs := abbr.Patterns(name, shortWords)
+	for i := range abbrs {
+		if _, ok := abbrMap[abbrs[i]]; ok {
+			res = append(res, abbrs[i])
+		}
+	}
+	return res
 }

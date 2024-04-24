@@ -7,7 +7,6 @@ type TitleMatcher interface {
 	// BHL titles.
 	TitlesBHL(refString string) (map[int][]string, error)
 
-	// Close cleans up all the database, key-value store, files locks and blocks,
-	// releasing resources for the next usage of the program.
-	Close() error
+	// Close cleans database connection.
+	Close()
 }

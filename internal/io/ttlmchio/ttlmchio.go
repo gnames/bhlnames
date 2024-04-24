@@ -1,40 +1,50 @@
 package ttlmchio
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
-	"os"
-	"path/filepath"
-	"strings"
 
-	"github.com/dgraph-io/badger/v2"
 	"github.com/gnames/aho_corasick"
 	"github.com/gnames/bhlnames/internal/ent/ttlmch"
 	"github.com/gnames/bhlnames/internal/io/dbio"
+	"github.com/gnames/bhlnames/internal/io/dictio"
 	"github.com/gnames/bhlnames/pkg/config"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type ttlmchio struct {
-	// acDir is the directory for AhoCorasick files.
-	acDir string
-
 	// AC is AhoCorasick object for matching references to BHL titles.
 	aho_corasick.AhoCorasick
 
-	// TitleKV contains a key-value Badger store where data about titleIDs and
-	// title abbreviations is kept.
-	TitleKV *badger.DB
+	shortWords map[string]struct{}
+
+	// db is a connection to the database.
+	db *pgxpool.Pool
 }
 
 func New(cfg config.Config) (ttlmch.TitleMatcher, error) {
-	titleKV, err := dbio.InitKeyVal(cfg.AhoCorKeyValDir, true)
+	db, err := dbio.NewDB(cfg)
 	if err != nil {
+		slog.Error(
+			"Cannot create database connection for TitleMatcher",
+			"error", err,
+		)
 		return nil, err
 	}
-	res := &ttlmchio{
-		acDir:   cfg.AhoCorasickDir,
-		TitleKV: titleKV,
+
+	d := dictio.New()
+	shortWords, err := d.ShortWords()
+	if err != nil {
+		slog.Error("Cannot get short words", "error", err)
+		return nil, err
 	}
+
+	res := ttlmchio{
+		db:         db,
+		shortWords: shortWords,
+	}
+
 	ac, err := res.getAhoCorasick()
 	if err != nil {
 		err = fmt.Errorf("titlemio.New: %w", err)
@@ -42,29 +52,37 @@ func New(cfg config.Config) (ttlmch.TitleMatcher, error) {
 		return nil, err
 	}
 	res.AhoCorasick = ac
-	return res, nil
+
+	return &res, nil
 }
 
-func (tm *ttlmchio) Close() error {
-	return tm.TitleKV.Close()
+func (tm *ttlmchio) Close() {
+	tm.db.Close()
 }
 
 func (tm ttlmchio) getAhoCorasick() (aho_corasick.AhoCorasick, error) {
 	var err error
-	var txt []byte
-	var patterns []string
 	ac := aho_corasick.New()
 
-	path := filepath.Join(tm.acDir, "patterns.txt")
-	txt, err = os.ReadFile(path)
-	if err == nil {
-		patterns = strings.Split(string(txt), "\n")
-		for i := range patterns {
-			patterns[i] = strings.TrimSpace(patterns[i])
-		}
-		acSize := ac.Setup(patterns)
-		str := fmt.Sprintf("Created Title search trie with %d nodes.\n", acSize)
-		slog.Info(str)
+	q := `SELECT abbr from abbrs`
+	rows, err := tm.db.Query(context.Background(), q)
+	if err != nil {
+		slog.Error("Cannot get abbreviations from the database", "error", err)
+		return ac, err
 	}
+	defer rows.Close()
+
+	patterns := make([]string, 0)
+	for rows.Next() {
+		var abbr string
+		err = rows.Scan(&abbr)
+		if err != nil {
+			slog.Error("Cannot scan abbreviation", "error", err)
+			return ac, err
+		}
+		patterns = append(patterns, abbr)
+	}
+	acSize := ac.Setup(patterns)
+	slog.Info("Created Title search trie", "trie_size", acSize)
 	return ac, err
 }

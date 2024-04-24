@@ -60,6 +60,7 @@ var namerefCmd = &cobra.Command{
 		}
 
 		cfg := config.New(opts...)
+
 		rf, err := reffndio.New(cfg)
 		if err != nil {
 			slog.Error("Cannot create reference finder", "error", err)

@@ -2,7 +2,6 @@ package builderio
 
 import (
 	"bufio"
-	"context"
 	"database/sql"
 	"log/slog"
 	"os"
@@ -11,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/gnames/bhlnames/internal/ent/model"
-	"github.com/jackc/pgx/v5"
 )
 
 const (
@@ -74,37 +72,6 @@ func (b builderio) prepareTitle(doiMap map[int]string) (map[int]*model.Title, er
 	if err := scanner.Err(); err != nil {
 		slog.Error("Error reading title.txt.", "error", err)
 		return res, err
-	}
-
-	return res, nil
-}
-
-func (b *builderio) dbTitlesMap() (map[int]*model.Title, error) {
-	res := make(map[int]*model.Title)
-	var err error
-	var rows pgx.Rows
-	rows, err = b.db.Query(
-		context.Background(),
-		`
-SELECT
-	title_id, title_name, title_year_start, title_year_end,
-	title_lang, title_doi
-FROM items `,
-	)
-	if err != nil {
-		return res, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		t := model.Title{}
-		err = rows.Scan(
-			&t.ID, &t.Name, &t.YearStart, &t.YearEnd, &t.Language, &t.DOI,
-		)
-		if err != nil {
-			return res, err
-		}
-		res[t.ID] = &t
 	}
 
 	return res, nil

@@ -11,14 +11,6 @@ import (
 
 // Config contains data needed for BHLnames functionality.
 type Config struct {
-	// AhoCorasickDir provides a directory where Aho-Corasick algorithm stores
-	// its cached data.
-	AhoCorasickDir string
-
-	// AhoCorKeyValDir provides a directory to keep a Key-Value store used by
-	// AhoCorasic library.
-	AhoCorKeyValDir string
-
 	// BHLDumpURL contains the URL containing Biodiversity Heritage Library
 	// dump files. These files provide metadata necessary for connection of
 	// names occurrences with BHL pages.
@@ -206,7 +198,5 @@ func New(opts ...Option) Config {
 	cfg.DownloadNamesFile = filepath.Join(cfg.InputDir, "bhlindex-latest.zip")
 	cfg.DownloadCoLFile = filepath.Join(cfg.InputDir, "col.zip")
 	cfg.DownloadDir = filepath.Join(cfg.InputDir, "Data")
-	cfg.AhoCorasickDir = filepath.Join(cfg.InputDir, "ac")
-	cfg.AhoCorKeyValDir = filepath.Join(cfg.InputDir, "ackv")
 	return cfg
 }

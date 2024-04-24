@@ -78,6 +78,8 @@ func New(cfg config.Config, opts ...Option) BHLnames {
 // Initialize downloads BHL's metadata and imports it into the storage.
 func (bn bhlnames) Initialize(bld builder.Builder) error {
 	var err error
+	defer bn.Close()
+
 	if bn.cfg.WithRebuild {
 		bld.ResetData()
 	}
@@ -94,7 +96,7 @@ func (bn bhlnames) Initialize(bld builder.Builder) error {
 		return err
 	}
 
-	return bn.Close()
+	return nil
 }
 
 func (bn bhlnames) NameRefs(inp input.Input) (*bhl.RefsByName, error) {
@@ -105,7 +107,7 @@ func (bn bhlnames) NameRefs(inp input.Input) (*bhl.RefsByName, error) {
 	res.ReferenceNumber = len(res.References)
 
 	if inp.WithNomenEvent || inp.Reference.RefString != "" {
-		bn.sortByScore(res, inp.WithNomenEvent)
+		bn.scoreCalcSort(res, inp.WithNomenEvent)
 	}
 
 	if inp.RefsLimit > 0 && len(res.References) > inp.RefsLimit {
@@ -154,17 +156,13 @@ func (bn bhlnames) ParserPool() chan gnparser.GNparser {
 	return bn.gnpPool
 }
 
-func (bn *bhlnames) Close() error {
+func (bn *bhlnames) Close() {
 	if bn.rf != nil {
 		bn.rf.Close()
 	}
 	if bn.tm != nil {
-		err := bn.tm.Close()
-		if err != nil {
-			return err
-		}
+		bn.tm.Close()
 	}
-	return nil
 }
 
 func gnparserPool(poolSize int) chan gnparser.GNparser {
@@ -176,7 +174,7 @@ func gnparserPool(poolSize int) chan gnparser.GNparser {
 	return gnpPool
 }
 
-func (bn bhlnames) sortByScore(nr *bhl.RefsByName, isNomen bool) error {
+func (bn bhlnames) scoreCalcSort(nr *bhl.RefsByName, isNomen bool) error {
 	// Year has precedence over others
 	prec := map[score.ScoreType]int{
 		score.RefVolume: 0,
