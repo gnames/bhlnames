@@ -66,6 +66,5 @@ func InsertRows(
 		columns,
 		pgx.CopyFromRows(rows),
 	)
-
 	return int64(copyCount), err
 }

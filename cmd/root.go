@@ -47,21 +47,21 @@ type fConfig struct {
 	BHLDumpURL  string
 	BHLNamesURL string
 	CoLDataURL  string
-	InputDir    string
+	DbDatabase  string
 	DbHost      string
 	DbUser      string
 	DbPass      string
-	DbName      string
 	JobsNum     int
 	PortREST    int
+	RootDir     string
 }
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "bhlnames",
-	Short: "Finds publications for scientific names in BHL",
-	Long: `Uses bhlindex service and Biodiversity Heritage Library (BHL)
-metadata to build a local database. It Uses this database to return all
+	Short: "BHLnames finds publications for scientific names in BHL",
+	Long: `BHLnames uses Biodiversity Heritage Library (BHL) and its Name Index
+data  to build a local database. It uses this database to return all
 usages found at BHL for a scientific name.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		versionFlag(cmd)
@@ -99,17 +99,16 @@ func initConfig() {
 	viper.AddConfigPath(configDir)
 	viper.SetConfigName(configFile)
 
-	viper.BindEnv("BHLDumpURL", "BHL_DUMP_URL")
+	viper.BindEnv("BHLDumpURL", "BHL_NAMES_DUMP_URL")
 	viper.BindEnv("BHLNamesURL", "BHL_NAMES_URL")
-	viper.BindEnv("BHLindexHost", "BHL_NAMES_INDEX_HOST")
-	viper.BindEnv("InputDir", "BHL_NAMES_INPUT_DIR")
+	viper.BindEnv("ColDataURL", "BHL_NAMES_COL_DATA_URL")
+	viper.BindEnv("DbDatabase", "BHL_NAMES_DB_DATABASE")
 	viper.BindEnv("DbHost", "BHL_NAMES_DB_HOST")
-	viper.BindEnv("DbPort", "BHL_NAMES_DB_PORT")
 	viper.BindEnv("DbUser", "BHL_NAMES_DB_USER")
 	viper.BindEnv("DbPass", "BHL_NAMES_DB_PASS")
-	viper.BindEnv("DbName", "BHL_NAMES_DATABASE")
 	viper.BindEnv("JobsNum", "BHL_NAMES_JOBS_NUM")
 	viper.BindEnv("PortREST", "BHL_NAMES_PORT_REST")
+	viper.BindEnv("RootDir", "BHL_NAMES_ROOT_DIR")
 	viper.AutomaticEnv()
 
 	configPath := filepath.Join(configDir, fmt.Sprintf("%s.yaml", configFile))
@@ -143,8 +142,8 @@ func getOpts() []config.Option {
 	if cfg.CoLDataURL != "" {
 		opts = append(opts, config.OptCoLDataURL(cfg.CoLDataURL))
 	}
-	if cfg.InputDir != "" {
-		opts = append(opts, config.OptInputDir(cfg.InputDir))
+	if cfg.DbDatabase != "" {
+		opts = append(opts, config.OptDbDatabase(cfg.DbDatabase))
 	}
 	if cfg.DbHost != "" {
 		opts = append(opts, config.OptDbHost(cfg.DbHost))
@@ -155,14 +154,14 @@ func getOpts() []config.Option {
 	if cfg.DbPass != "" {
 		opts = append(opts, config.OptDbPass(cfg.DbPass))
 	}
-	if cfg.DbName != "" {
-		opts = append(opts, config.OptDbName(cfg.DbName))
-	}
 	if cfg.JobsNum != 0 {
 		opts = append(opts, config.OptJobsNum(cfg.JobsNum))
 	}
 	if cfg.PortREST != 0 {
 		opts = append(opts, config.OptPortREST(cfg.PortREST))
+	}
+	if cfg.RootDir != "" {
+		opts = append(opts, config.OptRootDir(cfg.RootDir))
 	}
 	return opts
 }

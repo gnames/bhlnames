@@ -54,7 +54,7 @@ func (b builderio) importPart(doiMap map[int]string) error {
 	//keeps unique IDs of the parts
 	pMap := make(map[int]struct{})
 	var res []*model.Part
-	path := filepath.Join(b.cfg.DownloadDir, "part.txt")
+	path := filepath.Join(b.cfg.ExtractDir, "part.txt")
 	f, err := os.Open(path)
 	if err != nil {
 		slog.Error("Cannot open part.txt.", "path", path, "error", err)

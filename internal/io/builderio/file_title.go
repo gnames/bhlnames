@@ -25,7 +25,7 @@ const (
 func (b builderio) prepareTitle(doiMap map[int]string) (map[int]*model.Title, error) {
 	slog.Info("Processing title.txt.")
 	res := make(map[int]*model.Title)
-	path := filepath.Join(b.cfg.DownloadDir, "title.txt")
+	path := filepath.Join(b.cfg.ExtractDir, "title.txt")
 	f, err := os.Open(path)
 	if err != nil {
 		slog.Error("Cannot open title.txt.", "error", err)

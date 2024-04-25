@@ -11,10 +11,10 @@ import (
 func TestDefaultConfig(t *testing.T) {
 	assert := assert.New(t)
 	test := config.Config{
-		BHLDumpURL:  "http://opendata.globalnames.org/dumps/bhl-data.zip",
-		BHLNamesURL: "http://opendata.globalnames.org/dumps/bhl-col.zip",
-		CoLDataURL:  "https://api.checklistbank.org/dataset/3LR/export?format=dwca",
-		InputDir:    config.InputDir(),
+		BHLDumpURL:  "http://opendata.globalnames.org/bhlnames/bhl-data.zip",
+		BHLNamesURL: "http://opendata.globalnames.org/bhlnames/names.zip",
+		CoLDataURL:  "http://opendata.globalnames.org/bhlnames/col.zip",
+		RootDir:     config.RootDir(),
 		DbHost:      "0.0.0.0",
 		DbUser:      "postgres",
 		DbPass:      "postgres",
@@ -22,10 +22,10 @@ func TestDefaultConfig(t *testing.T) {
 		JobsNum:     4,
 		PortREST:    8888,
 	}
-	test.DownloadBHLFile = filepath.Join(test.InputDir, "bhl-data.zip")
-	test.DownloadNamesFile = filepath.Join(test.InputDir, "bhlindex-latest.zip")
-	test.DownloadCoLFile = filepath.Join(test.InputDir, "col.zip")
-	test.DownloadDir = filepath.Join(test.InputDir, "Data")
+	test.DownloadBHLFile = filepath.Join(test.RootDir, "bhl-data.zip")
+	test.DownloadNamesFile = filepath.Join(test.RootDir, "bhlindex-latest.zip")
+	test.DownloadCoLFile = filepath.Join(test.RootDir, "col.zip")
+	test.ExtractDir = filepath.Join(test.RootDir, "Data")
 
 	cfg := config.New()
 	assert.Equal(test, cfg)
@@ -34,24 +34,24 @@ func TestDefaultConfig(t *testing.T) {
 func TestModifiedConfig(t *testing.T) {
 	assert := assert.New(t)
 	test := config.Config{
-		BHLDumpURL:    "https://example.org",
-		BHLNamesURL:   "https://example.org",
-		CoLDataURL:    "https://example.org",
-		InputDir:      "/tmp",
-		DbHost:        "10.0.0.10",
-		DbUser:        "john",
-		DbPass:        "doe",
-		DbDatabase:    "bhl",
-		JobsNum:       100,
-		PortREST:      80,
-		WithRebuild:   true,
-		WithCoLRecalc: true,
+		BHLDumpURL:      "https://example.org",
+		BHLNamesURL:     "https://example.org",
+		CoLDataURL:      "https://example.org",
+		RootDir:         "/tmp",
+		DbHost:          "10.0.0.10",
+		DbUser:          "john",
+		DbPass:          "doe",
+		DbDatabase:      "bhl",
+		JobsNum:         100,
+		PortREST:        80,
+		WithRebuild:     true,
+		WithCoLDataTrim: true,
 	}
 
-	test.DownloadBHLFile = filepath.Join(test.InputDir, "bhl-data.zip")
-	test.DownloadNamesFile = filepath.Join(test.InputDir, "bhlindex-latest.zip")
-	test.DownloadCoLFile = filepath.Join(test.InputDir, "col.zip")
-	test.DownloadDir = filepath.Join(test.InputDir, "Data")
+	test.DownloadBHLFile = filepath.Join(test.RootDir, "bhl-data.zip")
+	test.DownloadNamesFile = filepath.Join(test.RootDir, "bhlindex-latest.zip")
+	test.DownloadCoLFile = filepath.Join(test.RootDir, "col.zip")
+	test.ExtractDir = filepath.Join(test.RootDir, "Data")
 	cfg := modConfig()
 	assert.Equal(test, cfg)
 }
@@ -61,11 +61,11 @@ func modConfig() config.Config {
 		config.OptBHLDumpURL("https://example.org"),
 		config.OptBHLNamesURL("https://example.org"),
 		config.OptCoLDataURL("https://example.org"),
-		config.OptInputDir("/tmp"),
+		config.OptRootDir("/tmp"),
 		config.OptDbHost("10.0.0.10"),
 		config.OptDbUser("john"),
 		config.OptDbPass("doe"),
-		config.OptDbName("bhl"),
+		config.OptDbDatabase("bhl"),
 		config.OptJobsNum(100),
 		config.OptPortREST(80),
 		config.OptWithRebuild(true),

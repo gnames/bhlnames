@@ -1,8 +1,11 @@
 package bhlnames
 
 import (
+	"context"
+
 	"github.com/gnames/bhlnames/internal/ent/bhl"
 	"github.com/gnames/bhlnames/internal/ent/builder"
+	"github.com/gnames/bhlnames/internal/ent/col"
 	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnparser"
@@ -11,26 +14,36 @@ import (
 // BHLnames provides methods for finding references for scientific names
 // in the Biodiversity Heritage Library (BHL).
 type BHLnames interface {
-	// Initialize downloads data about BHL corpus and names found in the
-	// corpus. It then imports the data into its storage.
+	// Initialize downloads of essential BHL data (corpus metadata + names) and
+	// prepares the internal storage for efficient querying.
 	Initialize(builder.Builder) error
 
-	// NameRefs takes an input with a scientific name and, optionally, a
-	// reference, and returns references found in BHL.
+	// InitCoLNomenEvents fetches Catalogue of Life (CoL) data. It finds
+	// nomenclatural events in BHL, cross-referencing them with names and
+	// references from CoL.
+	InitCoLNomenEvents(col.Nomen) error
+
+	// NameRefs accepts a scientific name and optional reference. It returns a
+	// collection of matching references found within the BHL corpus.
 	NameRefs(input.Input) (*bhl.RefsByName, error)
 
-	// NameRefsStream takes a channel with input that contains information
-	// about scientific name and, optionally a reference, and returns a
-	// channel with references found in BHL.
-	NameRefsStream(chIn <-chan input.Input, chOut chan<- *bhl.RefsByName)
+	// NameRefsStream processes a stream of inputs (scientific names + optional
+	// references). It returns a stream of corresponding reference collections
+	// found in BHL. Designed for asynchronous processing and large-scale
+	// requests.
+	NameRefsStream(
+		ctx context.Context,
+		chIn <-chan input.Input,
+		chOut chan<- *bhl.RefsByName,
+	) error
 
-	// Config returns the configuration of the BHLnames instance.
+	// Config returns the current configuration used by the BHLnames instance.
 	Config() config.Config
 
-	// ParsePool return a buffered channel containing instances of GNparser.
-	// It can be used as a pool of GNparser instances.
+	// ParserPool returns a channel for accessing reusable GNparser instances.
+	// This allows efficient pooling and management of name-parser resources.
 	ParserPool() chan gnparser.GNparser
 
-	// Close terminates connections to databases and key-value stores.
+	// Close releases all resources (database connections, etc.) used by BHLnames.
 	Close()
 }

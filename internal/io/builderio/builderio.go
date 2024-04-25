@@ -44,7 +44,7 @@ func New(cfg config.Config) (builder.Builder, error) {
 
 func (b *builderio) ResetData() error {
 	var err error
-	slog.Info("Resetting filesystem.", "input-dir", b.cfg.InputDir)
+	slog.Info("Resetting filesystem.", "input-dir", b.cfg.RootDir)
 	err = b.resetDirs()
 	if err != nil {
 		slog.Error("Cannot reset dirs fully.", "err", err)
@@ -122,7 +122,7 @@ func (b *builderio) downloadAndExtract() error {
 		"file", b.cfg.DownloadBHLFile,
 	)
 	err = bhlsys.Extract(
-		b.cfg.DownloadBHLFile, b.cfg.DownloadDir, b.cfg.WithRebuild,
+		b.cfg.DownloadBHLFile, b.cfg.ExtractDir, b.cfg.WithRebuild,
 	)
 	if err != nil {
 		slog.Error("Cannot extract BHL data.",
@@ -147,7 +147,7 @@ func (b *builderio) downloadAndExtract() error {
 		"file", b.cfg.DownloadNamesFile,
 	)
 	err = bhlsys.Extract(
-		b.cfg.DownloadNamesFile, b.cfg.DownloadDir, b.cfg.WithRebuild,
+		b.cfg.DownloadNamesFile, b.cfg.ExtractDir, b.cfg.WithRebuild,
 	)
 	if err != nil {
 		slog.Error("Cannot extract names data.",

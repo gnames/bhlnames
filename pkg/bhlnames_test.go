@@ -12,6 +12,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var bnG bhlnames.BHLnames
+
+func Init(t *testing.T) bhlnames.BHLnames {
+	if bnG != nil {
+		return bnG
+	}
+
+	cfg := config.New()
+	rf, err := reffndio.New(cfg)
+	assert.Nil(t, err)
+	tm, err := ttlmchio.New(cfg)
+	assert.Nil(t, err)
+
+	opts := []bhlnames.Option{
+		bhlnames.OptRefFinder(rf),
+		bhlnames.OptTitleMatcher(tm),
+		bhlnames.OptNLP(bayesio.New()),
+	}
+
+	bnG = bhlnames.New(cfg, opts...)
+	return bnG
+}
+
 func TestNameRefs(t *testing.T) {
 	assert := assert.New(t)
 	tests := []struct {
@@ -44,20 +67,8 @@ func TestNameRefs(t *testing.T) {
 			"Achenium nigriventris", 2, 2, true, true, false, 1988,
 		},
 	}
-	cfg := config.New()
-	rf, err := reffndio.New(cfg)
-	assert.Nil(err)
-	tm, err := ttlmchio.New(cfg)
-	assert.Nil(err)
 
-	opts := []bhlnames.Option{
-		bhlnames.OptRefFinder(rf),
-		bhlnames.OptTitleMatcher(tm),
-		bhlnames.OptNLP(bayesio.New()),
-	}
-
-	bn := bhlnames.New(cfg, opts...)
-	defer bn.Close()
+	bn := Init(t)
 
 	for _, v := range tests {
 		inpOpts := []input.Option{
@@ -107,21 +118,7 @@ func TestNameWithRefs(t *testing.T) {
 		},
 	}
 
-	cfg := config.New()
-	rf, err := reffndio.New(cfg)
-	assert.Nil(err)
-	tm, err := ttlmchio.New(cfg)
-	assert.Nil(err)
-
-	opts := []bhlnames.Option{
-		bhlnames.OptRefFinder(rf),
-		bhlnames.OptTitleMatcher(tm),
-		bhlnames.OptNLP(bayesio.New()),
-	}
-
-	bn := bhlnames.New(cfg, opts...)
-	defer bn.Close()
-
+	bn := Init(t)
 	for _, v := range tests {
 		inpOpts := []input.Option{
 			input.OptNameString(v.name),
@@ -196,21 +193,7 @@ func TestNomenRefs(t *testing.T) {
 			105242, 11, 3, 2, 3, 8000,
 		},
 	}
-
-	cfg := config.New()
-	rf, err := reffndio.New(cfg)
-	assert.Nil(err)
-	tm, err := ttlmchio.New(cfg)
-	assert.Nil(err)
-
-	opts := []bhlnames.Option{
-		bhlnames.OptRefFinder(rf),
-		bhlnames.OptTitleMatcher(tm),
-		bhlnames.OptNLP(bayesio.New()),
-	}
-
-	bn := bhlnames.New(cfg, opts...)
-	defer bn.Close()
+	bn := Init(t)
 
 	for _, v := range tests {
 		inpOpts := []input.Option{

@@ -32,7 +32,7 @@ func (b builderio) importItem(titles map[int]*model.Title) error {
 	slog.Info("Preparing item.txt data for db.")
 	iMap := make(map[int]struct{})
 	var res []*model.Item
-	path := filepath.Join(b.cfg.DownloadDir, "item.txt")
+	path := filepath.Join(b.cfg.ExtractDir, "item.txt")
 	f, err := os.Open(path)
 	if err != nil {
 		slog.Error("Cannot open item.txt.", "path", path, "error", err)

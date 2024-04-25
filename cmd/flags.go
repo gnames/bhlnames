@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// flagFunc sets 'interface' for flags.
 type flagFunc func(*cobra.Command)
 
 func curationFlag(cmd *cobra.Command) bool {
@@ -63,6 +64,13 @@ func shortFlag(cmd *cobra.Command) {
 	b, _ := cmd.Flags().GetBool("short_output")
 	if b {
 		inpOpts = append(inpOpts, input.OptWithShortenedOutput(b))
+	}
+}
+
+func trimFlag(cmd *cobra.Command) {
+	b, _ := cmd.Flags().GetBool("trim")
+	if b {
+		opts = append(opts, config.OptWithCoLDataTrim(b))
 	}
 }
 

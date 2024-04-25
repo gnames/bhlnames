@@ -22,7 +22,7 @@ func (b builderio) prepareDOI() (map[int]string, map[int]string, error) {
 	partMap := make(map[int]string)
 	slog.Info("Processing doi.txt.")
 
-	path := filepath.Join(b.cfg.DownloadDir, "doi.txt")
+	path := filepath.Join(b.cfg.ExtractDir, "doi.txt")
 	f, err := os.Open(path)
 	if err != nil {
 		slog.Error("Cannot open doi.txt.", "path", path, "error", err)

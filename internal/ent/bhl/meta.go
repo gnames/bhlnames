@@ -29,5 +29,5 @@ type Meta struct {
 	Error error `json:"error,omitempty"`
 
 	// ReferenceNumber is the number of references found for the name-string.
-	ReferenceNumber int `json:"refsNum"`
+	ReferenceNumber int `json:"totalRefsNum"`
 }

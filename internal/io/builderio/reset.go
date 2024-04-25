@@ -26,6 +26,20 @@ COMMENT ON SCHEMA public IS 'standard public schema'`
 		slog.Error("Cannot reset database.", "err", err)
 		return err
 	}
+
+	slog.Info("Update collation.")
+	q = `
+UPDATE pg_database 
+    SET datcollate = 'C', datctype = 'en_US.UTF-8' 
+    WHERE datname = '%s';
+`
+	q = fmt.Sprintf(q, b.cfg.DbDatabase)
+	_, err = b.db.Exec(context.Background(), q)
+	if err != nil {
+		slog.Error("Cannot update database's collation.", "err", err)
+		return err
+	}
+
 	slog.Info("Creating tables.")
 	err = model.Migrate(b.grm)
 	if err != nil {
@@ -37,12 +51,22 @@ COMMENT ON SCHEMA public IS 'standard public schema'`
 }
 
 func (b builderio) resetDirs() error {
-	err := gnsys.CleanDir(b.cfg.InputDir)
+	var err error
+	err = gnsys.MakeDir(b.cfg.RootDir)
+	if err != nil {
+		slog.Error(
+			"Cannot create root directory",
+			"dir", b.cfg.RootDir,
+			"error", err,
+		)
+		return err
+	}
+	err = gnsys.CleanDir(b.cfg.RootDir)
 	if err != nil {
 		slog.Warn("Cannot clean input directory.", "err", err)
 		slog.Info("Trying to create input directory.")
 	}
-	err = os.MkdirAll(b.cfg.DownloadDir, 0755)
+	err = os.MkdirAll(b.cfg.ExtractDir, 0755)
 	if err != nil {
 		slog.Error("Cannot create download directory.", "err", err)
 		return err

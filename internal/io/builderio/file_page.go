@@ -41,7 +41,7 @@ func (b builderio) importPage() error {
 	total := 0
 	pMap := make(map[int]struct{})
 	res := make([]*model.Page, 0, BatchSize)
-	path := filepath.Join(b.cfg.DownloadDir, "page.txt")
+	path := filepath.Join(b.cfg.ExtractDir, "page.txt")
 	f, err := os.Open(path)
 	if err != nil {
 		slog.Error("Cannot open page.txt.", "path", path, "error", err)

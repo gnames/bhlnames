@@ -9,139 +9,135 @@ import (
 	"github.com/gnames/gnsys"
 )
 
-// Config contains data needed for BHLnames functionality.
+// Config defines the essential parameters needed for BHLnames functionality.
 type Config struct {
-	// BHLDumpURL contains the URL containing Biodiversity Heritage Library
-	// dump files. These files provide metadata necessary for connection of
-	// names occurrences with BHL pages.
+
+	// BHLDumpURL specifies the source for Biodiversity Heritage Library dump
+	// files.
 	BHLDumpURL string
 
-	// BHLNamesURL provides URL to BHLindex Data. This data provides names
-	// occurrences and verifications. Together with data from BHL dumps it allows
-	// to connect a name to pages in BHL.
+	// BHLNamesURL specifies the source for BHLindex data (name occurrences and
+	// verifications).
 	BHLNamesURL string
 
-	// CoLDataURL provides a URL to the Catalogue of Life data in Darwin Core
-	// format.
+	// CoLDataURL specifies the source for Catalogue of Life data in Darwin Core
+	// Archive format.
 	CoLDataURL string
 
-	// DbDatabase is the name of the database to keep BHLnames data. By default
-	// it is `bhlnames`.
+	// DbDatabase is the name of the PostgreSQL database for BHLnames data.
 	DbDatabase string
 
-	// DbHost provides an IP or host name where PostgreSQL is located. The
-	// database is used as the major data store for the project.
+	// DbHost is the hostname or IP address of the PostgreSQL server.
 	DbHost string
 
-	// DbPass is the password for DBUser.
-	DbPass string
-
-	// DbUser is the username in PostgreSQL database. The user must have
-	// writing permissions to the database.
+	// DbUser is the PostgreSQL username with write permissions to the database.
 	DbUser string
 
-	// DownloadBHLFile provides the path where BHL dump compressed file will be
-	// stored.
+	// DbPass is the password for `DBUser`.
+	DbPass string
+
+	// JobsNum controls the concurrency level for finding references
+	// containing specified names.
+	JobsNum int
+
+	// PortREST specifies the port number for the BHLnames RESTful service.
+	PortREST int
+
+	// RootDir is the base directory for all BHLnames downloaded and extracted
+	// files.
+	RootDir string
+
+	// DownloadBHLFile is the full path where the downloaded BHL dump
+	// (compressed) is stored.
 	DownloadBHLFile string
 
-	// DownloadCoLFile provides the path where CoL DwCA compressed file will be
+	// DownloadCoLFile is the full path where the downloaded CoL DwCA file is
 	// stored.
 	DownloadCoLFile string
 
-	// DownloadDir is the directory where  BHLnames extracts data from
-	// BHL dump.
-	DownloadDir string
+	// ExtractDir is the directory where BHLnames extracts the contents of the
+	// compressed files.
+	ExtractDir string
 
-	// DownloadNamesFile provides the path where BHL dump compressed file will be
-	// stored.
+	// DownloadNamesFile is the full path where the downloaded BHLindex Data file
+	// is stored.
 	DownloadNamesFile string
 
-	// InputDir provides the `root` directory where all the BHLnames files are
-	// created.
-	InputDir string
-
-	// JobsNum provides concurrency value for finding references that contain
-	// specified names.
-	JobsNum int
-
-	// PortREST is used for BHLnames RESTful service port.
-	PortREST int
-
-	// WithCoLRecalc indicates that calculation of CoL nomenclatural events
+	// WithCoLDataTrim indicates that calculation of CoL nomenclatural events
 	// tables will be emptied, and CoL nomenclatural data will be reimported
 	// before linking to BHL data.
-	WithCoLRecalc bool
 
-	// WithRebuild determines if BHL dump data need to be uploaded again, or
-	// the data from local cache can be used. If `true` then local cache is
-	// ignored and data is downloaded from BHLDumpURL.
+	// WithCoLDataTrim indicates whether the CoL nomenclatural tables should be
+	// cleared and repopulated with fresh CoL data or import will continue from
+	// where it was paused.
+	WithCoLDataTrim bool
+
+	// WithRebuild determines if BHL or CoL data needs to be re-downloaded and
+	// processed. If true, deletes any locally cached data.
 	WithRebuild bool
 }
 
-// Option type for changing GNfinder settings.
+// Option enables a functional approach for modifying Config settings.
 type Option func(*Config)
 
+// OptBHLDumpURL sets the URL for BHL dump files.
 func OptBHLDumpURL(s string) Option {
 	return func(cfg *Config) {
 		cfg.BHLDumpURL = s
 	}
 }
 
+// OptBHLNamesURL sets the URL for BHLindex data.
 func OptBHLNamesURL(s string) Option {
 	return func(cfg *Config) {
 		cfg.BHLNamesURL = s
 	}
 }
 
+// OptCoLDataURL sets the URL for the Catalogue of Life data.
 func OptCoLDataURL(s string) Option {
 	return func(cfg *Config) {
 		cfg.CoLDataURL = s
 	}
 }
 
+// OptDbDatabase sets the name of the PostgreSQL database for BHLnames data.
+func OptDbDatabase(s string) Option {
+	return func(cfg *Config) {
+		cfg.DbDatabase = s
+	}
+}
+
+// OptDbHost sets the hostname or IP address of the PostgreSQL server.
 func OptDbHost(s string) Option {
 	return func(cfg *Config) {
 		cfg.DbHost = s
 	}
 }
 
-func OptDbName(s string) Option {
-	return func(cfg *Config) {
-		cfg.DbDatabase = s
-	}
-}
-
-func OptDbPass(s string) Option {
-	return func(cfg *Config) {
-		cfg.DbPass = s
-	}
-}
-
+// OptDbUser sets the PostgreSQL username with write permissions to the
+// database.
 func OptDbUser(s string) Option {
 	return func(cfg *Config) {
 		cfg.DbUser = s
 	}
 }
 
-func OptInputDir(s string) Option {
+// OptDbPass sets the password for the PostgreSQL user.
+func OptDbPass(s string) Option {
 	return func(cfg *Config) {
-		var err error
-		s, err = gnsys.ConvertTilda(s)
-		if err != nil {
-			err = fmt.Errorf("config.OptInputDir: %#w", err)
-			slog.Error("Cannot convert tilda to path.", "error", err)
-			os.Exit(1)
-		}
-		cfg.InputDir = s
+		cfg.DbPass = s
 	}
 }
 
+// OptJobsNum sets the concurrency level for finding references containing
 func OptJobsNum(i int) Option {
 	return func(cfg *Config) {
 		cfg.JobsNum = i
 	}
 }
 
+// OptPortREST sets the port number for the BHLnames RESTful service.
 func OptPortREST(i int) Option {
 	return func(cfg *Config) {
 		if i > 0 {
@@ -150,39 +146,59 @@ func OptPortREST(i int) Option {
 	}
 }
 
-func OptWithCoLRecalc(b bool) Option {
+// OptRootDir sets the base directory for all BHLnames downloaded and
+// extracted files.
+func OptRootDir(s string) Option {
 	return func(cfg *Config) {
-		cfg.WithCoLRecalc = b
+		var err error
+		s, err = gnsys.ConvertTilda(s)
+		if err != nil {
+			err = fmt.Errorf("config.OptInputDir: %#w", err)
+			slog.Error("Cannot convert tilda to path.", "error", err)
+			os.Exit(1)
+		}
+		cfg.RootDir = s
 	}
 }
 
+// OptWithCoLDataTrim sets the CoL data trim option.
+func OptWithCoLDataTrim(b bool) Option {
+	return func(cfg *Config) {
+		cfg.WithCoLDataTrim = b
+	}
+}
+
+// OptWithRebuild sets the rebuild option.
 func OptWithRebuild(b bool) Option {
 	return func(cfg *Config) {
 		cfg.WithRebuild = b
 	}
 }
 
-func InputDir() string {
-	inputDir, err := os.UserCacheDir()
+// RootDir returns the default root directory for BHLnames data.
+func RootDir() string {
+	cacheDir, err := os.UserCacheDir()
 	if err != nil {
-		inputDir = os.TempDir()
+		cacheDir = os.TempDir()
 	}
-	return filepath.Join(inputDir, "bhlnames")
+	return filepath.Join(cacheDir, "bhlnames")
 }
 
+// New creates a new Config instance with default values.
 func New(opts ...Option) Config {
 	cfg := Config{
-		BHLDumpURL:  "http://opendata.globalnames.org/dumps/bhl-data.zip",
-		BHLNamesURL: "http://opendata.globalnames.org/dumps/bhl-col.zip",
-		CoLDataURL:  "https://api.checklistbank.org/dataset/3LR/export?format=dwca",
-		InputDir:    InputDir(),
-		DbHost:      "0.0.0.0",
-		DbUser:      "postgres",
-		DbPass:      "postgres",
-		DbDatabase:  "bhlnames",
-		JobsNum:     4,
-		PortREST:    8888,
-		WithRebuild: false,
+		BHLDumpURL:      "http://opendata.globalnames.org/bhlnames/bhl-data.zip",
+		BHLNamesURL:     "http://opendata.globalnames.org/bhlnames/names.zip",
+		CoLDataURL:      "http://opendata.globalnames.org/bhlnames/col.zip",
+		DbDatabase:      "bhlnames",
+		DbHost:          "0.0.0.0",
+		DbUser:          "postgres",
+		DbPass:          "postgres",
+		JobsNum:         4,
+		PortREST:        8888,
+		RootDir:         RootDir(),
+		WithRebuild:     false,
+		WithCoLDataTrim: false,
 	}
 
 	for _, opt := range opts {
@@ -191,12 +207,12 @@ func New(opts ...Option) Config {
 
 	// if we redownload CoL files, we always reimport data.
 	if cfg.WithRebuild {
-		cfg.WithCoLRecalc = true
+		cfg.WithCoLDataTrim = true
 	}
 
-	cfg.DownloadBHLFile = filepath.Join(cfg.InputDir, "bhl-data.zip")
-	cfg.DownloadNamesFile = filepath.Join(cfg.InputDir, "bhlindex-latest.zip")
-	cfg.DownloadCoLFile = filepath.Join(cfg.InputDir, "col.zip")
-	cfg.DownloadDir = filepath.Join(cfg.InputDir, "Data")
+	cfg.DownloadBHLFile = filepath.Join(cfg.RootDir, "bhl-data.zip")
+	cfg.DownloadNamesFile = filepath.Join(cfg.RootDir, "bhlindex-latest.zip")
+	cfg.DownloadCoLFile = filepath.Join(cfg.RootDir, "col.zip")
+	cfg.ExtractDir = filepath.Join(cfg.RootDir, "Data")
 	return cfg
 }

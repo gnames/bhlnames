@@ -9,6 +9,7 @@ import (
 
 	"github.com/gnames/bhlnames/internal/ent/bhl"
 	"github.com/gnames/bhlnames/internal/ent/model"
+	"github.com/jackc/pgx/v5"
 )
 
 type preReference struct {
@@ -212,7 +213,7 @@ func (l reffndio) currentCanonical(canonical string) (string, error) {
 	ctx := context.Background()
 	row := l.db.QueryRow(ctx, q, canonical)
 	err := row.Scan(&currentCan)
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return "", nil
 	} else if err != nil {
 		return "", err

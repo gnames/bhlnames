@@ -3,11 +3,13 @@ package bhlnames
 import (
 	"cmp"
 	"fmt"
+	"log/slog"
 	"slices"
 
 	"github.com/gnames/bayes"
 	"github.com/gnames/bhlnames/internal/ent/bhl"
 	"github.com/gnames/bhlnames/internal/ent/builder"
+	"github.com/gnames/bhlnames/internal/ent/col"
 	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/internal/ent/nlp"
 	"github.com/gnames/bhlnames/internal/ent/reffnd"
@@ -15,6 +17,7 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/ttlmch"
 	"github.com/gnames/bhlnames/pkg/config"
 	"github.com/gnames/gnparser"
+	"github.com/gnames/gnsys"
 )
 
 // Option provides an 'interface' for setting up BHLnames instance.
@@ -35,6 +38,7 @@ func OptTitleMatcher(tm ttlmch.TitleMatcher) Option {
 	}
 }
 
+// OptNLP creates NLP instance to generate Odds for references.
 func OptNLP(n nlp.NLP) Option {
 	return func(bn *bhlnames) {
 		bayesWithData := n.LoadPretrainedWeights()
@@ -71,7 +75,7 @@ func New(cfg config.Config, opts ...Option) BHLnames {
 		opt(&res)
 	}
 
-	res.gnpPool = gnparserPool(cfg.JobsNum)
+	res.gnpPool = gnparser.NewPool(gnparser.NewConfig(), cfg.JobsNum)
 	return &res
 }
 
@@ -82,6 +86,16 @@ func (bn bhlnames) Initialize(bld builder.Builder) error {
 
 	if bn.cfg.WithRebuild {
 		bld.ResetData()
+	} else {
+		err = gnsys.MakeDir(bn.cfg.RootDir)
+		if err != nil {
+			slog.Error(
+				"Cannot create root directory",
+				"dir", bn.cfg.RootDir,
+				"error", err,
+			)
+			return err
+		}
 	}
 
 	err = bld.ImportData()
@@ -142,10 +156,32 @@ func matchQuality(odds float64) int {
 	return 5
 }
 
-func (bn bhlnames) NameRefsStream(
-	chIn <-chan input.Input,
-	chOut chan<- *bhl.RefsByName,
-) {
+func (bn bhlnames) InitCoLNomenEvents(cn col.Nomen) error {
+	hasFiles, hasData, err := cn.CheckCoLData()
+	if err != nil {
+		slog.Error("Unable to check Catalogue of Life data", "error", err)
+		return err
+	}
+
+	if bn.cfg.WithRebuild || !hasFiles {
+		cn.ResetCoLData()
+	}
+
+	// do not reimport data if percentage is given
+	if bn.cfg.WithCoLDataTrim || !hasData {
+		err = cn.ImportCoLData()
+		if err != nil {
+			slog.Error("Unable to import Catalogue of Life data", "error", err)
+			return err
+		}
+	}
+
+	err = cn.NomenEvents(bn.NameRefsStream)
+	if err != nil {
+		slog.Error("Unable to get nomenclatural events for CoL", "error", err)
+		return err
+	}
+	return nil
 }
 
 func (bn bhlnames) Config() config.Config {
@@ -163,15 +199,6 @@ func (bn *bhlnames) Close() {
 	if bn.tm != nil {
 		bn.tm.Close()
 	}
-}
-
-func gnparserPool(poolSize int) chan gnparser.GNparser {
-	gnpPool := make(chan gnparser.GNparser, poolSize)
-	for range poolSize {
-		cfgGNP := gnparser.NewConfig()
-		gnpPool <- gnparser.New(cfgGNP)
-	}
-	return gnpPool
 }
 
 func (bn bhlnames) scoreCalcSort(nr *bhl.RefsByName, isNomen bool) error {
@@ -198,17 +225,17 @@ func (bn bhlnames) scoreCalcSort(nr *bhl.RefsByName, isNomen bool) error {
 		return cmp.Compare(b.Score.Odds, a.Score.Odds)
 	})
 
-	if len(nr.References) > 0 {
-		noScoreIndex := len(nr.References)
-		for i := range nr.References {
-			if nr.References[i].Score.Total == 0 {
-				noScoreIndex = i
-				break
-			}
-		}
-
-		nr.References = nr.References[:noScoreIndex]
-	}
+	// if len(nr.References) > 0 {
+	// 	noScoreIndex := len(nr.References)
+	// 	for i := range nr.References {
+	// 		if nr.References[i].Score.Total == 0 {
+	// 			noScoreIndex = i
+	// 			break
+	// 		}
+	// 	}
+	//
+	// 	nr.References = nr.References[:noScoreIndex]
+	// }
 
 	err = score.BoostBestResult(nr, bn.bs)
 	if err != nil {

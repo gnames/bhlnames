@@ -18,6 +18,11 @@ type ReferenceName struct {
 
 	// RefMatchQuality provides a number between 0 and 5 to indicate if
 	// the reference is a good match for the input.
+	// 1 - nothing is found
+	// 2 - 15% (Odds > 0.01)
+	// 3 - 50% (Odds > 0.1)
+	// 4 - 80% (Odds > 1)
+	// 5 - 98% (Odds > 10)
 	RefMatchQuality int `json:"refMatchQuality,omitempty"`
 
 	// Score is the overall score of the match between the reference and
@@ -190,30 +195,30 @@ type Score struct {
 	Odds float64 `json:"odds" example:"0.1234"`
 
 	// OddsDetail provides details of the odds calculation.
-	OddsDetail bout.OddsDetails `json:"oddsDetail"`
+	OddsDetail *bout.OddsDetails `json:"oddsDetail,omitempty"`
 
 	// Total is a simple sum of all available individual scores.
-	Total int `json:"total" example:"15"`
+	Total int `json:"total,omitempty" example:"15"`
 
 	// Annot is a score important for nomenclatural events and provides match
 	// for nomenclatural annotations.
-	Annot int `json:"annot" example:"3"`
+	Annot int `json:"annot,omitempty" example:"3"`
 
 	// Year is a score representing the quality of a year match
 	// in a reference-string or the name-string.
-	Year int `json:"year" example:"3"`
+	Year int `json:"year,omitempty" example:"3"`
 
 	// RefTitle is the score of matching reference's titleName.
-	RefTitle int `json:"title" example:"3"`
+	RefTitle int `json:"title,omitempty" example:"3"`
 
 	// RefVolume is a score derived from matching volume from
 	// reference and BHL Volume.
-	RefVolume int `json:"volume" example:"3"`
+	RefVolume int `json:"volume,omitempty" example:"3"`
 
 	// RefPages is a score derived from matching pages in a reference
-	// and a page in BHL.
-	RefPages int `json:"pages" example:"3"`
+	// and a page from BHL.
+	RefPages int `json:"pages,omitempty" example:"3"`
 
 	// Labels provide types for each match
-	Labels map[string]string `json:"labels"`
+	Labels map[string]string `json:"labels,omitempty"`
 }

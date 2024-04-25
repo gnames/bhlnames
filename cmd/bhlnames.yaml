@@ -2,41 +2,53 @@
 # The file shows default settings. To change any of the settings
 # uncomment them and modify the value.
 
-## BHL provides its data in a zip file located at the default URL shown below.
-#
-## original (most often updated, might be incompatible)
-# BHLDumpURL: https://www.biodiversitylibrary.org/data/data.zip
-#
-## copy made at the same time as bhlindex dump (default).
-# BHLDumpURL: http://opendata.globalnames.org/dumps/bhl-data.zip
 
-## BHL name index data need to be downloaded and combined with BHL dump data.
-# BHLNamesURL: http://opendata.globalnames.org/dumps/bhl-col.zip
-
-## The Catalogue of Life Darwin Core Archive provides nomenclatural references
-# to scientific names.
+## BHLDumpURL provides URL to BHL data dump on BHL.
 #
-#  CoLDataURL:  https://api.checklistbank.org/dataset/281951/export.zip?extended=true&format=DwCA
+## Original URL (most often updated, might be incompatible)
+## BHLDumpURL: https://www.biodiversitylibrary.org/data/data.zip
+#
+## Copy made at the same time as bhlindex dump (default).
+#
+# BHLDumpURL: http://opendata.globalnames.org/bhlnames/bhl-data.zip
 
-## Postgresql host for assembling data from BHL and BHL name index.
-## Change it to IP address/Host of a database server.
+## BHLNamesURL provides data from BHL names index.
+#
+# BHLNamesURL: http://opendata.globalnames.org/bhlnames/names.zip
+
+## ColDataURL is the Catalogue of Life Darwin Core Archive that provides
+## names and their nomenclatural references.
+#
+## The file is downloaded from https://www.catalogueoflife.org/data/download
+#
+#  CoLDataURL:  http://opendata.globalnames.org/bhlnames/col.zip
+
+## DbDatabase is the database name of the  BHLnames project.
+#
+# DbDatabase: bhlnames
+
+## DbHost is the host computer containing PostgreSQL database of the project.
+## Change it to the IP address/Host Name of your database server.
+#
 # DbHost: 0.0.0.0
 
-## Postgresql user. Change it to username existed in Postgres service.
+## DbUser is the username that has access to the BHLnames database.
+#
 # DbUser: postgres
 
-## Postgresql password. Change it to the username password.
+## DbPass is the password for the DbUser.
+#
 # DbPass: postgres
 
-## Postgresql database to keep all the aggregated data.
-# DbName: bhlnames
-
-## Number of parallel jobs to search for BHL references.
+## JobsNum is the number of parallel jobs available to the BHLnames.
+#
 # JobsNum: 4
 
-## PortREST port for running REST API service
+## PortREST is the port to run REST API service.
+#
 # PortREST: 8888
 
-## Path to keep downloaded data and key-value stores. By default it is located
+## RootDir is a path to keep downloaded data. By default it is located
 ## in a standard Linux location.
-# InputDir: ~/.cache/bhlnames
+#
+# RootDir: ~/.cache/bhlnames

@@ -46,7 +46,7 @@ additional data about names and their connection to references.`,
 		// builder is used exclusively for initialization
 		builder, err := builderio.New(cfg)
 		if err != nil {
-			slog.Error("Cannot create builder.", "error", err)
+			slog.Error("Cannot create Builder.", "error", err)
 			os.Exit(1)
 		}
 		defer builder.Close()
@@ -66,5 +66,7 @@ additional data about names and their connection to references.`,
 func init() {
 	rootCmd.AddCommand(initCmd)
 
-	initCmd.Flags().BoolP("rebuild", "r", false, "Delete data and rebuild")
+	initCmd.PersistentFlags().BoolP("rebuild", "r", false,
+		"rebuild database and downloaded data from scratch",
+	)
 }

@@ -63,7 +63,7 @@ func (s *score) Calculate(
 		detail := bout.New(postOdds, "isNomen")
 		refs[i].Score = &bhl.Score{
 			Odds:       oddsVal,
-			OddsDetail: detail,
+			OddsDetail: &detail,
 			Total:      s.total,
 			Annot:      s.annot,
 			Year:       s.year,

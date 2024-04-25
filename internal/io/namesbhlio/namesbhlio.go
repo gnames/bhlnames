@@ -69,7 +69,7 @@ func (n namesbhlio) ImportOccurrences(blf *bloom.BloomFilter) error {
 }
 
 func (n namesbhlio) loadOccurrences(chIn chan<- []model.NameOccurrence) error {
-	path := filepath.Join(n.cfg.DownloadDir, "occurrences.csv")
+	path := filepath.Join(n.cfg.ExtractDir, "occurrences.csv")
 	f, err := os.Open(path)
 	if err != nil {
 		return err
@@ -226,7 +226,7 @@ func (n namesbhlio) loadNames(
 	ctx context.Context,
 	chIn chan<- [][]string,
 ) error {
-	path := filepath.Join(n.cfg.DownloadDir, "names.csv")
+	path := filepath.Join(n.cfg.ExtractDir, "names.csv")
 	f, err := os.Open(path)
 	if err != nil {
 		slog.Error("Could not open names.csv.", "error", err)

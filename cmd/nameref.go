@@ -90,6 +90,7 @@ var namerefCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(namerefCmd)
 
+	namerefCmd.PersistentFlags().MarkHidden("rebuild")
 	namerefCmd.Flags().StringP("format", "f", "compact",
 		"JSON output format can be 'compact' or 'pretty.")
 

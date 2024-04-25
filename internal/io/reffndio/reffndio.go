@@ -1,6 +1,7 @@
 package reffndio
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
@@ -45,13 +46,14 @@ func (rf reffndio) ReferencesByName(
 	// gets empty *namerefs.NameRefs with current_canonical
 	res := rf.emptyNameRefs(inp)
 
-	res.Canonical, err = fullCanonical(inp.NameString)
-	if err != nil {
-		return res, err
-	}
+	res.Canonical, _ = fullCanonical(inp.NameString)
 	res.CurrentCanonical, err = rf.currentCanonical(res.Canonical)
 	if err != nil {
-		return res, err
+		slog.Error(
+			"Could not get current canonical",
+			"canonical", res.Canonical,
+			"error", err,
+		)
 	}
 
 	var refRecs []*refRec
@@ -95,7 +97,13 @@ func fullCanonical(name_string string) (string, error) {
 	gnp := gnparser.New(cfg)
 	ps := gnp.ParseName(name_string)
 	if !ps.Parsed {
-		return "", fmt.Errorf("could not parse name_string '%s'", name_string)
+		err := errors.New("cannot parse name_string")
+		slog.Error(
+			"Name parsing error",
+			"name_string", name_string,
+			"error", err,
+		)
+		return "", err
 	}
 	can := ps.Canonical.Simple
 	return can, nil
