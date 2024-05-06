@@ -1,8 +1,12 @@
 package model
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
+	"log/slog"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"gorm.io/gorm"
 )
 
@@ -432,20 +436,14 @@ type ColName struct {
 }
 
 type ColBhlRef struct {
+	// ColNameID matches ID from ColName
 	ColNameID uint `gorm:"index:col_name_id"`
 
 	// RecordID is the Catalogue of Life identifier of a name-string.
 	RecordID string `gorm:"type:varchar(100);index:record_id_bhl"`
 
 	// MatchedName is a scientific name match from the reference's text.
-	MatchedName string `gorm:"type:varchar(255);not null"`
-
-	// EditDistance is the number of differences (edit events)
-	// between Name and MatchName according to Levenshtein algorithm.
-	EditDistance int
-
-	// AnnotNomen is a nomenclatural annotation located near the matchted name.
-	AnnotNomen string `gorm:"type:varchar(100);index:record_id_bhl"`
+	MatchedName string `gorm:"type:varchar(255);collate:C.UTF-8;not null"`
 
 	// ItemID is automatically generated identifier from BHL database.
 	// It corresponds to ID field in Item.
@@ -468,28 +466,19 @@ type ColBhlRef struct {
 	// ScoreOdds calculated by Naive Bayes algorithm. We consider odds from 0.01 and
 	// higher.
 	// Here are the Odds of the best result.
-	ScoreOdds float64
+	Odds float64
+}
 
-	// ScoreTotal is a simple sum of all available individual scores.
-	ScoreTotal int
+type ColBhlResult struct {
+	// ColNameID matches ID from ColName
+	ColNameID uint `gorm:"index:col_name_id"`
 
-	// ScoreAnnot is a score important for nomenclatural events and
-	// provides match for nomenclatural annotations.
-	ScoreAnnot int
+	// RecordID is the Catalogue of Life identifier of a name-string.
+	RecordID string `gorm:"type:varchar(100);index:record_id_bhl"`
 
-	// ScoreYear is a score representing the quality of a year match in a reference-string or the name-string.
-	ScoreYear int
-
-	// ScoreRefTitle is the score of matching reference's titleName.
-	ScoreRefTitle int
-
-	// ScoreRefVolume is a score derived from matching volume from
-	// reference and BHL Volume.
-	ScoreRefVolume int
-
-	// ScoreRefPages is a score derived from matching pages in a reference
-	// and a page from BHL.
-	ScoreRefPages int
+	// Result contains serialized version of the nomenclatural event
+	// search result.
+	Result []byte
 }
 
 func Migrate(grm *gorm.DB) error {
@@ -505,9 +494,43 @@ func Migrate(grm *gorm.DB) error {
 		&AbbrTitle{},
 		&ColName{},
 		&ColBhlRef{},
+		&ColBhlResult{},
 	)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func SetCollation(db *pgxpool.Pool) error {
+	ctx := context.Background()
+	type d struct {
+		table, column string
+		varchar       int
+	}
+	data := []d{
+		{"name_strings", "name", 255},
+		{"name_strings", "matched_name", 255},
+		{"name_strings", "current_name", 255},
+		{"col_names", "name", 500},
+	}
+	qStr := `
+ALTER TABLE %s
+	ALTER COLUMN %s TYPE VARCHAR(%d) COLLATE "C"
+`
+
+	for _, v := range data {
+		q := fmt.Sprintf(qStr, v.table, v.column, v.varchar)
+		_, err := db.Exec(ctx, q)
+		if err != nil {
+			slog.Error(
+				"Cannot set collation.",
+				"table", v.table,
+				"column", v.column,
+			)
+			return err
+		}
 	}
 	return nil
 }

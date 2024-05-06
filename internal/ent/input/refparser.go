@@ -84,6 +84,9 @@ func parsePages(ref string) []int {
 }
 
 func parseRefString(inp *Input) {
+	if inp.Reference == nil {
+		return
+	}
 	if inp.PageStart == 0 {
 		pages := parsePages(inp.RefString)
 		inp.PageStart = pages[0]

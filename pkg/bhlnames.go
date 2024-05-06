@@ -118,9 +118,13 @@ func (bn bhlnames) NameRefs(inp input.Input) (*bhl.RefsByName, error) {
 	if err != nil {
 		return nil, err
 	}
-	res.ReferenceNumber = len(res.References)
+	if inp.WithNomenEvent {
+		res.ReferenceNumber = 0
+	} else {
+		res.ReferenceNumber = len(res.References)
+	}
 
-	if inp.WithNomenEvent || inp.Reference.RefString != "" {
+	if inp.WithNomenEvent || inp.Reference != nil {
 		bn.scoreCalcSort(res, inp.WithNomenEvent)
 	}
 
@@ -128,7 +132,7 @@ func (bn bhlnames) NameRefs(inp input.Input) (*bhl.RefsByName, error) {
 		res.References = res.References[:inp.RefsLimit]
 	}
 
-	if inp.Reference.RefString != "" {
+	if inp.Reference != nil {
 		for i := range res.References {
 			res.References[i].RefMatchQuality = matchQuality(res.References[i].Odds)
 		}

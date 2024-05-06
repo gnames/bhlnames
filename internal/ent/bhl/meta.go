@@ -4,7 +4,7 @@ import "github.com/gnames/bhlnames/internal/ent/input"
 
 // RefsByName provides apparent occurrences of a name-string in BHL.
 type RefsByName struct {
-	Meta
+	*Meta
 	References []*ReferenceName `json:"references,omitempty"`
 }
 
@@ -29,5 +29,5 @@ type Meta struct {
 	Error error `json:"error,omitempty"`
 
 	// ReferenceNumber is the number of references found for the name-string.
-	ReferenceNumber int `json:"totalRefsNum"`
+	ReferenceNumber int `json:"totalRefsNum,omitempty"`
 }

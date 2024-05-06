@@ -12,6 +12,7 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/bhl"
 	"github.com/gnames/bhlnames/internal/ent/model"
 	"github.com/gnames/bhlnames/internal/io/dbio"
+	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnparser"
 	"github.com/jackc/pgx/v5"
 	"github.com/lib/pq"
@@ -266,19 +267,11 @@ func (c colio) saveColBhlRefs(refs *bhl.RefsByName) error {
 		"col_name_id",
 		"record_id",
 		"matched_name",
-		"edit_distance",
-		"annot_nomen",
 		"item_id",
 		"part_id",
 		"page_id",
 		"ref_match_quality",
-		"score_odds",
-		"score_total",
-		"score_annot",
-		"score_year",
-		"score_ref_title",
-		"score_ref_volume",
-		"score_ref_pages",
+		"odds",
 	}
 	rows := make([][]any, 0, len(refs.References))
 	es := strings.Split(refs.Input.ID, "|")
@@ -286,10 +279,10 @@ func (c colio) saveColBhlRefs(refs *bhl.RefsByName) error {
 	recID := es[1]
 	for _, ref := range refs.References {
 
-		row := []any{id, recID, ref.MatchedName, ref.EditDistance, ref.AnnotNomen,
-			ref.ItemID, ref.Part.ID, ref.PageID, ref.RefMatchQuality,
-			ref.Score.Odds, ref.Score.Total, ref.Score.Annot, ref.Score.Year,
-			ref.Score.RefTitle, ref.Score.RefVolume, ref.Score.RefPages}
+		row := []any{id, recID, ref.MatchedName,
+			ref.ItemID, ref.Part.ID, ref.PageID,
+			ref.RefMatchQuality, ref.Score.Odds,
+		}
 
 		rows = append(rows, row)
 	}
@@ -298,5 +291,25 @@ func (c colio) saveColBhlRefs(refs *bhl.RefsByName) error {
 		slog.Error("Cannot insert CoL ref data", "error", err)
 		return err
 	}
+
+	enc := gnfmt.GNgob{}
+	result, err := enc.Encode(refs)
+	if err != nil {
+		slog.Error("Cannot encode results", "error", err)
+		return err
+	}
+	ctx := context.Background()
+
+	q := `
+INSERT
+	INTO col_bhl_results (col_name_id, record_id, result)
+	VALUES ($1, $2, $3)
+`
+	_, err = c.db.Exec(ctx, q, id, recID, result)
+	if err != nil {
+		slog.Error("Cannot save search results", "error", err)
+		return err
+	}
+
 	return nil
 }

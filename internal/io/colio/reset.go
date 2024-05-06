@@ -45,9 +45,21 @@ func (c colio) resetColDB() error {
 	}
 
 	slog.Info("Recreating CoL tables.")
-	c.grm.AutoMigrate(
+	err := c.grm.AutoMigrate(
 		&model.ColName{},
 		&model.ColBhlRef{},
+		&model.ColBhlResult{},
 	)
+	if err != nil {
+		slog.Error("Cannot recreate CoL tables", "error", err)
+		return err
+	}
+
+	err = model.SetCollation(c.db)
+	if err != nil {
+		slog.Error("Cannot set collation", "error", err)
+		return err
+	}
+
 	return nil
 }

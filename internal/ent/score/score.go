@@ -35,7 +35,10 @@ func (s *score) Calculate(
 	refs := nr.References
 	yr := getYear(nr.Input)
 
-	refString := nr.Input.RefString
+	var refString string
+	if nr.Input.Reference != nil {
+		refString = nr.Input.RefString
+	}
 	var titleIDs map[int][]string
 	if refString != "" {
 		titleIDs, err = tm.TitlesBHL(refString)
@@ -49,8 +52,10 @@ func (s *score) Calculate(
 		s.year, s.yearLabel = getYearScore(yr, refs[i])
 		s.annot, s.annotLabel = getAnnotScore(refs[i])
 		s.refTitle, s.titleLabel = getRefTitleScore(titleIDs, refs[i])
-		s.refVolume, s.volLabel = getVolumeScore(nr.Input.Volume, refs[i])
-		s.refPages, s.pagesLabel = getPageScore(nr.Input.PageStart, nr.Input.PageEnd, refs[i])
+		if nr.Input.Reference != nil {
+			s.refVolume, s.volLabel = getVolumeScore(nr.Input.Volume, refs[i])
+			s.refPages, s.pagesLabel = getPageScore(nr.Input.PageStart, nr.Input.PageEnd, refs[i])
+		}
 		s.combineScores()
 		s.resNumLabel = "many"
 
@@ -158,7 +163,7 @@ func (s *score) combineScores() {
 }
 
 func getYear(inp input.Input) int {
-	if inp.RefYearStart != 0 {
+	if inp.Reference != nil && inp.RefYearStart != 0 {
 		return inp.RefYearStart
 	}
 	return inp.NameYear

@@ -1,14 +1,18 @@
 package reffndio
 
 import (
+	"cmp"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
 
 	"github.com/gnames/bhlnames/internal/ent/bhl"
+	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/internal/ent/model"
+	"github.com/gnames/gnfmt"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -204,14 +208,14 @@ func (l reffndio) occurrences(name string, field string) ([]*refRec, error) {
 	return res, nil
 }
 
-func (l reffndio) currentCanonical(canonical string) (string, error) {
+func (rf reffndio) currentCanonical(canonical string) (string, error) {
 	var currentCan sql.NullString
 	q := `SELECT current_canonical
           FROM name_strings
         WHERE matched_canonical = $1
         LIMIT 1`
 	ctx := context.Background()
-	row := l.db.QueryRow(ctx, q, canonical)
+	row := rf.db.QueryRow(ctx, q, canonical)
 	err := row.Scan(&currentCan)
 	if err == pgx.ErrNoRows {
 		return "", nil
@@ -219,4 +223,64 @@ func (l reffndio) currentCanonical(canonical string) (string, error) {
 		return "", err
 	}
 	return currentCan.String, nil
+}
+
+func (rf *reffndio) colNomen(inp input.Input) (*bhl.RefsByName, error) {
+	q := `
+SELECT cr.result 
+	FROM col_names cn
+		JOIN col_bhl_results cr
+			ON cn.id = cr.col_name_id
+	WHERE cn.canonical_simple = $1
+`
+
+	ctx := context.Background()
+	enc := gnfmt.GNgob{}
+	var res []*bhl.RefsByName
+
+	rows, err := rf.db.Query(ctx, q, inp.Name.CanonicalSimple)
+	if err != nil {
+		slog.Error("Cannot run CoL nomen query", "error", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var bs []byte
+		var nref bhl.RefsByName
+		err := rows.Scan(&bs)
+		if err != nil {
+			slog.Error("Cannot scan results of CoL nomen query", "error", err)
+			return nil, err
+		}
+
+		err = enc.Decode(bs, &nref)
+		if err != nil {
+			slog.Error("Cannot decode name-reference data from CoL", "error", err)
+			return nil, err
+		}
+
+		if len(nref.References) > 0 {
+			res = append(res, &nref)
+		}
+	}
+	var out *bhl.RefsByName
+	switch len(res) {
+	case 0:
+		return nil, nil
+	case 1:
+		out = res[0]
+	default:
+		slices.SortFunc(res, func(a, b *bhl.RefsByName) int {
+			return cmp.Compare(b.References[0].Odds, a.References[0].Odds)
+		})
+		out = res[0]
+	}
+
+	prepareOutput(inp, out)
+	return out, nil
+}
+
+func prepareOutput(inp input.Input, nr *bhl.RefsByName) {
+	nr.Input = inp
 }

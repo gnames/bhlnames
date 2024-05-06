@@ -46,7 +46,7 @@ func (rf reffndio) ReferencesByName(
 	// gets empty *namerefs.NameRefs with current_canonical
 	res := rf.emptyNameRefs(inp)
 
-	res.Canonical, _ = fullCanonical(inp.NameString)
+	res.Canonical, _ = simpleCanonical(inp.NameString)
 	res.CurrentCanonical, err = rf.currentCanonical(res.Canonical)
 	if err != nil {
 		slog.Error(
@@ -57,6 +57,16 @@ func (rf reffndio) ReferencesByName(
 	}
 
 	var refRecs []*refRec
+
+	if inp.Reference == nil && inp.WithNomenEvent {
+		res, err = rf.colNomen(inp)
+		if err != nil {
+			slog.Error("Cannot get nomenclatural reference from CoL", "error", err)
+			return nil, err
+		}
+		return res, nil
+	}
+
 	if inp.WithTaxon {
 		refRecs, err = rf.taxonOccurrences(res)
 		if err != nil {
@@ -86,13 +96,13 @@ func (rf *reffndio) emptyNameRefs(inp input.Input) *bhl.RefsByName {
 		Input: inp,
 	}
 	res := &bhl.RefsByName{
-		Meta:       meta,
+		Meta:       &meta,
 		References: make([]*bhl.ReferenceName, 0),
 	}
 	return res
 }
 
-func fullCanonical(name_string string) (string, error) {
+func simpleCanonical(name_string string) (string, error) {
 	cfg := gnparser.NewConfig()
 	gnp := gnparser.New(cfg)
 	ps := gnp.ParseName(name_string)

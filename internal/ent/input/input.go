@@ -24,31 +24,38 @@ type Input struct {
 	// Reference provides data about a reference where the name was
 	// mentioned. Information can be provided by a reference-string or
 	// be split into separate fields.
-	Reference `json:"reference"`
+	*Reference `json:"reference,omitempty"`
 
 	Params `json:"params"`
 }
 
+// @Description Params contain options used in the search and output.
 type Params struct {
-	// WithNomenEvent is true when the result tries to get a nomenclatural event
-	// for the name.
-	WithNomenEvent bool `json:"nomenEvent,omitempty" example:"false"`
-
-	WithTaxon bool `json:"taxon,omitempty" example:"false"`
-
-	// WithShortenedOutput determines if references details will be provided.
-	// If it is `true`, found references are not provided, only the metadata
-	// about them.
-	WithShortenedOutput bool `json:"shortenedOutput,omitempty" example:"false"`
+	// RefsLimit provides the maximum number of references to return for each
+	// name.
+	RefsLimit int `json:"refsLimit,omitempty" example:"3"`
 
 	// SortDesc determines the order of sorting the output data. If `true`
 	// data are sorted by year from latest to earliest. If `false` then from
 	// earliest to latest.
 	SortDesc bool `json:"sortDesc,omitempty" example:"true"`
 
-	// RefsLimit provides the maximum number of references to return for each
-	// name.
-	RefsLimit int `json:"refsLimit,omitempty" example:"3"`
+	// WithDetails is true when it is desirable to show more information in the
+	// output.
+	WithDetails bool `json:"showDetails,omitempty" example:"false"`
+
+	// WithNomenEvent is true when the result tries to get a nomenclatural event
+	// for the name.
+	WithNomenEvent bool `json:"nomenEvent,omitempty" example:"false"`
+
+	// WithShortenedOutput determines if references details will be provided.
+	// If it is `true`, found references are not provided, only the metadata
+	// about them.
+	WithShortenedOutput bool `json:"shortenedOutput,omitempty" example:"false"`
+
+	// WithTaxon is true when result includes data from all names that point to
+	// a particular taxon, not only from the given name.
+	WithTaxon bool `json:"taxon,omitempty" example:"false"`
 }
 
 // @Description Name provides data about a scientific name.
@@ -57,9 +64,14 @@ type Name struct {
 	// provide only NameString without provided other fields.
 	NameString string `json:"nameString,omitempty" example:"Canis lupus Linnaeus, 1758"`
 
-	// Canonical is the canonical form of a name, meaning the name without
+	// CanonicalSimple is the canonical form of a name, meaning the name without
 	// authorship or a year.
-	Canonical string `json:"canonical,omitempty" example:"Canis lupus"`
+	CanonicalSimple string `json:"canonical,omitempty" example:"Canis lupus"`
+
+	// CanonicalStem is the canonical form further normalized by removing
+	// suffixes of specific and infraspecific epithets as well as normalizing
+	// some interchangeable letters.
+	CanonicalStem string `json:"canonicalStem,omitempty" example:"Canis lup"`
 
 	// NameAuthors is the authorship of a name.
 	NameAuthors string `json:"authors,omitempty" example:"Linnaeus"`
@@ -121,7 +133,8 @@ func OptNameYear(i int) Option {
 
 func OptRefString(s string) Option {
 	return func(inp *Input) {
-		inp.RefString = s
+		inp.Reference = &Reference{}
+		inp.Reference.RefString = s
 	}
 }
 
@@ -168,10 +181,10 @@ func New(parsers chan gnparser.GNparser, opts ...Option) Input {
 		res.ID = generateID()
 	}
 
-	if res.NameString != "" && res.Canonical == "" {
+	if res.NameString != "" && res.CanonicalSimple == "" {
 		parseNameString(gnp, &res)
 	}
-	if res.RefString != "" {
+	if res.Reference != nil {
 		parseRefString(&res)
 	}
 
@@ -190,7 +203,8 @@ func parseNameString(gnp gnparser.GNparser, inp *Input) {
 	}
 
 	if parsed.Canonical != nil {
-		inp.Canonical = parsed.Canonical.Simple
+		inp.CanonicalSimple = parsed.Canonical.Simple
+		inp.CanonicalStem = parsed.Canonical.Stemmed
 	}
 
 	if parsed.Authorship != nil {

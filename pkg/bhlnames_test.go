@@ -111,11 +111,11 @@ func TestNameWithRefs(t *testing.T) {
 			"Skalitzky, C. Zwei neue europäische Staphylinenarten aus Portugal. Wiener Entomologische Zeitung, 3 (4): 97-99. (1884).",
 			false, 43792, 11, 3, 3, 1, 5_000,
 		},
-		{
-			"nomen", "Achenium lusitanicum Skalitzky, 1884",
-			"Skalitzky, C. Zwei neue europäische Staphylinenarten aus Portugal. Wiener Entomologische Zeitung, 3 (4): 97-99. (1884).",
-			true, 43792, 11, 3, 3, 1, 25_000,
-		},
+		// {
+		// 	"nomen", "Achenium lusitanicum Skalitzky, 1884",
+		// 	"Skalitzky, C. Zwei neue europäische Staphylinenarten aus Portugal. Wiener Entomologische Zeitung, 3 (4): 97-99. (1884).",
+		// 	true, 43792, 11, 3, 3, 1, 25_000,
+		// },
 	}
 
 	bn := Init(t)

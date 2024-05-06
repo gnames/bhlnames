@@ -27,23 +27,29 @@ COMMENT ON SCHEMA public IS 'standard public schema'`
 		return err
 	}
 
-	slog.Info("Update collation.")
-	q = `
-UPDATE pg_database 
-    SET datcollate = 'C', datctype = 'en_US.UTF-8' 
-    WHERE datname = '%s';
-`
-	q = fmt.Sprintf(q, b.cfg.DbDatabase)
-	_, err = b.db.Exec(context.Background(), q)
-	if err != nil {
-		slog.Error("Cannot update database's collation.", "err", err)
-		return err
-	}
+	// 	slog.Info("Update collation.")
+	// 	q = `
+	// UPDATE pg_database
+	//     SET datcollate = 'C.UTF-8', datctype = 'C.UTF-8'
+	//     WHERE datname = '%s';
+	// `
+	// 	q = fmt.Sprintf(q, b.cfg.DbDatabase)
+	// 	_, err = b.db.Exec(context.Background(), q)
+	// 	if err != nil {
+	// 		slog.Error("Cannot update database's collation.", "err", err)
+	// 		return err
+	// 	}
 
 	slog.Info("Creating tables.")
 	err = model.Migrate(b.grm)
 	if err != nil {
 		slog.Error("Cannot create tables.", "err", err)
+		return err
+	}
+
+	err = model.SetCollation(b.db)
+	if err != nil {
+		slog.Error("Cannot set collation", "error", err)
 		return err
 	}
 
