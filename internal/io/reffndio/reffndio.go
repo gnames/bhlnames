@@ -1,6 +1,7 @@
 package reffndio
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -12,6 +13,7 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/reffnd"
 	"github.com/gnames/bhlnames/internal/io/dbio"
 	"github.com/gnames/bhlnames/pkg/config"
+	"github.com/gnames/gnfmt"
 	"github.com/gnames/gnparser"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -20,8 +22,14 @@ type reffndio struct {
 	// db is a PostgreSQL connection for plain SQL-queries.
 	db *pgxpool.Pool
 
-	// AC is AhoCorasick object for matching references to BHL titles.
-	AC aho_corasick.AhoCorasick
+	// ac is AhoCorasick object for matching references to BHL titles.
+	ac aho_corasick.AhoCorasick
+
+	// enc is an encoder/decoder for serializing/deserializing data.
+	enc gnfmt.Encoder
+
+	// ctx is a placeholder for database queries, for now it is "empty".
+	ctx context.Context
 }
 
 func New(cfg config.Config) (reffnd.RefFinder, error) {
@@ -33,7 +41,9 @@ func New(cfg config.Config) (reffnd.RefFinder, error) {
 	}
 
 	res := &reffndio{
-		db: dbConn,
+		db:  dbConn,
+		enc: gnfmt.GNgob{},
+		ctx: context.Background(),
 	}
 	return res, nil
 }
@@ -83,12 +93,40 @@ func (rf reffndio) ReferencesByName(
 	return res, nil
 }
 
-func (r *reffndio) RefByPageID(pageID int) (*bhl.Reference, error) {
-	return nil, nil
+func (rf *reffndio) RefByPageID(pageID int) (*bhl.Reference, error) {
+	var ref *bhl.Reference
+	ref, err := rf.refByPageID(pageID)
+	if err != nil {
+		return ref, err
+	}
+	return ref, nil
 }
 
-func (r *reffndio) Close() {
-	r.db.Close()
+func (rf *reffndio) RefsByExtID(
+	extID string,
+	dataSourceID int,
+) (*bhl.RefsByName, error) {
+	_ = dataSourceID // not used yet, here for future use
+
+	bs, err := rf.refsByExtID(extID)
+	if err != nil {
+		return nil, err
+	}
+	if bs == nil {
+		return nil, nil
+	}
+
+	var res bhl.RefsByName
+	err = rf.enc.Decode(bs, &res)
+	if err != nil {
+		slog.Error("Cannot decode refs by external ID", "error", err)
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (rf *reffndio) Close() {
+	rf.db.Close()
 }
 
 func (rf *reffndio) emptyNameRefs(inp input.Input) *bhl.RefsByName {
@@ -96,7 +134,7 @@ func (rf *reffndio) emptyNameRefs(inp input.Input) *bhl.RefsByName {
 		Input: inp,
 	}
 	res := &bhl.RefsByName{
-		Meta:       &meta,
+		Meta:       meta,
 		References: make([]*bhl.ReferenceName, 0),
 	}
 	return res

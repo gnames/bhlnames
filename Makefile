@@ -78,7 +78,7 @@ install: openapi ## Build and install binary
 	
 ## OpenAPI generation
 openapi: ## Generate documentation for OpenAPI
-	## swag init -g restio.go -d ./internal/io/restio  --parseDependency --parseInternal
+	swag init -g restio.go -d ./internal/io/restio  --parseDependency --parseInternal
 
 ## Build docker image
 dc: build

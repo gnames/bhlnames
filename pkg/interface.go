@@ -37,6 +37,18 @@ type BHLnames interface {
 		chOut chan<- *bhl.RefsByName,
 	) error
 
+	// RefByPageID returns  BHL metadata for a given pageID.
+	RefByPageID(pageID int) (*bhl.Reference, error)
+
+	// RefsByExtID returns BHL metadata for a given external ID and data-source
+	// ID. If allRefs is true, it returns all cached references for
+	// the external ID. Otherwise it returns only the best match.
+	RefsByExtID(
+		extID string,
+		dataSourceID int,
+		allRefs bool,
+	) (*bhl.RefsByName, error)
+
 	// Config returns the current configuration used by the BHLnames instance.
 	Config() config.Config
 

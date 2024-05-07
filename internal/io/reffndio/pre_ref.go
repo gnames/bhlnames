@@ -115,9 +115,6 @@ func (rf reffndio) getReferences(
 ) []*bhl.ReferenceName {
 	res := make([]*bhl.ReferenceName, len(prs))
 	for i, v := range prs {
-		if v.part == nil {
-			v.part = &model.Part{}
-		}
 		yr, tp := getYearAggr(v)
 		res[i] = &bhl.ReferenceName{
 			NameData: &bhl.NameData{
@@ -141,13 +138,6 @@ func (rf reffndio) getReferences(
 				TitleYearEnd:   int(v.item.titleYearEnd.Int32),
 				ItemYearStart:  int(v.item.yearStart.Int32),
 				ItemYearEnd:    int(v.item.yearEnd.Int32),
-				Part: &bhl.Part{
-					DOI:   v.part.DOI,
-					ID:    int(v.part.ID),
-					Pages: getPartPages(v),
-					Name:  v.part.Title,
-					Year:  int(v.part.Year.Int32),
-				},
 				ItemStats: bhl.ItemStats{
 					MainKingdom:        v.item.mainKingdom,
 					MainKingdomPercent: v.item.mainKingdomPercent,
@@ -156,7 +146,17 @@ func (rf reffndio) getReferences(
 				},
 			},
 		}
+		if v.part != nil {
+			res[i].Reference.Part = &bhl.Part{
+				DOI:   v.part.DOI,
+				ID:    int(v.part.ID),
+				Pages: getPartPages(v),
+				Name:  v.part.Title,
+				Year:  int(v.part.Year.Int32),
+			}
+		}
 	}
+
 	slices.SortStableFunc(res, func(a, b *bhl.ReferenceName) int {
 		if desc {
 			return cmp.Compare(b.YearAggr, a.YearAggr)

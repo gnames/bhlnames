@@ -141,6 +141,29 @@ func (bn bhlnames) NameRefs(inp input.Input) (*bhl.RefsByName, error) {
 	return res, nil
 }
 
+// RefByPageID returns a reference metadata for a given pageID.
+func (bn bhlnames) RefByPageID(pageID int) (*bhl.Reference, error) {
+	return bn.rf.RefByPageID(pageID)
+}
+
+func (bn bhlnames) RefsByExtID(
+	extID string,
+	dataSourceID int,
+	allRefs bool,
+) (*bhl.RefsByName, error) {
+	res, err := bn.rf.RefsByExtID(extID, dataSourceID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !allRefs {
+		if len(res.References) > 0 {
+			res.References = res.References[:1]
+		}
+	}
+	return res, nil
+}
+
 func matchQuality(odds float64) int {
 	if odds <= 0 {
 		return 0

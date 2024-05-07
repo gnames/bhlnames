@@ -1,0 +1,647 @@
+basePath: /api/v1
+definitions:
+  bhl.ItemStats:
+    description: ItemStats provides insights about a Reference's Item. This data can
+      be used to infer the prevalent taxonomic groups within the Item.
+    properties:
+      mainClass:
+        description: MainClass is the most prevalent class in the Item.
+        example: Insecta
+        type: string
+      mainClassPercent:
+        description: |-
+          MainClassPercent indicates the percentage of names that belong
+          to the most prevalent class.
+        example: 44
+        type: integer
+      mainFamily:
+        description: MainFamily is the most prevalent family in the Item.
+        example: Buprestidae
+        type: string
+      mainFamilyPercent:
+        description: |-
+          MainFamilyPercent indicates the percentage of names that belong
+          to the most prevalent family.
+        example: 13
+        type: integer
+      mainGenus:
+        description: MainGenus is the most prevalent genus in the Item.
+        example: Agrilus
+        type: string
+      mainGenusPercent:
+        description: |-
+          MainGenusPercent indicates the percentage of names that belong
+          to the most prevalent genus.
+        example: 5
+        type: integer
+      mainKingdom:
+        description: MainKingdom is the most prevalent kingdom in the Item.
+        example: Animalia
+        type: string
+      mainKingdomPercent:
+        description: |-
+          MainKingdomPercent indicates the percentage of names that belong
+          to the most prevalent kingdom.
+        example: 79
+        type: integer
+      mainOrder:
+        description: MainOrder is the most prevalent order in the Item.
+        example: Coleoptera
+        type: string
+      mainOrderPercent:
+        description: |-
+          MainOrderPercent indicates the percentage of names that belong
+          to the most prevalent order.
+        example: 14
+        type: integer
+      mainPhylum:
+        description: MainPhylum is the most prevalent phylum in the Item.
+        example: Arthropoda
+        type: string
+      mainPhylumPercent:
+        description: |-
+          MainPhylumPercent indicates the percentage of names that belong
+          to the most prevalent phylum.
+        example: 45
+        type: integer
+      mainTaxon:
+        description: |-
+          MainTaxon provides a clade that contains a majority of scientific names
+          mentioned in the Item.
+        example: Arthropoda
+        type: string
+      uniqNamesNum:
+        description: UniqNamesNum is the number of unique names in the Item.
+        example: 1234
+        type: integer
+    type: object
+  bhl.NameData:
+    description: NameData contains details about a scientific name provided in the
+      search.
+    properties:
+      annotNomen:
+        description: AnnotNomen is a nomenclatural annotation located near the matchted
+          name.
+        example: sp. nov.
+        type: string
+      editDistance:
+        description: |-
+          EditDistance is the number of differences (edit events)
+          between Name and MatchName according to Levenshtein algorithm.
+        example: 0
+        type: integer
+      matchName:
+        description: MatchedName is a scientific name match from the reference's text.
+        example: Pardosa moesta Banks, 1892
+        type: string
+      name:
+        description: Name is a scientific name from the query.
+        example: Pardosa moesta
+        type: string
+    type: object
+  bhl.Part:
+    description: Part represents a distinct entity, usually a scientific paper,
+    properties:
+      doi:
+        description: DOI provides DOI for a part (usually a paper/publication).
+        example: 10.1234/5678
+        type: string
+      id:
+        description: ID is the BHL database ID for the Part (usually a scientific
+          paper).
+        example: 39371
+        type: integer
+      name:
+        description: Name is the publication title.
+        example: On a remarkable bacterium (Streptococcus) from wheat-ensilage
+        type: string
+      pages:
+        description: Pages are the start and end pages of a publication.
+        example: 925-928
+        type: string
+      year:
+        description: Year is the year of publication for a part.
+        example: 1886
+        type: integer
+    type: object
+  bhl.Reference:
+    description: Reference represents a BHL reference that matched the query. This
+      could be a book, a journal, or a scientific paper.
+    properties:
+      doiTitle:
+        description: TitleDOI provides DOI for a book or journal
+        example: 10.1234/5678
+        type: string
+      itemId:
+        description: ItemID is the BHL database ID for Item (usually a volume).
+        example: 12345
+        type: integer
+      itemStats:
+        allOf:
+        - $ref: '#/definitions/bhl.ItemStats'
+        description: |-
+          ItemStats provides insights about the Reference Item.
+          From this data it is possible to infer what kind of
+          taxonomic groups are prevalent in the text.
+      itemYearEnd:
+        description: ItemYearEnd is the year when an Item ceased publication.
+        example: 1893
+        type: integer
+      itemYearStart:
+        description: |-
+          ItemYearStart is the year when an Item began publication (most
+          items will have only ItemYearStart).
+        example: 1892
+        type: integer
+      pageId:
+        description: |-
+          PageID is the BHL database ID for the page where the name was found.
+          It is provided by BHL.
+        example: 12345
+        type: integer
+      pageNum:
+        description: PageNum is the page number provided by the hard copy of the publication.
+        example: 123
+        type: integer
+      part:
+        allOf:
+        - $ref: '#/definitions/bhl.Part'
+        description: |-
+          Part corresponds to a scientific paper, or other
+          distinct entity in an Item.
+      titleId:
+        description: TitleID is the BHL database ID for the Title (book or journal).
+        example: 12345
+        type: integer
+      titleName:
+        description: TitleName is the name of a title (a book or a journal).
+        example: Bulletin of the American Museum of Natural History
+        type: string
+      titleYearEnd:
+        description: TitleYearEnd is the year when the journal ceased publication.
+        example: 1922
+        type: integer
+      titleYearStart:
+        description: |-
+          TitleYearStart is the year the when book is published,
+          or when the journal was first published.
+        example: 1890
+        type: integer
+      url:
+        description: URL is the URL of the reference in BHL.
+        example: https://www.biodiversitylibrary.org/page/12345
+        type: string
+      volume:
+        description: Volume is the information about a volume in a journal.
+        example: vol. 12
+        type: string
+      yearAggr:
+        description: |-
+          YearAggr is the most precise year information available for the
+          reference. This could be from the reference year (part),
+          the year of a Volume (item), or from the title (usually a book
+          or journal).
+        example: 1892
+        type: integer
+      yearType:
+        description: YearType indicates the source of the YearAggr value.
+        example: part
+        type: string
+    type: object
+  bhl.ReferenceName:
+    description: ReferenceName represents a BHL entity that includes a matched scientific
+      name and the reference where this name was discovered.
+    properties:
+      name:
+        allOf:
+        - $ref: '#/definitions/bhl.NameData'
+        description: NameData contains detailed information about the scientific name.
+      refMatchQuality:
+        description: |-
+          RefMatchQuality provides a number between 0 and 5 to indicate if
+          the reference is a good match for the input.
+          1 - nothing is found
+          2 - 15% (Odds > 0.01)
+          3 - 50% (Odds > 0.1)
+          4 - 80% (Odds > 1)
+          5 - 98% (Odds > 10)
+        type: integer
+      reference:
+        allOf:
+        - $ref: '#/definitions/bhl.Reference'
+        description: Reference is the BHL reference where the name was detected.
+      score:
+        allOf:
+        - $ref: '#/definitions/bhl.Score'
+        description: |-
+          Score is the overall score of the match between the reference and
+          a name-string or a reference-string.
+    type: object
+  bhl.RefsByName:
+    properties:
+      canonical:
+        description: Canonical is a full canonical form of the input name-string.
+        type: string
+      currentCanonical:
+        description: |-
+          CurrentCanonical is a full canonical form of a currently accepted
+          name for the taxon of the input name-string.
+        type: string
+      error:
+        description: Error in results
+      imagesURL:
+        description: ImagesURL provides URL that contains images of the taxon.
+        type: string
+      input:
+        allOf:
+        - $ref: '#/definitions/input.Input'
+        description: Input of a name and/or reference
+      references:
+        items:
+          $ref: '#/definitions/bhl.ReferenceName'
+        type: array
+      synonyms:
+        description: Synonyms is a list of synonyms for the name-string.
+        items:
+          type: string
+        type: array
+      totalRefsNum:
+        description: ReferenceNumber is the number of references found for the name-string.
+        type: integer
+    type: object
+  bhl.Score:
+    description: Score provides a qualitative estimation of a match quality to a name-string,
+      a nomen, or a reference-string.
+    properties:
+      annot:
+        description: |-
+          Annot is a score important for nomenclatural events and provides match
+          for nomenclatural annotations.
+        example: 3
+        type: integer
+      labels:
+        additionalProperties:
+          type: string
+        description: Labels provide types for each match
+        type: object
+      odds:
+        description: Odds is total Naive Bayes odds for the score.
+        example: 0.1234
+        type: number
+      oddsDetail:
+        allOf:
+        - $ref: '#/definitions/output.OddsDetails'
+        description: OddsDetail provides details of the odds calculation.
+      pages:
+        description: |-
+          RefPages is a score derived from matching pages in a reference
+          and a page from BHL.
+        example: 3
+        type: integer
+      title:
+        description: RefTitle is the score of matching reference's titleName.
+        example: 3
+        type: integer
+      total:
+        description: Total is a simple sum of all available individual scores.
+        example: 15
+        type: integer
+      volume:
+        description: |-
+          RefVolume is a score derived from matching volume from
+          reference and BHL Volume.
+        example: 3
+        type: integer
+      year:
+        description: |-
+          Year is a score representing the quality of a year match
+          in a reference-string or the name-string.
+        example: 3
+        type: integer
+    type: object
+  gnvers.Version:
+    description: Version provides information about the version of an application.
+    properties:
+      build:
+        description: |-
+          Build contains the timestamp or other details
+          indicating when the app was compiled.
+        example: 2023-08-03_18:58:38UTC
+        type: string
+      version:
+        description: Version specifies the version of the app, usually in the v0.0.0
+          format.
+        example: v1.0.2
+        type: string
+    type: object
+  input.Input:
+    description: Input is used to pass data to the BHLnames API. It contains infromation
+      about a name and a reference where the name was mentioned. Reference can point
+      to a name usage or a nomenclatural event.
+    properties:
+      id:
+        description: |-
+          ID is a unique identifier for the Input. It is optional and helps
+          to find Input data on the client side.
+        example: a1b2c3d4
+        type: string
+      name:
+        allOf:
+        - $ref: '#/definitions/input.Name'
+        description: |-
+          Name provides data about a scientific name. Information can be
+          provided by a name-string or be split into separate fields.
+      params:
+        $ref: '#/definitions/input.Params'
+      reference:
+        allOf:
+        - $ref: '#/definitions/input.Reference'
+        description: |-
+          Reference provides data about a reference where the name was
+          mentioned. Information can be provided by a reference-string or
+          be split into separate fields.
+    type: object
+  input.Name:
+    description: Name provides data about a scientific name.
+    properties:
+      authors:
+        description: NameAuthors is the authorship of a name.
+        example: Linnaeus
+        type: string
+      canonical:
+        description: |-
+          CanonicalSimple is the canonical form of a name, meaning the name without
+          authorship or a year.
+        example: Canis lupus
+        type: string
+      canonicalStem:
+        description: |-
+          CanonicalStem is the canonical form further normalized by removing
+          suffixes of specific and infraspecific epithets as well as normalizing
+          some interchangeable letters.
+        example: Canis lup
+        type: string
+      nameString:
+        description: |-
+          NameString is a scientific name as a string. It might be enough to
+          provide only NameString without provided other fields.
+        example: Canis lupus Linnaeus, 1758
+        type: string
+      year:
+        description: NameYear is the year of publication for a name.
+        example: 1758
+        type: integer
+    type: object
+  input.Params:
+    description: Params contain options used in the search and output.
+    properties:
+      nomenEvent:
+        description: |-
+          WithNomenEvent is true when the result tries to get a nomenclatural event
+          for the name.
+        example: false
+        type: boolean
+      refsLimit:
+        description: |-
+          RefsLimit provides the maximum number of references to return for each
+          name.
+        example: 3
+        type: integer
+      shortenedOutput:
+        description: |-
+          WithShortenedOutput determines if references details will be provided.
+          If it is `true`, found references are not provided, only the metadata
+          about them.
+        example: false
+        type: boolean
+      showDetails:
+        description: |-
+          WithDetails is true when it is desirable to show more information in the
+          output.
+        example: false
+        type: boolean
+      sortDesc:
+        description: |-
+          SortDesc determines the order of sorting the output data. If `true`
+          data are sorted by year from latest to earliest. If `false` then from
+          earliest to latest.
+        example: true
+        type: boolean
+      taxon:
+        description: |-
+          WithTaxon is true when result includes data from all names that point to
+          a particular taxon, not only from the given name.
+        example: false
+        type: boolean
+    type: object
+  input.Reference:
+    description: Reference provides data about a reference where the name was mentioned.
+    properties:
+      authors:
+        description: RefAuthors is the authorship of a reference.
+        example: Linnaeus
+        type: string
+      journal:
+        description: |-
+          Journal is the title of the journal where the reference was
+          published.
+        example: Systema naturae per regna tria naturae, secundum classes, ordines,
+          genera, species, cum characteribus, differentiis, synonymis, locis.
+        type: string
+      pageEnd:
+        description: PageEnd is the last page of the reference.
+        example: 24
+        type: integer
+      pageStart:
+        description: PageStart is the first page of the reference.
+        example: 24
+        type: integer
+      refString:
+        description: |-
+          RefString is a reference as a string. It might be enough to
+          provide only RefString without provided other fields.
+        example: 'Linnaeus, C. 1758. Systema naturae per regna tria naturae, secundum
+          classes, ordines, genera, species, cum characteribus, differentiis, synonymis,
+          locis. Tomus I. Editio decima, reformata. Holmiae: impensis direct. Laurentii
+          Salvii. i–ii, 1–824 pp.'
+        type: string
+      volume:
+        description: |-
+          Volume is the volume of the journal where the reference was
+          published.
+        example: 1
+        type: integer
+      yearEnd:
+        description: RefYear is the year of publication for a reference.
+        example: 1758
+        type: integer
+      yearStart:
+        description: RefYear is the year of publication for a reference.
+        example: 1758
+        type: integer
+    type: object
+  output.OddsDetails:
+    additionalProperties:
+      type: number
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8888
+info:
+  contact:
+    email: dmozzherin@gmail.com
+    name: Dmitry Mozzherin
+    url: https://github.com/dimus
+  description: |-
+    This API serves the BHLnames app. It locates relevant sections in the Biodiversity Heritage Library that correspond provided names, references or pages.
+
+    Code repository: https://github.com/gnames/bhlnames.
+
+    Access the API on the production server: https://bhlnames.globalnames.org/api/v1.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: BHLnames API
+  version: "1.0"
+paths:
+  /:
+    get:
+      description: Gives information where to find docs.
+      operationId: get-info
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: API documentation URL
+          schema:
+            type: string
+      summary: Information about the API documentation
+  /cached_refs/{external_id}:
+    get:
+      consumes:
+      - text/plain
+      operationId: get-external-id
+      parameters:
+      - description: External ID
+        example: '"BKDDK"'
+        in: path
+        name: external_id
+        required: true
+        type: string
+      - description: All Cached References
+        example: '"true"'
+        in: query
+        name: all_refs
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Matched references for the provided external ID
+          schema:
+            $ref: '#/definitions/bhl.RefsByName'
+      summary: Get nomenclatural event data by external ID from a data source.
+  /name_refs:
+    post:
+      consumes:
+      - application/json
+      description: Finds BHL references for a name, does not include references of
+        synonyms.
+      operationId: post-name-refs
+      parameters:
+      - description: Input data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/input.Input'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Matched references for the provided name
+          schema:
+            $ref: '#/definitions/bhl.RefsByName'
+      summary: Finds BHL references for a name
+  /namerefs/{name}:
+    get:
+      consumes:
+      - text/plain
+      description: Finds BHL references for a name, does not include references of
+        synonyms. There is an option to find references for the nomenclatural event
+        of a name.
+      operationId: get-name-refs
+      parameters:
+      - description: Name to find references for.
+        example: '"Pardosa moesta"'
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Reference data used to filter results.
+        example: '"Docums Mycol. 34(nos 135-136'
+        in: query
+        name: reference
+        type: string
+      - description: If true, tries to find nomenclatural event reference.
+        example: true
+        in: query
+        name: nomen_event
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Matched references for the provided name
+          schema:
+            $ref: '#/definitions/bhl.RefsByName'
+      summary: Finds BHL references for a name
+  /ping:
+    get:
+      description: Checks if the API is online and returns a simple response if it
+        is.
+      operationId: get-ping
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: API status response
+          schema:
+            type: string
+      summary: Check API status
+  /references/{page_id}:
+    get:
+      consumes:
+      - text/plain
+      description: Retrieves the BHL reference metadata by pageID.
+      operationId: get-refs
+      parameters:
+      - description: Page ID of a reference.
+        example: 6589171
+        in: path
+        name: page_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful response with data about the reference
+          schema:
+            $ref: '#/definitions/bhl.Reference'
+      summary: Get BHL reference metadata by pageID
+  /version:
+    get:
+      description: Retrieves the current version of the BHLnames application.
+      operationId: get-version
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful response with version information
+          schema:
+            $ref: '#/definitions/gnvers.Version'
+      summary: Get BHLnames version
+swagger: "2.0"

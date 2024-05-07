@@ -12,7 +12,6 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/bhl"
 	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/internal/ent/model"
-	"github.com/gnames/gnfmt"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -57,9 +56,7 @@ func (rf reffndio) refByPageID(pageID int) (*bhl.Reference, error) {
 	WHERE pg.id = $1
 	ORDER BY title_year_start`
 
-	ctx := context.Background()
-
-	r := rf.db.QueryRow(ctx, qs, pageID)
+	r := rf.db.QueryRow(rf.ctx, qs, pageID)
 
 	var rr refRec
 	err := r.Scan(&rr.itemID, &rr.titleID, &rr.pageID, &rr.pageNum,
@@ -99,8 +96,7 @@ func (rf reffndio) partByID(pageID int) (*model.Part, error) {
 		ON p.id = pp.part_id
 	WHERE pp.page_id = $1
 	`
-	ctx := context.Background()
-	rows, err := rf.db.Query(ctx, q, pageID)
+	rows, err := rf.db.Query(rf.ctx, q, pageID)
 	if err != nil {
 		slog.Error("Cannot run part query", "error", err)
 		return nil, err
@@ -124,15 +120,15 @@ func (rf reffndio) partByID(pageID int) (*model.Part, error) {
 	return &parts[len(parts)-1], nil
 }
 
-func (l reffndio) nameOnlyOccurrences(nameRefs *bhl.RefsByName) ([]*refRec, error) {
-	return l.occurrences(nameRefs.Canonical, "matched_canonical")
+func (rf reffndio) nameOnlyOccurrences(nameRefs *bhl.RefsByName) ([]*refRec, error) {
+	return rf.occurrences(nameRefs.Canonical, "matched_canonical")
 }
 
-func (l reffndio) taxonOccurrences(nameRefs *bhl.RefsByName) ([]*refRec, error) {
-	return l.occurrences(nameRefs.CurrentCanonical, "current_canonical")
+func (rf reffndio) taxonOccurrences(nameRefs *bhl.RefsByName) ([]*refRec, error) {
+	return rf.occurrences(nameRefs.CurrentCanonical, "current_canonical")
 }
 
-func (l reffndio) occurrences(name string, field string) ([]*refRec, error) {
+func (rf reffndio) occurrences(name string, field string) ([]*refRec, error) {
 	switch field {
 	case "matched_canonical", "current_canonical":
 	default:
@@ -162,8 +158,7 @@ func (l reffndio) occurrences(name string, field string) ([]*refRec, error) {
 	ORDER BY title_year_start`
 	q := fmt.Sprintf(qs, field)
 
-	ctx := context.Background()
-	rows, err := l.db.Query(ctx, q, name)
+	rows, err := rf.db.Query(rf.ctx, q, name)
 	if err != nil {
 		slog.Error("Cannot run occurences query", "error", err)
 		return nil, err
@@ -225,6 +220,26 @@ func (rf reffndio) currentCanonical(canonical string) (string, error) {
 	return currentCan.String, nil
 }
 
+func (rf *reffndio) refsByExtID(extID string) ([]byte, error) {
+	var res []byte
+	q := `
+SELECT cr.result
+	FROM col_bhl_results cr
+	WHERE cr.record_id = $1
+`
+	err := rf.db.QueryRow(rf.ctx, q, extID).Scan(&res)
+	if err == pgx.ErrNoRows {
+		return nil, nil
+	}
+
+	if err != nil {
+		slog.Error("Cannot run external ID query", "error", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (rf *reffndio) colNomen(inp input.Input) (*bhl.RefsByName, error) {
 	q := `
 SELECT cr.result 
@@ -234,11 +249,9 @@ SELECT cr.result
 	WHERE cn.canonical_simple = $1
 `
 
-	ctx := context.Background()
-	enc := gnfmt.GNgob{}
 	var res []*bhl.RefsByName
 
-	rows, err := rf.db.Query(ctx, q, inp.Name.CanonicalSimple)
+	rows, err := rf.db.Query(rf.ctx, q, inp.Name.CanonicalSimple)
 	if err != nil {
 		slog.Error("Cannot run CoL nomen query", "error", err)
 		return nil, err
@@ -254,7 +267,7 @@ SELECT cr.result
 			return nil, err
 		}
 
-		err = enc.Decode(bs, &nref)
+		err = rf.enc.Decode(bs, &nref)
 		if err != nil {
 			slog.Error("Cannot decode name-reference data from CoL", "error", err)
 			return nil, err

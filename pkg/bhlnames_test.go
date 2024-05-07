@@ -111,11 +111,11 @@ func TestNameWithRefs(t *testing.T) {
 			"Skalitzky, C. Zwei neue europäische Staphylinenarten aus Portugal. Wiener Entomologische Zeitung, 3 (4): 97-99. (1884).",
 			false, 43792, 11, 3, 3, 1, 5_000,
 		},
-		// {
-		// 	"nomen", "Achenium lusitanicum Skalitzky, 1884",
-		// 	"Skalitzky, C. Zwei neue europäische Staphylinenarten aus Portugal. Wiener Entomologische Zeitung, 3 (4): 97-99. (1884).",
-		// 	true, 43792, 11, 3, 3, 1, 25_000,
-		// },
+		{
+			"nomen", "Achenium lusitanicum Skalitzky, 1884",
+			"Skalitzky, C. Zwei neue europäische Staphylinenarten aus Portugal. Wiener Entomologische Zeitung, 3 (4): 97-99. (1884).",
+			true, 43792, 11, 3, 3, 1, 25_000,
+		},
 	}
 
 	bn := Init(t)
@@ -213,4 +213,30 @@ func TestNomenRefs(t *testing.T) {
 		assert.Equal(v.scoreTitle, ref.Score.RefTitle, v.msg)
 		assert.Less(v.odds, ref.Score.Odds, v.msg)
 	}
+}
+
+func TestRefByPageID(t *testing.T) {
+	assert := assert.New(t)
+	tests := []struct {
+		msg       string
+		pageID    int
+		itemID    int
+		partIsNil bool
+	}{
+		{"6059125", 6059125, 29372, true},
+		{"1656908", 1656908, 17664, false},
+	}
+
+	bn := Init(t)
+	for _, v := range tests {
+		ref, err := bn.RefByPageID(v.pageID)
+		assert.Nil(err)
+		assert.Equal(v.itemID, ref.ItemID, v.msg)
+		if v.partIsNil {
+			assert.Nil(ref.Part)
+		} else {
+			assert.NotNil(ref.Part)
+		}
+	}
+
 }

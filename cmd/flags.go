@@ -39,11 +39,9 @@ func nomenFlag(cmd *cobra.Command) {
 	}
 }
 
-func taxonFlag(cmd *cobra.Command) {
-	b, _ := cmd.Flags().GetBool("taxon")
-	if b {
-		inpOpts = append(inpOpts, input.OptWithTaxon(b))
-	}
+func portFlag(cmd *cobra.Command) {
+	p, _ := cmd.Flags().GetInt("port")
+	opts = append(opts, config.OptPortREST(p))
 }
 
 func rebuildFlag(cmd *cobra.Command) {
@@ -64,6 +62,13 @@ func shortFlag(cmd *cobra.Command) {
 	b, _ := cmd.Flags().GetBool("short_output")
 	if b {
 		inpOpts = append(inpOpts, input.OptWithShortenedOutput(b))
+	}
+}
+
+func taxonFlag(cmd *cobra.Command) {
+	b, _ := cmd.Flags().GetBool("taxon")
+	if b {
+		inpOpts = append(inpOpts, input.OptWithTaxon(b))
 	}
 }
 
