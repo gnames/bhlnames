@@ -1,74 +1,246 @@
 basePath: /api/v1
 definitions:
-  bhl.ItemStats:
-    description: ItemStats provides insights about a Reference's Item. This data can
-      be used to infer the prevalent taxonomic groups within the Item.
+  bhl.Item:
+    description: Item represents a BHL item, usually a journal volume of a journal
+      or a book. It includes metadata about the item and statistics about the taxonomic
+      groups mentioned in the item.
     properties:
+      KingdomBacteriaNum:
+        description: BacteriaNum is the number of names that belong to the Bacteria
+          kingdom.
+        example: 1234
+        type: integer
+      doiTitle:
+        description: TitleDOI provides DOI for the title.
+        example: 10.1234/5678
+        type: string
+      itemId:
+        description: ItemID is the BHL database ID for the Item.
+        example: 12345
+        type: integer
+      kingdomAnimaliaNum:
+        description: AnimaliaNum is the number of names that belong to the Animalia
+          kingdom.
+        example: 1234
+        type: integer
+      kingdomFungiNum:
+        description: FungiNum is the number of names that belong to the Fungi kingdom.
+        example: 1234
+        type: integer
+      kingdomPlantaeNum:
+        description: PlantaeNum is the number of names that belong to the Plantae
+          kingdom.
+        example: 1234
+        type: integer
       mainClass:
         description: MainClass is the most prevalent class in the Item.
         example: Insecta
         type: string
       mainClassPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
         description: |-
           MainClassPercent indicates the percentage of names that belong
           to the most prevalent class.
-        example: 44
-        type: integer
       mainFamily:
         description: MainFamily is the most prevalent family in the Item.
         example: Buprestidae
         type: string
       mainFamilyPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
         description: |-
           MainFamilyPercent indicates the percentage of names that belong
           to the most prevalent family.
-        example: 13
-        type: integer
       mainGenus:
         description: MainGenus is the most prevalent genus in the Item.
         example: Agrilus
         type: string
       mainGenusPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
         description: |-
           MainGenusPercent indicates the percentage of names that belong
           to the most prevalent genus.
-        example: 5
-        type: integer
       mainKingdom:
         description: MainKingdom is the most prevalent kingdom in the Item.
         example: Animalia
         type: string
       mainKingdomPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
         description: |-
           MainKingdomPercent indicates the percentage of names that belong
           to the most prevalent kingdom.
-        example: 79
-        type: integer
       mainOrder:
         description: MainOrder is the most prevalent order in the Item.
         example: Coleoptera
         type: string
       mainOrderPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
         description: |-
           MainOrderPercent indicates the percentage of names that belong
           to the most prevalent order.
-        example: 14
-        type: integer
       mainPhylum:
         description: MainPhylum is the most prevalent phylum in the Item.
         example: Arthropoda
         type: string
       mainPhylumPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
         description: |-
           MainPhylumPercent indicates the percentage of names that belong
           to the most prevalent phylum.
-        example: 45
-        type: integer
       mainTaxon:
         description: |-
           MainTaxon provides a clade that contains a majority of scientific names
           mentioned in the Item.
         example: Arthropoda
+        type: string
+      mainTaxonPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
+        description: |-
+          MainTaxonPercent indicates the percentage of names that belong
+          to the main taxon.
+      mainTaxonRank:
+        description: MainTaxonRank is the rank of the main taxon.
+        example: phylum
+        type: string
+      titleId:
+        description: TitleID is the BHL database ID for the Title (book or journal).
+        example: 12345
+        type: integer
+      titleName:
+        description: TitleName is the name of a title (a book or a journal).
+        example: Bulletin of the American Museum of Natural History
+        type: string
+      titleYearEnd:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
+        description: TitleYearEnd is the year when the journal ceased publication.
+      titleYearStart:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
+        description: |-
+          TitleYearStart is the year the when book is published, or
+          a journal started publication.
+      uniqNamesNum:
+        description: UniqNamesNum is the number of unique names in the Item.
+        example: 1234
+        type: integer
+      volume:
+        description: Volume is the information about a volume in a journal.
+        example: vol. 12
+        type: string
+      yearEnd:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
+        description: YearEnd is the year when the Item ceased publication.
+      yearStart:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
+        description: YearStart is the year when the Item began publication.
+    type: object
+  bhl.ItemStats:
+    description: ItemStats provides insights about a Reference's Item. This data can
+      be used to infer the prevalent taxonomic groups within the Item.
+    properties:
+      KingdomBacteriaNum:
+        description: BacteriaNum is the number of names that belong to the Bacteria
+          kingdom.
+        example: 1234
+        type: integer
+      kingdomAnimaliaNum:
+        description: AnimaliaNum is the number of names that belong to the Animalia
+          kingdom.
+        example: 1234
+        type: integer
+      kingdomFungiNum:
+        description: FungiNum is the number of names that belong to the Fungi kingdom.
+        example: 1234
+        type: integer
+      kingdomPlantaeNum:
+        description: PlantaeNum is the number of names that belong to the Plantae
+          kingdom.
+        example: 1234
+        type: integer
+      mainClass:
+        description: MainClass is the most prevalent class in the Item.
+        example: Insecta
+        type: string
+      mainClassPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
+        description: |-
+          MainClassPercent indicates the percentage of names that belong
+          to the most prevalent class.
+      mainFamily:
+        description: MainFamily is the most prevalent family in the Item.
+        example: Buprestidae
+        type: string
+      mainFamilyPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
+        description: |-
+          MainFamilyPercent indicates the percentage of names that belong
+          to the most prevalent family.
+      mainGenus:
+        description: MainGenus is the most prevalent genus in the Item.
+        example: Agrilus
+        type: string
+      mainGenusPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
+        description: |-
+          MainGenusPercent indicates the percentage of names that belong
+          to the most prevalent genus.
+      mainKingdom:
+        description: MainKingdom is the most prevalent kingdom in the Item.
+        example: Animalia
+        type: string
+      mainKingdomPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
+        description: |-
+          MainKingdomPercent indicates the percentage of names that belong
+          to the most prevalent kingdom.
+      mainOrder:
+        description: MainOrder is the most prevalent order in the Item.
+        example: Coleoptera
+        type: string
+      mainOrderPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
+        description: |-
+          MainOrderPercent indicates the percentage of names that belong
+          to the most prevalent order.
+      mainPhylum:
+        description: MainPhylum is the most prevalent phylum in the Item.
+        example: Arthropoda
+        type: string
+      mainPhylumPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
+        description: |-
+          MainPhylumPercent indicates the percentage of names that belong
+          to the most prevalent phylum.
+      mainTaxon:
+        description: |-
+          MainTaxon provides a clade that contains a majority of scientific names
+          mentioned in the Item.
+        example: Arthropoda
+        type: string
+      mainTaxonPercent:
+        allOf:
+        - $ref: '#/definitions/pgtype.Int4'
+        description: |-
+          MainTaxonPercent indicates the percentage of names that belong
+          to the main taxon.
+      mainTaxonRank:
+        description: MainTaxonRank is the rank of the main taxon.
+        example: phylum
         type: string
       uniqNamesNum:
         description: UniqNamesNum is the number of unique names in the Item.
@@ -484,6 +656,13 @@ definitions:
     additionalProperties:
       type: number
     type: object
+  pgtype.Int4:
+    properties:
+      int32:
+        type: integer
+      valid:
+        type: boolean
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -521,7 +700,7 @@ paths:
     get:
       consumes:
       - text/plain
-      operationId: get-external-id
+      operationId: get-cached-refs
       parameters:
       - description: External ID
         example: '"BKDDK"'
@@ -543,7 +722,27 @@ paths:
           schema:
             $ref: '#/definitions/bhl.RefsByName'
       summary: Get nomenclatural event data by external ID from a data source.
-  /name_refs:
+  /items/{item_id}:
+    get:
+      consumes:
+      - text/plain
+      operationId: get-item
+      parameters:
+      - description: Item ID
+        example: 73397
+        in: path
+        name: item_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: BHL item metadata and statistics
+          schema:
+            $ref: '#/definitions/bhl.Item'
+      summary: Get metadata and taxonomic statistics of a BHL item.
+  /namerefs:
     post:
       consumes:
       - application/json

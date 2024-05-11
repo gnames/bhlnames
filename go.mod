@@ -33,8 +33,6 @@ require (
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/PuerkitoBio/purell v1.2.1 // indirect
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/bits-and-blooms/bitset v1.10.0 // indirect
 	github.com/cheggaaa/pb/v3 v3.1.5 // indirect

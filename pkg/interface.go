@@ -49,6 +49,10 @@ type BHLnames interface {
 		allRefs bool,
 	) (*bhl.RefsByName, error)
 
+	// ItemStats returns metadata for a given itemID as well as the
+	// statisics about taxonomic groups mentioned in the item.
+	ItemStats(itemID int) (*bhl.Item, error)
+
 	// Config returns the current configuration used by the BHLnames instance.
 	Config() config.Config
 

@@ -125,6 +125,15 @@ func (rf *reffndio) RefsByExtID(
 	return &res, nil
 }
 
+func (rf *reffndio) ItemStats(itemID int) (*bhl.Item, error) {
+	res, err := rf.itemStats(itemID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (rf *reffndio) Close() {
 	rf.db.Close()
 }

@@ -1,6 +1,7 @@
 package bhlnames_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gnames/bhlnames/internal/ent/input"
@@ -238,5 +239,23 @@ func TestRefByPageID(t *testing.T) {
 			assert.NotNil(ref.Part)
 		}
 	}
+}
 
+func TestItemStats(t *testing.T) {
+	assert := assert.New(t)
+	tests := []struct {
+		msg             string
+		itemID, titleID int
+	}{
+		{"73397", 73397, 29889},
+	}
+
+	bn := Init(t)
+	for _, v := range tests {
+		item, err := bn.ItemStats(v.itemID)
+		assert.Nil(err)
+		fmt.Printf("ITM: %#v\n", item)
+		assert.Equal(v.itemID, item.ItemID, v.msg)
+		assert.Equal(v.titleID, item.TitleID, v.msg)
+	}
 }

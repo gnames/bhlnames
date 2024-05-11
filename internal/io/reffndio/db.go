@@ -13,6 +13,7 @@ import (
 	"github.com/gnames/bhlnames/internal/ent/input"
 	"github.com/gnames/bhlnames/internal/ent/model"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type preReference struct {
@@ -34,7 +35,7 @@ type refRec struct {
 	titleName          string
 	mainTaxon          string
 	mainKingdom        string
-	mainKingdomPercent int
+	mainKingdomPercent *pgtype.Int4
 	namesTotal         int
 	nameID             string
 	name               string
@@ -137,7 +138,9 @@ func (rf reffndio) occurrences(name string, field string) ([]*refRec, error) {
 	}
 	var res []*refRec
 	var itemID, titleID, pageID int
-	var kingdomPercent, pathsTotal, editDistance sql.NullInt16
+	var kingdomPercent *pgtype.Int4
+	var namesTotal int
+	var editDistance sql.NullInt16
 	var yearStart, yearEnd, titleYearStart, titleYearEnd sql.NullInt32
 	var pageNum sql.NullInt64
 	var nameID string
@@ -167,7 +170,7 @@ func (rf reffndio) occurrences(name string, field string) ([]*refRec, error) {
 	for rows.Next() {
 		err := rows.Scan(&itemID, &titleID, &pageID, &pageNum, &annot,
 			&titleYearStart, &titleYearEnd, &yearStart, &yearEnd, &titleName, &vol,
-			&titleDOI, &contextWrds, &majorKingdom, &kingdomPercent, &pathsTotal,
+			&titleDOI, &contextWrds, &majorKingdom, &kingdomPercent, &namesTotal,
 			&nameID, &nameString, &matchedCanonical, &matchType, &editDistance)
 		if err != nil {
 			err = fmt.Errorf("reffinderio.occurrences: %w", err)
@@ -188,8 +191,8 @@ func (rf reffndio) occurrences(name string, field string) ([]*refRec, error) {
 			volume:             vol.String,
 			mainTaxon:          contextWrds.String,
 			mainKingdom:        majorKingdom.String,
-			mainKingdomPercent: int(kingdomPercent.Int16),
-			namesTotal:         int(pathsTotal.Int16),
+			mainKingdomPercent: kingdomPercent,
+			namesTotal:         namesTotal,
 			nameID:             nameID,
 			name:               nameString.String,
 			annotation:         annot.String,
@@ -296,4 +299,45 @@ SELECT cr.result
 
 func prepareOutput(inp input.Input, nr *bhl.RefsByName) {
 	nr.Input = inp
+}
+
+func (rf *reffndio) itemStats(itemID int) (*bhl.Item, error) {
+	q := `
+SELECT
+	item.id, item.title_id, item.title_year_start, item.title_year_end,
+	item.year_start, item.year_end, item.title_name, item.vol, item.title_doi,
+	ist.main_taxon, ist.main_taxon_rank, ist.main_taxon_percent,
+	ist.main_kingdom, ist.main_kingdom_percent,
+	ist.animalia_num, ist.plantae_num, ist.fungi_num, ist.bacteria_num,
+	ist.main_phylum, ist.main_phylum_percent,
+	ist.main_class, ist.main_class_percent,
+	ist.main_order, ist.main_order_percent,
+	ist.main_family, ist.main_family_percent,
+	ist.main_genus, ist.main_genus_percent,
+	ist.names_total
+	FROM items item
+		JOIN item_stats ist
+			ON item.id = ist.id
+	WHERE item.id = $1
+`
+
+	var res bhl.Item
+	err := rf.db.QueryRow(rf.ctx, q, itemID).Scan(
+		&res.ItemID, &res.TitleID, &res.TitleYearStart, &res.TitleYearEnd,
+		&res.YearStart, &res.YearEnd, &res.TitleName, &res.Volume, &res.TitleDOI,
+		&res.MainTaxon, &res.MainTaxonRank, &res.MainTaxonPercent,
+		&res.MainKingdom, &res.MainKingdomPercent,
+		&res.AnimaliaNum, &res.PlantaeNum, &res.FungiNum, &res.BacteriaNum,
+		&res.MainPhylum, &res.MainPhylumPercent,
+		&res.MainClass, &res.MainClassPercent,
+		&res.MainOrder, &res.MainOrderPercent,
+		&res.MainFamily, &res.MainFamilyPercent,
+		&res.MainGenus, &res.MainGenusPercent,
+		&res.UniqNamesNum,
+	)
+	if err != nil {
+		slog.Error("Cannot run item stats query", "error", err)
+		return nil, err
+	}
+	return &res, nil
 }

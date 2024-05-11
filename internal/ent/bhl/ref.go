@@ -1,6 +1,9 @@
 package bhl
 
-import bout "github.com/gnames/bayes/ent/output"
+import (
+	bout "github.com/gnames/bayes/ent/output"
+	"github.com/jackc/pgx/v5/pgtype"
+)
 
 // @Description ReferenceName represents a BHL entity that
 // @Description includes a matched scientific name and the reference where
@@ -134,58 +137,119 @@ type Part struct {
 	DOI string `json:"doi,omitempty" example:"10.1234/5678"`
 }
 
+// @Description Item represents a BHL item, usually a journal volume of a journal or a book.
+// @Description It includes metadata about the item and statistics about the taxonomic
+// @Description groups mentioned in the item.
+type Item struct {
+	// ItemMeta provides metadata about the Item.
+	ItemMeta
+
+	// ItemStats provides taxonomic statistics about the Item.
+	ItemStats
+}
+
+// @Description ItemMeta provides metadata about a BHL Item.
+type ItemMeta struct {
+	// ItemID is the BHL database ID for the Item.
+	ItemID int `json:"itemId" example:"12345"`
+
+	// TitleID is the BHL database ID for the Title (book or journal).
+	TitleID int `json:"titleId" example:"12345"`
+
+	// TitleName is the name of a title (a book or a journal).
+	TitleName string `json:"titleName" example:"Bulletin of the American Museum of Natural History"`
+
+	// TitleYearStart is the year the when book is published, or
+	// a journal started publication.
+	TitleYearStart *pgtype.Int4 `json:"titleYearStart,omitempty"` // example:1890`
+
+	// TitleYearEnd is the year when the journal ceased publication.
+	TitleYearEnd *pgtype.Int4 `json:"titleYearEnd,omitempty"` // example:1922`
+
+	// TitleDOI provides DOI for the title.
+	TitleDOI string `json:"doiTitle,omitempty" example:"10.1234/5678"`
+
+	// YearStart is the year when the Item began publication.
+	YearStart *pgtype.Int4 `json:"yearStart,omitempty"` // example:1892`
+
+	// YearEnd is the year when the Item ceased publication.
+	YearEnd *pgtype.Int4 `json:"yearEnd,omitempty"` // example:1893`
+
+	// Volume is the information about a volume in a journal.
+	Volume string `json:"volume,omitempty" example:"vol. 12"`
+}
+
 // @Description ItemStats provides insights about a Reference's Item.
 // @Description This data can be used to infer the prevalent taxonomic
 // @Description groups within the Item.
 type ItemStats struct {
+	// MainTaxon provides a clade that contains a majority of scientific names
+	// mentioned in the Item.
+	MainTaxon string `json:"mainTaxon,omitempty" example:"Arthropoda"`
+
+	// MainTaxonRank is the rank of the main taxon.
+	MainTaxonRank string `json:"mainTaxonRank,omitempty" example:"phylum"`
+
+	// MainTaxonPercent indicates the percentage of names that belong
+	// to the main taxon.
+	MainTaxonPercent *pgtype.Int4 `json:"mainTaxonPercent,omitempty"` // example:45`
+
 	// MainKingdom is the most prevalent kingdom in the Item.
 	MainKingdom string `json:"mainKingdom,omitempty" example:"Animalia"`
 
 	// MainKingdomPercent indicates the percentage of names that belong
 	// to the most prevalent kingdom.
-	MainKingdomPercent int `json:"mainKingdomPercent,omitempty" example:"79"`
+	MainKingdomPercent *pgtype.Int4 `json:"mainKingdomPercent,omitempty"` // example:79`
+
+	// AnimaliaNum is the number of names that belong to the Animalia kingdom.
+	AnimaliaNum int `json:"kingdomAnimaliaNum" example:"1234"`
+
+	// PlantaeNum is the number of names that belong to the Plantae kingdom.
+	PlantaeNum int `json:"kingdomPlantaeNum" example:"1234"`
+
+	// FungiNum is the number of names that belong to the Fungi kingdom.
+	FungiNum int `json:"kingdomFungiNum" example:"1234"`
+
+	// BacteriaNum is the number of names that belong to the Bacteria kingdom.
+	BacteriaNum int `json:"KingdomBacteriaNum" example:"1234"`
 
 	// MainPhylum is the most prevalent phylum in the Item.
 	MainPhylum string `json:"mainPhylum,omitempty" example:"Arthropoda"`
 
 	// MainPhylumPercent indicates the percentage of names that belong
 	// to the most prevalent phylum.
-	MainPhylumPercent int `json:"mainPhylumPercent,omitempty" example:"45"`
+	MainPhylumPercent *pgtype.Int4 `json:"mainPhylumPercent,omitempty"` // example:45`
 
 	// MainClass is the most prevalent class in the Item.
 	MainClass string `json:"mainClass,omitempty" example:"Insecta"`
 
 	// MainClassPercent indicates the percentage of names that belong
 	// to the most prevalent class.
-	MainClassPercent int `json:"mainClassPercent,omitempty" example:"44"`
+	MainClassPercent *pgtype.Int4 `json:"mainClassPercent,omitempty"` // example:44`
 
 	// MainOrder is the most prevalent order in the Item.
 	MainOrder string `json:"mainOrder,omitempty" example:"Coleoptera"`
 
 	// MainOrderPercent indicates the percentage of names that belong
 	// to the most prevalent order.
-	MainOrderPercent int `json:"mainOrderPercent,omitempty" example:"14"`
+	MainOrderPercent *pgtype.Int4 `json:"mainOrderPercent,omitempty"` // example:14`
 
 	// MainFamily is the most prevalent family in the Item.
 	MainFamily string `json:"mainFamily,omitempty" example:"Buprestidae"`
 
 	// MainFamilyPercent indicates the percentage of names that belong
 	// to the most prevalent family.
-	MainFamilyPercent int `json:"mainFamilyPercent,omitempty" example:"13"`
+	MainFamilyPercent *pgtype.Int4 `json:"mainFamilyPercent,omitempty"` // example:13`
 
 	// MainGenus is the most prevalent genus in the Item.
 	MainGenus string `json:"mainGenus,omitempty" example:"Agrilus"`
 
 	// MainGenusPercent indicates the percentage of names that belong
 	// to the most prevalent genus.
-	MainGenusPercent int `json:"mainGenusPercent,omitempty" example:"5"`
+	MainGenusPercent *pgtype.Int4 `json:"mainGenusPercent,omitempty"` // example:5`
 
 	// UniqNamesNum is the number of unique names in the Item.
-	UniqNamesNum int `json:"uniqNamesNum,omitempty" example:"1234"`
-
-	// MainTaxon provides a clade that contains a majority of scientific names
-	// mentioned in the Item.
-	MainTaxon string `json:"mainTaxon,omitempty" example:"Arthropoda"`
+	UniqNamesNum int `json:"uniqNamesNum" example:"1234"`
 }
 
 // @Description Score provides a qualitative estimation of a match quality

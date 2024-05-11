@@ -72,11 +72,11 @@ func (r *restio) Run() {
 	r.GET(apiPath+"/ping", ping)
 	r.GET(apiPath+"/version", ver())
 	r.GET(apiPath+"/references/:page_id", refs(r.bn))
+	r.GET(apiPath+"/items/:item_id", itemStatsGet(r.bn))
 	r.GET(apiPath+"/namerefs/:name", nameRefsGet(r.bn))
 	r.POST(apiPath+"/namerefs", nameRefsPost(r.bn))
 	r.GET(apiPath+"/cached_refs/:external_id", externalIDGet(r.bn))
-	// r.GET(apiPath+"/item_stats/:item_id", itemStatsGet(r.BHLnames))
-	// r.GET(apiPath+"/items_by_taxon/:taxon_name", itemsByTaxonGet(r.BHLnames))
+	// r.GET(apiPath+"/taxon_items/:taxon_name", itemsByTaxonGet(r.BHLnames))
 
 	addr := fmt.Sprintf(":%d", r.cfg.PortREST)
 	s := &http.Server{
@@ -201,7 +201,7 @@ func nameRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Accept json
 // @Produce json
 // @Success 200 {object} bhl.RefsByName  "Matched references for the provided name"
-// @Router /name_refs [post]
+// @Router /namerefs [post]
 func nameRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
 	var err error
 	var res *bhl.RefsByName
@@ -223,7 +223,7 @@ func nameRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
 
 // externalIDGet provides nomenclatural event data for a given external ID.
 // @Summary Get nomenclatural event data by external ID from a data source.
-// @ID get-external-id
+// @ID get-cached-refs
 // @Param external_id path string true "External ID" example("BKDDK")
 // @Param all_refs query string true "All Cached References" example("true")
 // @Accept plain
@@ -236,6 +236,29 @@ func externalIDGet(bn bhlnames.BHLnames) func(echo.Context) error {
 		allRefs := c.QueryParam("all_refs") == "true"
 
 		res, err := bn.RefsByExtID(externalID, 1, allRefs)
+		if err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, res)
+	}
+}
+
+// itemStatsGet provides metadata and stats of a BHL item.
+// @Summary Get metadata and taxonomic statistics of a BHL item.
+// @ID get-item
+// @Param item_id path integer true "Item ID" example(73397)
+// @Accept plain
+// @Produce json
+// @Success 200 {object} bhl.Item  "BHL item metadata and statistics"
+// @Router /items/{item_id} [get]
+func itemStatsGet(bn bhlnames.BHLnames) func(echo.Context) error {
+	return func(c echo.Context) error {
+		itemIDStr := c.Param("item_id")
+		itemID, err := strconv.Atoi(itemIDStr)
+		if err != nil {
+			return err
+		}
+		res, err := bn.ItemStats(itemID)
 		if err != nil {
 			return err
 		}

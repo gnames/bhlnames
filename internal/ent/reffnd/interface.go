@@ -27,6 +27,10 @@ type RefFinder interface {
 		data_source_id int,
 	) (*bhl.RefsByName, error)
 
+	// ItemStats returns metadata for a given itemID as well as the
+	// taxonomic statistics for the item.
+	ItemStats(itemID int) (*bhl.Item, error)
+
 	// Close cleans up all the database, key-value store, files locks and blocks,
 	// releasing resources for the next usage of the program.
 	Close()

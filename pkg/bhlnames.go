@@ -164,6 +164,15 @@ func (bn bhlnames) RefsByExtID(
 	return res, nil
 }
 
+func (bn bhlnames) ItemStats(itemID int) (*bhl.Item, error) {
+	res, err := bn.rf.ItemStats(itemID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func matchQuality(odds float64) int {
 	if odds <= 0 {
 		return 0
