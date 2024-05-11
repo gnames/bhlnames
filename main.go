@@ -26,6 +26,7 @@ import (
 	"os"
 
 	"github.com/gnames/bhlnames/cmd"
+	_ "github.com/gnames/bhlnames/docs" // for swagger docs
 	"github.com/lmittmann/tint"
 )
 
