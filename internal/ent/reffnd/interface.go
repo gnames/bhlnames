@@ -31,6 +31,10 @@ type RefFinder interface {
 	// taxonomic statistics for the item.
 	ItemStats(itemID int) (*bhl.Item, error)
 
+	// ItemsByTaxon returns a collection of BHL items that contain more than
+	// 50% of the species of the profided taxon.
+	ItemsByTaxon(taxon string) ([]*bhl.Item, error)
+
 	// Close cleans up all the database, key-value store, files locks and blocks,
 	// releasing resources for the next usage of the program.
 	Close()

@@ -235,6 +235,39 @@ const docTemplate = `{
                 }
             }
         },
+        "/taxon_items/{taxon_name}": {
+            "get": {
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get BHL items where a given higher taxon is prevalent.",
+                "operationId": "get-items-by-taxon",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"Lepidoptera\"",
+                        "description": "Taxon Name",
+                        "name": "taxon_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "BHL items with metadata and statistics",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/bhl.Item"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/version": {
             "get": {
                 "description": "Retrieves the current version of the BHLnames application.",
@@ -296,11 +329,8 @@ const docTemplate = `{
                 },
                 "mainClassPercent": {
                     "description": "MainClassPercent indicates the percentage of names that belong\nto the most prevalent class.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 44
                 },
                 "mainFamily": {
                     "description": "MainFamily is the most prevalent family in the Item.",
@@ -309,11 +339,8 @@ const docTemplate = `{
                 },
                 "mainFamilyPercent": {
                     "description": "MainFamilyPercent indicates the percentage of names that belong\nto the most prevalent family.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 13
                 },
                 "mainGenus": {
                     "description": "MainGenus is the most prevalent genus in the Item.",
@@ -322,11 +349,8 @@ const docTemplate = `{
                 },
                 "mainGenusPercent": {
                     "description": "MainGenusPercent indicates the percentage of names that belong\nto the most prevalent genus.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 5
                 },
                 "mainKingdom": {
                     "description": "MainKingdom is the most prevalent kingdom in the Item.",
@@ -335,11 +359,8 @@ const docTemplate = `{
                 },
                 "mainKingdomPercent": {
                     "description": "MainKingdomPercent indicates the percentage of names that belong\nto the most prevalent kingdom.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 79
                 },
                 "mainOrder": {
                     "description": "MainOrder is the most prevalent order in the Item.",
@@ -348,11 +369,8 @@ const docTemplate = `{
                 },
                 "mainOrderPercent": {
                     "description": "MainOrderPercent indicates the percentage of names that belong\nto the most prevalent order.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 14
                 },
                 "mainPhylum": {
                     "description": "MainPhylum is the most prevalent phylum in the Item.",
@@ -361,11 +379,8 @@ const docTemplate = `{
                 },
                 "mainPhylumPercent": {
                     "description": "MainPhylumPercent indicates the percentage of names that belong\nto the most prevalent phylum.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 45
                 },
                 "mainTaxon": {
                     "description": "MainTaxon provides a clade that contains a majority of scientific names\nmentioned in the Item.",
@@ -374,11 +389,8 @@ const docTemplate = `{
                 },
                 "mainTaxonPercent": {
                     "description": "MainTaxonPercent indicates the percentage of names that belong\nto the main taxon.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 45
                 },
                 "mainTaxonRank": {
                     "description": "MainTaxonRank is the rank of the main taxon.",
@@ -397,19 +409,13 @@ const docTemplate = `{
                 },
                 "titleYearEnd": {
                     "description": "TitleYearEnd is the year when the journal ceased publication.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 1922
                 },
                 "titleYearStart": {
                     "description": "TitleYearStart is the year the when book is published, or\na journal started publication.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 1890
                 },
                 "uniqNamesNum": {
                     "description": "UniqNamesNum is the number of unique names in the Item.",
@@ -423,19 +429,13 @@ const docTemplate = `{
                 },
                 "yearEnd": {
                     "description": "YearEnd is the year when the Item ceased publication.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 1893
                 },
                 "yearStart": {
                     "description": "YearStart is the year when the Item began publication.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 1892
                 }
             }
         },
@@ -470,11 +470,8 @@ const docTemplate = `{
                 },
                 "mainClassPercent": {
                     "description": "MainClassPercent indicates the percentage of names that belong\nto the most prevalent class.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 44
                 },
                 "mainFamily": {
                     "description": "MainFamily is the most prevalent family in the Item.",
@@ -483,11 +480,8 @@ const docTemplate = `{
                 },
                 "mainFamilyPercent": {
                     "description": "MainFamilyPercent indicates the percentage of names that belong\nto the most prevalent family.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 13
                 },
                 "mainGenus": {
                     "description": "MainGenus is the most prevalent genus in the Item.",
@@ -496,11 +490,8 @@ const docTemplate = `{
                 },
                 "mainGenusPercent": {
                     "description": "MainGenusPercent indicates the percentage of names that belong\nto the most prevalent genus.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 5
                 },
                 "mainKingdom": {
                     "description": "MainKingdom is the most prevalent kingdom in the Item.",
@@ -509,11 +500,8 @@ const docTemplate = `{
                 },
                 "mainKingdomPercent": {
                     "description": "MainKingdomPercent indicates the percentage of names that belong\nto the most prevalent kingdom.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 79
                 },
                 "mainOrder": {
                     "description": "MainOrder is the most prevalent order in the Item.",
@@ -522,11 +510,8 @@ const docTemplate = `{
                 },
                 "mainOrderPercent": {
                     "description": "MainOrderPercent indicates the percentage of names that belong\nto the most prevalent order.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 14
                 },
                 "mainPhylum": {
                     "description": "MainPhylum is the most prevalent phylum in the Item.",
@@ -535,11 +520,8 @@ const docTemplate = `{
                 },
                 "mainPhylumPercent": {
                     "description": "MainPhylumPercent indicates the percentage of names that belong\nto the most prevalent phylum.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 45
                 },
                 "mainTaxon": {
                     "description": "MainTaxon provides a clade that contains a majority of scientific names\nmentioned in the Item.",
@@ -548,11 +530,8 @@ const docTemplate = `{
                 },
                 "mainTaxonPercent": {
                     "description": "MainTaxonPercent indicates the percentage of names that belong\nto the main taxon.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/pgtype.Int4"
-                        }
-                    ]
+                    "type": "integer",
+                    "example": 45
                 },
                 "mainTaxonRank": {
                     "description": "MainTaxonRank is the rank of the main taxon.",
@@ -1013,17 +992,6 @@ const docTemplate = `{
             "type": "object",
             "additionalProperties": {
                 "type": "number"
-            }
-        },
-        "pgtype.Int4": {
-            "type": "object",
-            "properties": {
-                "int32": {
-                    "type": "integer"
-                },
-                "valid": {
-                    "type": "boolean"
-                }
             }
         }
     },

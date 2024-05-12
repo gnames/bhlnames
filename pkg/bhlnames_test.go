@@ -1,7 +1,6 @@
 package bhlnames_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/gnames/bhlnames/internal/ent/input"
@@ -254,8 +253,26 @@ func TestItemStats(t *testing.T) {
 	for _, v := range tests {
 		item, err := bn.ItemStats(v.itemID)
 		assert.Nil(err)
-		fmt.Printf("ITM: %#v\n", item)
 		assert.Equal(v.itemID, item.ItemID, v.msg)
 		assert.Equal(v.titleID, item.TitleID, v.msg)
+	}
+}
+
+func TestItemsByTaxon(t *testing.T) {
+	assert := assert.New(t)
+	tests := []struct {
+		msg, taxon string
+		itemNum    int
+		itemID     int
+	}{
+		{"lep", "Lepidoptera", 2000, 18534},
+	}
+
+	bn := Init(t)
+	for _, v := range tests {
+		items, err := bn.ItemsByTaxon(v.taxon)
+		assert.Nil(err)
+		assert.GreaterOrEqual(len(items), v.itemNum, v.msg)
+		assert.Equal(v.itemID, items[0].ItemID, v.msg)
 	}
 }

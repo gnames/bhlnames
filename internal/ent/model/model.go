@@ -42,7 +42,7 @@ type Item struct {
 	BarCode string `gorm:"type:varchar(100);unique_index;not null"`
 
 	// Vol contains not normalized volume field from BHl database.
-	Vol string `gorm:"type:varchar(100)"`
+	Vol string `gorm:"type:varchar(100);not null;default:''"`
 
 	// YearStart contains the earliest year of publication. For journal volume
 	// it would be a publication of the first journal issue, for a book it
@@ -58,18 +58,18 @@ type Item struct {
 	TitleID uint `gorm:"not null"`
 
 	// TitleDOI is the DOI of an item.
-	TitleDOI string `gorm:"type:varchar(100)"`
+	TitleDOI string `gorm:"type:varchar(100);not null;default:''"`
 
 	// TitleName is the name of a journal or a book.
-	TitleName string `gorm:"type:varchar(255)"`
+	TitleName string `gorm:"type:varchar(255);not null;default:''"`
 
 	// TitleAbbr1 is an acronym of a title where the first letter of each
 	// word is used.
-	TitleAbbr1 string `gorm:"type:varchar(10)"`
+	TitleAbbr1 string `gorm:"type:varchar(10);not null;default:''"`
 
 	// TitleAbbr2 is an acronym of a title where 'common' words like 'and'
 	// 'the' etc. are ommitted.
-	TitleAbbr2 string `gorm:"type:varchar(10)"`
+	TitleAbbr2 string `gorm:"type:varchar(10);not null;default:''"`
 
 	// TitleYearStart the first year when a title was published.
 	TitleYearStart sql.NullInt32
@@ -78,7 +78,7 @@ type Item struct {
 	TitleYearEnd sql.NullInt32
 
 	// TitleLang is the most prevalent language of a title.
-	TitleLang string `gorm:"type:varchar(20)"`
+	TitleLang string `gorm:"type:varchar(20);not null;default:''"`
 }
 
 // ItemStats contains taxonomical statistics for items.
@@ -92,16 +92,16 @@ type ItemStats struct {
 	NamesTotal uint `gorm:"not null"`
 
 	// MainTaxon is the taxon containing more that 50% of all taxa in the item.
-	MainTaxon string `gorm:"type:varchar(100)"`
+	MainTaxon string `gorm:"type:varchar(100);index:main_taxon;not null;default:''"`
 
 	// MainTaxonRank is the rank of the MainTaxon.
-	MainTaxonRank string `gorm:"type:varchar(100)"`
+	MainTaxonRank string `gorm:"type:varchar(100);not null;default:''"`
 
 	// MainTaxonPercent is the percentage of taxa belonging to the MainTaxon.
 	MainTaxonPercent uint
 
 	// MainKingdom is the kingdom that contains most of the taxa in the item.
-	MainKingdom string `gorm:"type:varchar(100)"`
+	MainKingdom string `gorm:"type:varchar(100);not null;default:''"`
 
 	// MainKingdomPercent is the percentage of taxa associated with the
 	// MainKingdom.
@@ -124,35 +124,35 @@ type ItemStats struct {
 	BacteriaNum uint `gorm:"not null"`
 
 	// MainPhylum is the phylum that contains most of the taxa in the item.
-	MainPhylum string `gorm:"type:varchar(100)"`
+	MainPhylum string `gorm:"type:varchar(100);not null;default:''"`
 
 	// MainPhylumPercent is the percentage of taxa associated with the
 	// MainPhylum.
 	MainPhylumPercent uint
 
 	// MainClass is the class that contains most of the taxa in the item.
-	MainClass string `gorm:"type:varchar(100)"`
+	MainClass string `gorm:"type:varchar(100);not null;default:''"`
 
 	// MainClassPercent is the percentage of taxa associated with the
 	// MainClass.
 	MainClassPercent uint
 
 	// MainOrder is the order that contains most of the taxa in the item.
-	MainOrder string `gorm:"type:varchar(100)"`
+	MainOrder string `gorm:"type:varchar(100);not null;default:''"`
 
 	// MainOrderPercent is the percentage of taxa associated with the
 	// MainOrder.
 	MainOrderPercent uint
 
 	// MainFamily is the family that contains most of the taxa in the item.
-	MainFamily string `gorm:"type:varchar(100)"`
+	MainFamily string `gorm:"type:varchar(100);not null;default:''"`
 
 	// MainFamilyPercent is the percentage of taxa associated with the
 	// MainFamily.
 	MainFamilyPercent uint
 
 	// MainGenus is the family that contains most of the taxa in the item.
-	MainGenus string `gorm:"type:varchar(100)"`
+	MainGenus string `gorm:"type:varchar(100);not null;default:''"`
 
 	// MainGenusPercent is the percentage of taxa associated with the
 	// MainGenus.

@@ -76,7 +76,7 @@ func (r *restio) Run() {
 	r.GET(apiPath+"/namerefs/:name", nameRefsGet(r.bn))
 	r.POST(apiPath+"/namerefs", nameRefsPost(r.bn))
 	r.GET(apiPath+"/cached_refs/:external_id", externalIDGet(r.bn))
-	// r.GET(apiPath+"/taxon_items/:taxon_name", itemsByTaxonGet(r.BHLnames))
+	r.GET(apiPath+"/taxon_items/:taxon_name", itemsByTaxonGet(r.bn))
 
 	addr := fmt.Sprintf(":%d", r.cfg.PortREST)
 	s := &http.Server{
@@ -259,6 +259,25 @@ func itemStatsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 			return err
 		}
 		res, err := bn.ItemStats(itemID)
+		if err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, res)
+	}
+}
+
+// itemxByTaxonGet provides items where a given higher taxon is prevalent.
+// @Summary Get BHL items where a given higher taxon is prevalent.
+// @ID get-items-by-taxon
+// @Param taxon_name path string true "Taxon Name" example("Lepidoptera")
+// @Accept plain
+// @Produce json
+// @Success 200 {object} []bhl.Item  "BHL items with metadata and statistics"
+// @Router /taxon_items/{taxon_name} [get]
+func itemsByTaxonGet(bn bhlnames.BHLnames) func(echo.Context) error {
+	return func(c echo.Context) error {
+		taxon := c.Param("taxon_name")
+		res, err := bn.ItemsByTaxon(taxon)
 		if err != nil {
 			return err
 		}

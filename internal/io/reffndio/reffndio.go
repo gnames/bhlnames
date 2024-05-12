@@ -134,6 +134,17 @@ func (rf *reffndio) ItemStats(itemID int) (*bhl.Item, error) {
 	return res, nil
 }
 
+// ItemsByTaxon returns a collection of BHL items that contain more than
+// 50% of the species of the profided taxon.
+func (rf *reffndio) ItemsByTaxon(taxon string) ([]*bhl.Item, error) {
+	items, err := rf.itemsByTaxon(taxon)
+	if err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
 func (rf *reffndio) Close() {
 	rf.db.Close()
 }

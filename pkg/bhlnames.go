@@ -173,6 +173,15 @@ func (bn bhlnames) ItemStats(itemID int) (*bhl.Item, error) {
 	return res, nil
 }
 
+func (bn bhlnames) ItemsByTaxon(taxon string) ([]*bhl.Item, error) {
+	res, err := bn.rf.ItemsByTaxon(taxon)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func matchQuality(odds float64) int {
 	if odds <= 0 {
 		return 0

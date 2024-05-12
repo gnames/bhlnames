@@ -53,6 +53,11 @@ type BHLnames interface {
 	// statisics about taxonomic groups mentioned in the item.
 	ItemStats(itemID int) (*bhl.Item, error)
 
+	// ItemsByTaxon returns a collection of BHL items that have provided
+	// taxon as the main taxon mentioned in the item. The taxon is a main
+	// taxon if its species make more than 50% of all species in the item.
+	ItemsByTaxon(taxon string) ([]*bhl.Item, error)
+
 	// Config returns the current configuration used by the BHLnames instance.
 	Config() config.Config
 

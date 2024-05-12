@@ -341,3 +341,56 @@ SELECT
 	}
 	return &res, nil
 }
+
+func (rf *reffndio) itemsByTaxon(taxon string) ([]*bhl.Item, error) {
+	q := `
+SELECT
+	item.id, item.title_id, item.title_year_start, item.title_year_end,
+	item.year_start, item.year_end, item.title_name, item.vol, item.title_doi,
+	ist.main_taxon, ist.main_taxon_rank, ist.main_taxon_percent,
+	ist.main_kingdom, ist.main_kingdom_percent,
+	ist.animalia_num, ist.plantae_num, ist.fungi_num, ist.bacteria_num,
+	ist.main_phylum, ist.main_phylum_percent,
+	ist.main_class, ist.main_class_percent,
+	ist.main_order, ist.main_order_percent,
+	ist.main_family, ist.main_family_percent,
+	ist.main_genus, ist.main_genus_percent,
+	ist.names_total
+	FROM items item
+		JOIN item_stats ist
+			ON item.id = ist.id
+	WHERE ist.main_taxon = $1
+	ORDER BY ist.main_taxon_percent DESC, ist.names_total DESC, item.id
+`
+
+	rows, err := rf.db.Query(rf.ctx, q, taxon)
+	if err != nil {
+		slog.Error("Cannot run items taxon query", "error", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var res []*bhl.Item
+	for rows.Next() {
+		var itm bhl.Item
+		err = rows.Scan(
+			&itm.ItemID, &itm.TitleID, &itm.TitleYearStart, &itm.TitleYearEnd,
+			&itm.YearStart, &itm.YearEnd, &itm.TitleName, &itm.Volume, &itm.TitleDOI,
+			&itm.MainTaxon, &itm.MainTaxonRank, &itm.MainTaxonPercent,
+			&itm.MainKingdom, &itm.MainKingdomPercent,
+			&itm.AnimaliaNum, &itm.PlantaeNum, &itm.FungiNum, &itm.BacteriaNum,
+			&itm.MainPhylum, &itm.MainPhylumPercent,
+			&itm.MainClass, &itm.MainClassPercent,
+			&itm.MainOrder, &itm.MainOrderPercent,
+			&itm.MainFamily, &itm.MainFamilyPercent,
+			&itm.MainGenus, &itm.MainGenusPercent,
+			&itm.UniqNamesNum,
+		)
+		if err != nil {
+			slog.Error("Cannot run item stats query", "error", err)
+			return nil, err
+		}
+		res = append(res, &itm)
+	}
+	return res, nil
+}

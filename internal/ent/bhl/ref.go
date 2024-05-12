@@ -161,19 +161,19 @@ type ItemMeta struct {
 
 	// TitleYearStart is the year the when book is published, or
 	// a journal started publication.
-	TitleYearStart *pgtype.Int4 `json:"titleYearStart,omitempty"` // example:1890`
+	TitleYearStart *pgtype.Int4 `json:"titleYearStart,omitempty" swaggertype:"integer" example:"1890"`
 
 	// TitleYearEnd is the year when the journal ceased publication.
-	TitleYearEnd *pgtype.Int4 `json:"titleYearEnd,omitempty"` // example:1922`
+	TitleYearEnd *pgtype.Int4 `json:"titleYearEnd,omitempty" swaggertype:"integer" example:"1922"`
 
 	// TitleDOI provides DOI for the title.
 	TitleDOI string `json:"doiTitle,omitempty" example:"10.1234/5678"`
 
 	// YearStart is the year when the Item began publication.
-	YearStart *pgtype.Int4 `json:"yearStart,omitempty"` // example:1892`
+	YearStart *pgtype.Int4 `json:"yearStart,omitempty" swaggertype:"integer" example:"1892"`
 
 	// YearEnd is the year when the Item ceased publication.
-	YearEnd *pgtype.Int4 `json:"yearEnd,omitempty"` // example:1893`
+	YearEnd *pgtype.Int4 `json:"yearEnd,omitempty" swaggertype:"integer" example:"1893"`
 
 	// Volume is the information about a volume in a journal.
 	Volume string `json:"volume,omitempty" example:"vol. 12"`
@@ -192,14 +192,14 @@ type ItemStats struct {
 
 	// MainTaxonPercent indicates the percentage of names that belong
 	// to the main taxon.
-	MainTaxonPercent *pgtype.Int4 `json:"mainTaxonPercent,omitempty"` // example:45`
+	MainTaxonPercent *pgtype.Int4 `json:"mainTaxonPercent,omitempty" swaggertype:"integer" example:"45"`
 
 	// MainKingdom is the most prevalent kingdom in the Item.
 	MainKingdom string `json:"mainKingdom,omitempty" example:"Animalia"`
 
 	// MainKingdomPercent indicates the percentage of names that belong
 	// to the most prevalent kingdom.
-	MainKingdomPercent *pgtype.Int4 `json:"mainKingdomPercent,omitempty"` // example:79`
+	MainKingdomPercent *pgtype.Int4 `json:"mainKingdomPercent,omitempty" swaggertype:"integer" example:"79"`
 
 	// AnimaliaNum is the number of names that belong to the Animalia kingdom.
 	AnimaliaNum int `json:"kingdomAnimaliaNum" example:"1234"`
@@ -218,35 +218,35 @@ type ItemStats struct {
 
 	// MainPhylumPercent indicates the percentage of names that belong
 	// to the most prevalent phylum.
-	MainPhylumPercent *pgtype.Int4 `json:"mainPhylumPercent,omitempty"` // example:45`
+	MainPhylumPercent *pgtype.Int4 `json:"mainPhylumPercent,omitempty" swaggertype:"integer" example:"45"`
 
 	// MainClass is the most prevalent class in the Item.
 	MainClass string `json:"mainClass,omitempty" example:"Insecta"`
 
 	// MainClassPercent indicates the percentage of names that belong
 	// to the most prevalent class.
-	MainClassPercent *pgtype.Int4 `json:"mainClassPercent,omitempty"` // example:44`
+	MainClassPercent *pgtype.Int4 `json:"mainClassPercent,omitempty" swaggertype:"integer" example:"44"`
 
 	// MainOrder is the most prevalent order in the Item.
 	MainOrder string `json:"mainOrder,omitempty" example:"Coleoptera"`
 
 	// MainOrderPercent indicates the percentage of names that belong
 	// to the most prevalent order.
-	MainOrderPercent *pgtype.Int4 `json:"mainOrderPercent,omitempty"` // example:14`
+	MainOrderPercent *pgtype.Int4 `json:"mainOrderPercent,omitempty" swaggertype:"integer" example:"14"`
 
 	// MainFamily is the most prevalent family in the Item.
 	MainFamily string `json:"mainFamily,omitempty" example:"Buprestidae"`
 
 	// MainFamilyPercent indicates the percentage of names that belong
 	// to the most prevalent family.
-	MainFamilyPercent *pgtype.Int4 `json:"mainFamilyPercent,omitempty"` // example:13`
+	MainFamilyPercent *pgtype.Int4 `json:"mainFamilyPercent,omitempty" swaggertype:"integer" example:"13"`
 
 	// MainGenus is the most prevalent genus in the Item.
 	MainGenus string `json:"mainGenus,omitempty" example:"Agrilus"`
 
 	// MainGenusPercent indicates the percentage of names that belong
 	// to the most prevalent genus.
-	MainGenusPercent *pgtype.Int4 `json:"mainGenusPercent,omitempty"` // example:5`
+	MainGenusPercent *pgtype.Int4 `json:"mainGenusPercent,omitempty" swaggertype:"integer" example:"5"`
 
 	// UniqNamesNum is the number of unique names in the Item.
 	UniqNamesNum int `json:"uniqNamesNum" example:"1234"`

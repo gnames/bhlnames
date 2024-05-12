@@ -43,7 +43,7 @@ func (b builderio) addStatsToItems(
 		count += len(taxa)
 
 		var taxon, taxonRank, kingdom, phylum, class, order,
-			family, genus sql.NullString
+			family, genus string
 		var taxonPcnt, kingdomPcnt, phylumPcnt, classPcnt, orderPcnt,
 			familyPcnt, genusPcnt sql.NullInt16
 		var total, animNum, plantNum, fungiNum, bactNum uint
@@ -117,32 +117,17 @@ func floatToNullInt(f float32) sql.NullInt16 {
 }
 
 func statStrings(st gnstats.Stats) (
-	sql.NullString, sql.NullString,
-	sql.NullString, sql.NullString, sql.NullString, sql.NullString,
-	sql.NullString, sql.NullString) {
-	var taxon, taxonRank, kingdom, phylum, class, order, family, genus sql.NullString
-	if st.MainTaxon.Name != "" {
-		taxon = sql.NullString{String: st.MainTaxon.Name, Valid: true}
-		taxonRank = sql.NullString{String: st.MainTaxon.RankStr, Valid: true}
-	}
-	if st.Kingdom.Name != "" {
-		kingdom = sql.NullString{String: st.Kingdom.Name, Valid: true}
-	}
-	if st.Phylum.Name != "" {
-		phylum = sql.NullString{String: st.Phylum.Name, Valid: true}
-	}
-	if st.Class.Name != "" {
-		class = sql.NullString{String: st.Class.Name, Valid: true}
-	}
-	if st.Order.Name != "" {
-		order = sql.NullString{String: st.Order.Name, Valid: true}
-	}
-	if st.Family.Name != "" {
-		family = sql.NullString{String: st.Family.Name, Valid: true}
-	}
-	if st.Genus.Name != "" {
-		genus = sql.NullString{String: st.Genus.Name, Valid: true}
-	}
+	string, string, string, string, string, string, string, string,
+) {
+	var taxon, taxonRank, kingdom, phylum, class, order, family, genus string
+	taxon = st.MainTaxon.Name
+	taxonRank = st.MainTaxon.RankStr
+	kingdom = st.Kingdom.Name
+	phylum = st.Phylum.Name
+	class = st.Class.Name
+	order = st.Order.Name
+	family = st.Family.Name
+	genus = st.Genus.Name
 	return taxon, taxonRank, kingdom, phylum, class, order, family, genus
 }
 
