@@ -53,11 +53,11 @@ func New(bn bhlnames.BHLnames) rest.REST {
 // @license.url https://opensource.org/licenses/MIT
 
 // Server Definitions
-// @Server https://bhlquest.globalnames.org Description for production server
 // @Server http://localhost:8888 Description for local server
+// @Server https://bhlquest.globalnames.org Description for production server
 
-// @host bhlnames.globalnames.org
 // @host localhost:8888
+// @host bhlnames.globalnames.org
 // @BasePath /api/v1
 
 // @externalDocs.description  OpenAPI

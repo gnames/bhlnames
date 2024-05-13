@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## [v0.2.1]
+
+- Fix: server URL for OpenAPI documenation.
+
 ## [v0.2.0]
 
 - Add [#59]: restore RESTful API.
