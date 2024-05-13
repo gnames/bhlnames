@@ -2,13 +2,20 @@
 
 ## Unreleased
 
-## [v0.1.8]
+## [v0.2.0]
 
-- Add [#55]: improve refeerence finding.
+- Add [#59]: restore RESTful API.
+- Add [#58]: incorporate CoL Data into nomen finding.
+- Add [#57]: speedup processing CoL data.
+- Add [#56]: depend only on database (remove KV store).
+- Add [#55]: improve reference finding.
 - Add [#54]: improve speed of data import from BHL and BHLIndex.
+- Add [#53]: limit use of KV store.
 - Add [#51]: remove Nomen methods, add their functionality to NameRefs.
 - Add [#50]: decide on API endpoints.
 - Add [#49]: switch logs to slog.
+- Add [#45]: get item statistics by item_id.
+- Add [#36]: find items by a prevalent higher taxon name.
 
 ## [v0.1.7]
 
