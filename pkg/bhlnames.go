@@ -118,18 +118,26 @@ func (bn bhlnames) NameRefs(inp input.Input) (*bhl.RefsByName, error) {
 	if err != nil {
 		return nil, err
 	}
+	// do not show ReferenceNumber for nomenclatural events, because we
+	// try to find only one reference.
 	if inp.WithNomenEvent {
 		res.ReferenceNumber = 0
 	} else {
 		res.ReferenceNumber = len(res.References)
 	}
 
-	if inp.WithNomenEvent || inp.Reference != nil {
-		bn.scoreCalcSort(res, inp.WithNomenEvent)
-	}
-
+	// limit the number of references if needed
 	if inp.RefsLimit > 0 && len(res.References) > inp.RefsLimit {
 		res.References = res.References[:inp.RefsLimit]
+	}
+
+	// if results are from CoL cache, return them here
+	if res.Meta.NomenEventFromCache {
+		return res, nil
+	}
+
+	if inp.WithNomenEvent || inp.Reference != nil {
+		bn.scoreCalcSort(res, inp.WithNomenEvent)
 	}
 
 	if inp.Reference != nil {

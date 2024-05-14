@@ -118,7 +118,7 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Finds BHL references for a name",
+                "summary": "Finds BHL references for a name, taxon, or nomenclatural event",
                 "operationId": "post-name-refs",
                 "parameters": [
                     {
@@ -150,7 +150,7 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Finds BHL references for a name",
+                "summary": "Finds BHL references for a name, taxon, or nomenclatural event",
                 "operationId": "get-name-refs",
                 "parameters": [
                     {
@@ -192,7 +192,7 @@ const docTemplate = `{
                 "produces": [
                     "text/plain"
                 ],
-                "summary": "Check API status",
+                "summary": "Check if API service is online",
                 "operationId": "get-ping",
                 "responses": {
                     "200": {
@@ -545,8 +545,56 @@ const docTemplate = `{
                 }
             }
         },
+        "bhl.Meta": {
+            "description": "Meta provides metadata for the results of a name-string search.",
+            "type": "object",
+            "properties": {
+                "canonical": {
+                    "description": "Canonical is a full canonical form of the input name-string.",
+                    "type": "string"
+                },
+                "currentCanonical": {
+                    "description": "CurrentCanonical is a full canonical form of a currently accepted\nname for the taxon of the input name-string.",
+                    "type": "string"
+                },
+                "error": {
+                    "description": "Error in results"
+                },
+                "imagesURL": {
+                    "description": "ImagesURL provides URL that contains images of the taxon.",
+                    "type": "string"
+                },
+                "input": {
+                    "description": "Input of a name and/or reference",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/input.Input"
+                        }
+                    ]
+                },
+                "inputReferenceFrom": {
+                    "description": "InputReferenceFrom indicates that input references were taked from\na data source.",
+                    "type": "string"
+                },
+                "nomenEventFromCache": {
+                    "description": "NomenEventFromCache indicates that nomenclatural event was taken from\na pre-cached data.",
+                    "type": "boolean"
+                },
+                "synonyms": {
+                    "description": "Synonyms is a list of synonyms for the name-string.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "totalRefsNum": {
+                    "description": "ReferenceNumber is the number of references found for the name-string.",
+                    "type": "integer"
+                }
+            }
+        },
         "bhl.NameData": {
-            "description": "NameData contains details about a scientific name provided in the search.",
+            "description": "NameData contains details about a scientific name in the BHL reference.",
             "type": "object",
             "properties": {
                 "annotNomen": {
@@ -699,7 +747,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "name": {
-                    "description": "NameData contains detailed information about the scientific name.",
+                    "description": "NameData contains detailed information about the scientific name found\nin the BHL reference.",
                     "allOf": [
                         {
                             "$ref": "#/definitions/bhl.NameData"
@@ -729,47 +777,23 @@ const docTemplate = `{
             }
         },
         "bhl.RefsByName": {
+            "description": "RefsByName provides references to BHL Items, Parts and Pages where a name-string, taxon or a putative nomenclatural event were found.",
             "type": "object",
             "properties": {
-                "canonical": {
-                    "description": "Canonical is a full canonical form of the input name-string.",
-                    "type": "string"
-                },
-                "currentCanonical": {
-                    "description": "CurrentCanonical is a full canonical form of a currently accepted\nname for the taxon of the input name-string.",
-                    "type": "string"
-                },
-                "error": {
-                    "description": "Error in results"
-                },
-                "imagesURL": {
-                    "description": "ImagesURL provides URL that contains images of the taxon.",
-                    "type": "string"
-                },
-                "input": {
-                    "description": "Input of a name and/or reference",
+                "meta": {
+                    "description": "Meta provides metadata for the results of a name-string search.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/input.Input"
+                            "$ref": "#/definitions/bhl.Meta"
                         }
                     ]
                 },
                 "references": {
+                    "description": "References is a list of references to BHL Items, Parts and Pages\nwhere a name-string was found.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/bhl.ReferenceName"
                     }
-                },
-                "synonyms": {
-                    "description": "Synonyms is a list of synonyms for the name-string.",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "totalRefsNum": {
-                    "description": "ReferenceNumber is the number of references found for the name-string.",
-                    "type": "integer"
                 }
             }
         },
@@ -1004,7 +1028,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8888",
+	Host:             "bhlnames.globalnames.org",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "BHLnames API",

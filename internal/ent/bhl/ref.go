@@ -12,7 +12,8 @@ type ReferenceName struct {
 	// Reference is the BHL reference where the name was detected.
 	Reference `json:"reference"`
 
-	// NameData contains detailed information about the scientific name.
+	// NameData contains detailed information about the scientific name found
+	// in the BHL reference.
 	*NameData `json:"name,omitempty"`
 
 	// IsNomenRef states if the reference likely contains
@@ -34,7 +35,7 @@ type ReferenceName struct {
 }
 
 // @Description NameData contains details about a scientific name
-// @Description provided in the search.
+// @Description in the BHL reference.
 type NameData struct {
 	// Name is a scientific name from the query.
 	Name string `json:"name" example:"Pardosa moesta"`

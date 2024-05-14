@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## [v0.2.2]
+
+- Add [#61]: RefsByName.Meta has details for cached searches.
+
 ## [v0.2.1]
 
 - Fix: server URL for OpenAPI documenation.

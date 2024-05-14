@@ -247,9 +247,47 @@ definitions:
         example: 1234
         type: integer
     type: object
+  bhl.Meta:
+    description: Meta provides metadata for the results of a name-string search.
+    properties:
+      canonical:
+        description: Canonical is a full canonical form of the input name-string.
+        type: string
+      currentCanonical:
+        description: |-
+          CurrentCanonical is a full canonical form of a currently accepted
+          name for the taxon of the input name-string.
+        type: string
+      error:
+        description: Error in results
+      imagesURL:
+        description: ImagesURL provides URL that contains images of the taxon.
+        type: string
+      input:
+        allOf:
+        - $ref: '#/definitions/input.Input'
+        description: Input of a name and/or reference
+      inputReferenceFrom:
+        description: |-
+          InputReferenceFrom indicates that input references were taked from
+          a data source.
+        type: string
+      nomenEventFromCache:
+        description: |-
+          NomenEventFromCache indicates that nomenclatural event was taken from
+          a pre-cached data.
+        type: boolean
+      synonyms:
+        description: Synonyms is a list of synonyms for the name-string.
+        items:
+          type: string
+        type: array
+      totalRefsNum:
+        description: ReferenceNumber is the number of references found for the name-string.
+        type: integer
+    type: object
   bhl.NameData:
-    description: NameData contains details about a scientific name provided in the
-      search.
+    description: NameData contains details about a scientific name in the BHL reference.
     properties:
       annotNomen:
         description: AnnotNomen is a nomenclatural annotation located near the matchted
@@ -387,7 +425,9 @@ definitions:
       name:
         allOf:
         - $ref: '#/definitions/bhl.NameData'
-        description: NameData contains detailed information about the scientific name.
+        description: |-
+          NameData contains detailed information about the scientific name found
+          in the BHL reference.
       refMatchQuality:
         description: |-
           RefMatchQuality provides a number between 0 and 5 to indicate if
@@ -410,36 +450,20 @@ definitions:
           a name-string or a reference-string.
     type: object
   bhl.RefsByName:
+    description: RefsByName provides references to BHL Items, Parts and Pages where
+      a name-string, taxon or a putative nomenclatural event were found.
     properties:
-      canonical:
-        description: Canonical is a full canonical form of the input name-string.
-        type: string
-      currentCanonical:
-        description: |-
-          CurrentCanonical is a full canonical form of a currently accepted
-          name for the taxon of the input name-string.
-        type: string
-      error:
-        description: Error in results
-      imagesURL:
-        description: ImagesURL provides URL that contains images of the taxon.
-        type: string
-      input:
+      meta:
         allOf:
-        - $ref: '#/definitions/input.Input'
-        description: Input of a name and/or reference
+        - $ref: '#/definitions/bhl.Meta'
+        description: Meta provides metadata for the results of a name-string search.
       references:
+        description: |-
+          References is a list of references to BHL Items, Parts and Pages
+          where a name-string was found.
         items:
           $ref: '#/definitions/bhl.ReferenceName'
         type: array
-      synonyms:
-        description: Synonyms is a list of synonyms for the name-string.
-        items:
-          type: string
-        type: array
-      totalRefsNum:
-        description: ReferenceNumber is the number of references found for the name-string.
-        type: integer
     type: object
   bhl.Score:
     description: Score provides a qualitative estimation of a match quality to a name-string,
@@ -659,7 +683,7 @@ definitions:
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: localhost:8888
+host: bhlnames.globalnames.org
 info:
   contact:
     email: dmozzherin@gmail.com
@@ -756,7 +780,7 @@ paths:
           description: Matched references for the provided name
           schema:
             $ref: '#/definitions/bhl.RefsByName'
-      summary: Finds BHL references for a name
+      summary: Finds BHL references for a name, taxon, or nomenclatural event
   /namerefs/{name}:
     get:
       consumes:
@@ -789,7 +813,7 @@ paths:
           description: Matched references for the provided name
           schema:
             $ref: '#/definitions/bhl.RefsByName'
-      summary: Finds BHL references for a name
+      summary: Finds BHL references for a name, taxon, or nomenclatural event
   /ping:
     get:
       description: Checks if the API is online and returns a simple response if it
@@ -802,7 +826,7 @@ paths:
           description: API status response
           schema:
             type: string
-      summary: Check API status
+      summary: Check if API service is online
   /references/{page_id}:
     get:
       consumes:

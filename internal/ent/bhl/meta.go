@@ -2,15 +2,29 @@ package bhl
 
 import "github.com/gnames/bhlnames/internal/ent/input"
 
-// RefsByName provides apparent occurrences of a name-string in BHL.
+// @Description RefsByName provides references to BHL Items, Parts and Pages
+// @Description where a name-string, taxon or a putative nomenclatural
+// @Description event were found.
 type RefsByName struct {
-	Meta
+	// Meta provides metadata for the results of a name-string search.
+	Meta `json:"meta"`
+	// References is a list of references to BHL Items, Parts and Pages
+	// where a name-string was found.
 	References []*ReferenceName `json:"references,omitempty"`
 }
 
+// @Description Meta provides metadata for the results of a name-string search.
 type Meta struct {
 	// Input of a name and/or reference
 	Input input.Input `json:"input"`
+
+	// NomenEventFromCache indicates that nomenclatural event was taken from
+	// a pre-cached data.
+	NomenEventFromCache bool `json:"nomenEventFromCache,omitempty"`
+
+	// InputReferenceFrom indicates that input references were taked from
+	// a data source.
+	InputReferenceFrom string `json:"inputReferenceFrom,omitempty"`
 
 	// Canonical is a full canonical form of the input name-string.
 	Canonical string `json:"canonical,omitempty"`

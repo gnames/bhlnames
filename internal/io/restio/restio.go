@@ -101,7 +101,7 @@ https://bhlnames.globalnames.org/apidoc/index.html`)
 }
 
 // ping checks if the API is online
-// @Summary Check API status
+// @Summary Check if API service is online
 // @Description Checks if the API is online and returns a simple response if it is.
 // @ID get-ping
 // @Produce plain
@@ -153,7 +153,7 @@ func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 // nameRefsGet takes a name, optionally reference and returns
 // best matched references to provided data. It can also try to return
 // a reference for the nomenclatural event for the name.
-// @Summary Finds BHL references for a name
+// @Summary Finds BHL references for a name, taxon, or nomenclatural event
 // @Description Finds BHL references for a name, does not include references of synonyms. There is an option to find references for the nomenclatural event of a name.
 // @ID get-name-refs
 // @Param name path string true "Name to find references for." example("Pardosa moesta")
@@ -194,7 +194,7 @@ func nameRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 
 // nameRefsPost takes an input.Input with a name, optionally reference and returns
 // best matched reference to provided data.
-// @Summary Finds BHL references for a name
+// @Summary Finds BHL references for a name, taxon, or nomenclatural event
 // @Description Finds BHL references for a name, does not include references of synonyms.
 // @ID post-name-refs
 // @Param input body input.Input true "Input data"

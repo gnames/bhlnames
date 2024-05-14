@@ -293,12 +293,16 @@ SELECT cr.result
 		out = res[0]
 	}
 
-	prepareOutput(inp, out)
+	prepareCoLOutput(inp, out)
 	return out, nil
 }
 
-func prepareOutput(inp input.Input, nr *bhl.RefsByName) {
+func prepareCoLOutput(inp input.Input, nr *bhl.RefsByName) {
+	colInp := nr.Input
 	nr.Input = inp
+	nr.Input.Reference = colInp.Reference
+	nr.Meta.NomenEventFromCache = true
+	nr.Meta.InputReferenceFrom = "Catalogue of Life"
 }
 
 func (rf *reffndio) itemStats(itemID int) (*bhl.Item, error) {
