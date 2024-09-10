@@ -73,8 +73,8 @@ func (r *restio) Run() {
 	r.GET(apiPath+"/version", ver())
 	r.GET(apiPath+"/references/:page_id", refs(r.bn))
 	r.GET(apiPath+"/items/:item_id", itemStatsGet(r.bn))
-	r.GET(apiPath+"/namerefs/:name", nameRefsGet(r.bn))
-	r.POST(apiPath+"/namerefs", nameRefsPost(r.bn))
+	r.GET(apiPath+"/name_refs/:name", nameRefsGet(r.bn))
+	r.POST(apiPath+"/name_refs", nameRefsPost(r.bn))
 	r.GET(apiPath+"/cached_refs/:external_id", externalIDGet(r.bn))
 	r.GET(apiPath+"/taxon_items/:taxon_name", itemsByTaxonGet(r.bn))
 
@@ -162,7 +162,7 @@ func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Accept plain
 // @Produce json
 // @Success 200 {object} bhl.RefsByName "Matched references for the provided name"
-// @Router /namerefs/{name} [get]
+// @Router /name_refs/{name} [get]
 func nameRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 	return func(c echo.Context) error {
 		var res *bhl.RefsByName
@@ -201,7 +201,7 @@ func nameRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 // @Accept json
 // @Produce json
 // @Success 200 {object} bhl.RefsByName  "Matched references for the provided name"
-// @Router /namerefs [post]
+// @Router /name_refs [post]
 func nameRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
 	var err error
 	var res *bhl.RefsByName
