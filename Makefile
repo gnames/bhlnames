@@ -74,7 +74,7 @@ release: openapi dockerhub ## Build and package binaries for release
 
 ## Install
 install: openapi ## Build and install binary
-	$(FLAGS_SHARED) $(GOINSTALL);
+	$(NO_C) $(GOINSTALL);
 	
 ## OpenAPI generation
 openapi: ## Generate documentation for OpenAPI

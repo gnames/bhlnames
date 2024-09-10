@@ -20,6 +20,7 @@ func Init(t *testing.T) bhlnames.BHLnames {
 	}
 
 	cfg := config.New()
+	config.LoadEnv(&cfg)
 	rf, err := reffndio.New(cfg)
 	assert.Nil(t, err)
 	tm, err := ttlmchio.New(cfg)

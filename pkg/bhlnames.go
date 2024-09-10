@@ -164,7 +164,7 @@ func (bn bhlnames) RefsByExtID(
 		return nil, err
 	}
 
-	if !allRefs {
+	if !allRefs && res != nil {
 		if len(res.References) > 0 {
 			res.References = res.References[:1]
 		}

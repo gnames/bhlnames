@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	testURL = "http://0.0.0.0:8888/api/v1"
 	enc     = gnfmt.GNjson{}
+	testURL = "http://0.0.0.0:8888/api/v1"
 )
 
 func TestPing(t *testing.T) {
@@ -51,7 +51,7 @@ func TestNameRefs(t *testing.T) {
 	assert.Nil(err)
 
 	r := bytes.NewReader(reqBody)
-	resp, err := http.Post(testURL+"/namerefs", "application/json", r)
+	resp, err := http.Post(testURL+"/name_refs", "application/json", r)
 	assert.Nil(err)
 
 	respBytes, err := io.ReadAll(resp.Body)
@@ -80,7 +80,7 @@ func TestTaxonRefs(t *testing.T) {
 	assert.Nil(err)
 
 	r := bytes.NewReader(reqBody)
-	resp, err := http.Post(testURL+"/namerefs", "application/json", r)
+	resp, err := http.Post(testURL+"/name_refs", "application/json", r)
 	assert.Nil(err)
 
 	respBytes, err := io.ReadAll(resp.Body)
@@ -112,7 +112,7 @@ func TestNomenRefs(t *testing.T) {
 	assert.Nil(err)
 
 	r := bytes.NewReader(reqBody)
-	resp, err := http.Post(testURL+"/namerefs", "application/json", r)
+	resp, err := http.Post(testURL+"/name_refs", "application/json", r)
 	assert.Nil(err)
 
 	respBytes, err := io.ReadAll(resp.Body)

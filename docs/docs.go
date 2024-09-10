@@ -54,7 +54,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "example": "\"BKDDK\"",
+                        "example": "\"3W7R6\"",
                         "description": "External ID",
                         "name": "external_id",
                         "in": "path",
@@ -62,7 +62,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "example": "\"true\"",
+                        "example": "\"false\"",
                         "description": "All Cached References",
                         "name": "all_refs",
                         "in": "query",
@@ -109,7 +109,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/namerefs": {
+        "/name_refs": {
             "post": {
                 "description": "Finds BHL references for a name, does not include references of synonyms.",
                 "consumes": [
@@ -141,7 +141,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/namerefs/{name}": {
+        "/name_refs/{name}": {
             "get": {
                 "description": "Finds BHL references for a name, does not include references of synonyms. There is an option to find references for the nomenclatural event of a name.",
                 "consumes": [
@@ -1028,7 +1028,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "bhlnames.globalnames.org",
+	Host:             "localhost:8888",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "BHLnames API",

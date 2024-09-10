@@ -52,10 +52,12 @@ func New(bn bhlnames.BHLnames) rest.REST {
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
+// TODO swap for development
 // Server Definitions
 // @Server http://localhost:8888 Description for local server
-// @Server https://bhlquest.globalnames.org Description for production server
+// @Server https://bhlnames.globalnames.org Description for production server
 
+// TODO swap for development
 // @host localhost:8888
 // @host bhlnames.globalnames.org
 // @BasePath /api/v1
@@ -224,8 +226,8 @@ func nameRefsPost(bn bhlnames.BHLnames) func(echo.Context) error {
 // externalIDGet provides nomenclatural event data for a given external ID.
 // @Summary Get nomenclatural event data by external ID from a data source.
 // @ID get-cached-refs
-// @Param external_id path string true "External ID" example("BKDDK")
-// @Param all_refs query string true "All Cached References" example("true")
+// @Param external_id path string true "External ID" example("3W7R6")
+// @Param all_refs query string true "All Cached References" example("false")
 // @Accept plain
 // @Produce json
 // @Success 200 {object} bhl.RefsByName  "Matched references for the provided external ID"

@@ -683,7 +683,7 @@ definitions:
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: bhlnames.globalnames.org
+host: localhost:8888
 info:
   contact:
     email: dmozzherin@gmail.com
@@ -720,13 +720,13 @@ paths:
       operationId: get-cached-refs
       parameters:
       - description: External ID
-        example: '"BKDDK"'
+        example: '"3W7R6"'
         in: path
         name: external_id
         required: true
         type: string
       - description: All Cached References
-        example: '"true"'
+        example: '"false"'
         in: query
         name: all_refs
         required: true
@@ -759,7 +759,7 @@ paths:
           schema:
             $ref: '#/definitions/bhl.Item'
       summary: Get metadata and taxonomic statistics of a BHL item.
-  /namerefs:
+  /name_refs:
     post:
       consumes:
       - application/json
@@ -781,7 +781,7 @@ paths:
           schema:
             $ref: '#/definitions/bhl.RefsByName'
       summary: Finds BHL references for a name, taxon, or nomenclatural event
-  /namerefs/{name}:
+  /name_refs/{name}:
     get:
       consumes:
       - text/plain

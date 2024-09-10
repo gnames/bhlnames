@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## [v0.2.3]
+
+Fix [#62]: Error when querying for external id that is not in database.
+
 ## [v0.2.2]
 
 - Add [#61]: RefsByName.Meta has details for cached searches.

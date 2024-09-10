@@ -286,14 +286,20 @@ TODO: Explain score and score thresholds.
 
 ### Running tests
 
-1. Install bhlnames and its data as described above.
-2. Start RESTful service in another terminal window:
+1. Install `direnv`, copy `envrc.example` to `.envrc`.
+2. Modify `.envrc` according to your needs, enable `direnv`.
+3. Install bhlnames and its data as described above.
+4. in `./internal/io/restio/restio.go` go to TODO and swap development
+   and production servers. (Dont forget to swap them back for production)
+5. Start RESTful service in another terminal window:
 
    ```bash
    bhlnames rest
    ```
 
-3. Run `go test ./...`
+6. Run `make tools`
+7. Run `make test`
+8. Run `make testrest`
 
 ## Authors
 

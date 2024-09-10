@@ -14,7 +14,7 @@
         },
         "version": "1.0"
     },
-    "host": "bhlnames.globalnames.org",
+    "host": "localhost:8888",
     "basePath": "/api/v1",
     "paths": {
         "/": {
@@ -48,7 +48,7 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "example": "\"BKDDK\"",
+                        "example": "\"3W7R6\"",
                         "description": "External ID",
                         "name": "external_id",
                         "in": "path",
@@ -56,7 +56,7 @@
                     },
                     {
                         "type": "string",
-                        "example": "\"true\"",
+                        "example": "\"false\"",
                         "description": "All Cached References",
                         "name": "all_refs",
                         "in": "query",
@@ -103,7 +103,7 @@
                 }
             }
         },
-        "/namerefs": {
+        "/name_refs": {
             "post": {
                 "description": "Finds BHL references for a name, does not include references of synonyms.",
                 "consumes": [
@@ -135,7 +135,7 @@
                 }
             }
         },
-        "/namerefs/{name}": {
+        "/name_refs/{name}": {
             "get": {
                 "description": "Finds BHL references for a name, does not include references of synonyms. There is an option to find references for the nomenclatural event of a name.",
                 "consumes": [
