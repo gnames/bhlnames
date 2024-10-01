@@ -46,6 +46,9 @@ func intOpts() []Option {
 		"BHL_NAMES_PORT_REST": OptPortREST,
 	}
 	for envVar, optFunc := range envToOpt {
+		if envVar == "" {
+			continue
+		}
 		val := os.Getenv(envVar)
 		i, err := strconv.Atoi(val)
 		if err != nil {
