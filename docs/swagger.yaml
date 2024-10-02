@@ -260,9 +260,6 @@ definitions:
         type: string
       error:
         description: Error in results
-      imagesURL:
-        description: ImagesURL provides URL that contains images of the taxon.
-        type: string
       input:
         allOf:
         - $ref: '#/definitions/input.Input'
@@ -683,7 +680,7 @@ definitions:
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: bhlnames.globalnames.org
+host: localhost:8888
 info:
   contact:
     email: dmozzherin@gmail.com

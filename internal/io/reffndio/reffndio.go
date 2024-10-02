@@ -54,7 +54,7 @@ func (rf reffndio) ReferencesByName(
 	var err error
 
 	// gets empty *namerefs.NameRefs with current_canonical
-	res := rf.emptyNameRefs(inp)
+	res := rf.EmptyNameRefs(inp)
 
 	res.Canonical, _ = simpleCanonical(inp.NameString)
 	res.CurrentCanonical, err = rf.currentCanonical(res.Canonical)
@@ -88,7 +88,6 @@ func (rf reffndio) ReferencesByName(
 			return nil, err
 		}
 	}
-	res.ImagesURL = imagesUrl(res.CurrentCanonical)
 	rf.deduplicateResults(inp, res, refRecs)
 	return res, nil
 }
@@ -149,7 +148,7 @@ func (rf *reffndio) Close() {
 	rf.db.Close()
 }
 
-func (rf *reffndio) emptyNameRefs(inp input.Input) *bhl.RefsByName {
+func (rf *reffndio) EmptyNameRefs(inp input.Input) *bhl.RefsByName {
 	meta := bhl.Meta{
 		Input: inp,
 	}

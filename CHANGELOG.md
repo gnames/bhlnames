@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## [v0.2.4] - 2024-10-02 Wed
+
+Fix [#64]: parse names correctly when they come from API names_ref
+
 ## [v0.2.3]
 
 Fix [#62]: Error when querying for external id that is not in database.

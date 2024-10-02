@@ -288,18 +288,19 @@ TODO: Explain score and score thresholds.
 
 1. Install `direnv`, copy `envrc.example` to `.envrc`.
 2. Modify `.envrc` according to your needs, enable `direnv`.
-3. Install bhlnames and its data as described above.
-4. in `./internal/io/restio/restio.go` go to TODO and swap development
+3. Install bhlnames as described above.
+4. Use [bhlnames test database] for data.
+5. in `./internal/io/restio/restio.go` go to TODO and swap development
    and production servers. (Dont forget to swap them back for production)
-5. Start RESTful service in another terminal window:
+6. Start RESTful service in another terminal window:
 
    ```bash
    bhlnames rest
    ```
 
-6. Run `make tools`
-7. Run `make test`
-8. Run `make testrest`
+7. Run `make tools`
+8. Run `make test`
+9. Run `make testrest`
 
 ## Authors
 
@@ -318,3 +319,4 @@ Released under [MIT license]
 [geoff ower]: https://github.com/gdower
 [mit license]: https://github.com/gnames/bhlnames/blob/master/LICENSE
 [rest test file]: https://github.com/gnames/bhlnames/blob/master/rest/rest_test.go
+[bhlnames test database]: http://opendata.globalnames.org/bhlnames/bhlnames-postgres-2024-05-07.zst

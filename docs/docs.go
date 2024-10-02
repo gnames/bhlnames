@@ -560,10 +560,6 @@ const docTemplate = `{
                 "error": {
                     "description": "Error in results"
                 },
-                "imagesURL": {
-                    "description": "ImagesURL provides URL that contains images of the taxon.",
-                    "type": "string"
-                },
                 "input": {
                     "description": "Input of a name and/or reference",
                     "allOf": [
@@ -1028,7 +1024,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "bhlnames.globalnames.org",
+	Host:             "localhost:8888",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "BHLnames API",

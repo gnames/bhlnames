@@ -208,7 +208,7 @@ func parseNameString(gnp gnparser.GNparser, inp *Input) {
 	}
 
 	if parsed.Authorship != nil {
-		inp.NameAuthors = strings.Join(parsed.Authorship.Authors, " ")
+		inp.NameAuthors = strings.Join(parsed.Authorship.Authors, ", ")
 
 		if inp.NameYear == 0 && parsed.Authorship.Year != "" {
 			yr, _ := strconv.Atoi(parsed.Authorship.Year)

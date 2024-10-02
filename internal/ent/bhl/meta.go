@@ -36,9 +36,6 @@ type Meta struct {
 	// Synonyms is a list of synonyms for the name-string.
 	Synonyms []string `json:"synonyms,omitempty"`
 
-	// ImagesURL provides URL that contains images of the taxon.
-	ImagesURL string `json:"imagesURL,omitempty"`
-
 	// Error in results
 	Error error `json:"error,omitempty"`
 

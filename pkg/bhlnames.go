@@ -115,8 +115,11 @@ func (bn bhlnames) Initialize(bld builder.Builder) error {
 
 func (bn bhlnames) NameRefs(inp input.Input) (*bhl.RefsByName, error) {
 	res, err := bn.rf.ReferencesByName(inp, bn.cfg)
+	if res == nil {
+		res = bn.rf.EmptyNameRefs(inp)
+	}
 	if err != nil {
-		return nil, err
+		return res, err
 	}
 	// do not show ReferenceNumber for nomenclatural events, because we
 	// try to find only one reference.

@@ -14,7 +14,7 @@
         },
         "version": "1.0"
     },
-    "host": "bhlnames.globalnames.org",
+    "host": "localhost:8888",
     "basePath": "/api/v1",
     "paths": {
         "/": {
@@ -553,10 +553,6 @@
                 },
                 "error": {
                     "description": "Error in results"
-                },
-                "imagesURL": {
-                    "description": "ImagesURL provides URL that contains images of the taxon.",
-                    "type": "string"
                 },
                 "input": {
                     "description": "Input of a name and/or reference",

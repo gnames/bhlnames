@@ -16,6 +16,9 @@ type RefFinder interface {
 		cfg config.Config,
 	) (*bhl.RefsByName, error)
 
+	// EmptyNameRefs returns empty non-nil result.
+	EmptyNameRefs(inp input.Input) *bhl.RefsByName
+
 	// RefByPageID returns a reference for a given pageID.
 	RefByPageID(pageID int) (*bhl.Reference, error)
 

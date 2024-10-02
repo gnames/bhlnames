@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -54,12 +55,12 @@ func New(bn bhlnames.BHLnames) rest.REST {
 
 // TODO swap for development
 // Server Definitions
-// @Server http://localhost:8888 Description for local server
 // @Server https://bhlnames.globalnames.org Description for production server
+// @Server http://localhost:8888 Description for local server
 
 // TODO swap for development
-// @host localhost:8888
 // @host bhlnames.globalnames.org
+// @host localhost:8888
 // @BasePath /api/v1
 
 // @externalDocs.description  OpenAPI
@@ -169,7 +170,7 @@ func nameRefsGet(bn bhlnames.BHLnames) func(echo.Context) error {
 	return func(c echo.Context) error {
 		var res *bhl.RefsByName
 
-		name := c.Param("name")
+		name, _ := url.QueryUnescape(c.Param("name"))
 		ref := c.QueryParam("reference")
 		nomenEvent := c.QueryParam("nomen_event")
 		taxon := c.QueryParam("taxon")
