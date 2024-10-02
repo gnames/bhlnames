@@ -14,7 +14,7 @@
         },
         "version": "1.0"
     },
-    "host": "bhlnames.globalnames.org",
+    "host": "localhost:8888",
     "basePath": "/api/v1",
     "paths": {
         "/": {
