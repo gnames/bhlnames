@@ -680,7 +680,7 @@ definitions:
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
-host: localhost:8888
+host: bhlnames.globalnames.org
 info:
   contact:
     email: dmozzherin@gmail.com

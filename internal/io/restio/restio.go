@@ -55,12 +55,12 @@ func New(bn bhlnames.BHLnames) rest.REST {
 
 // TODO swap for development
 // Server Definitions
-// @Server https://bhlnames.globalnames.org Description for production server
 // @Server http://localhost:8888 Description for local server
+// @Server https://bhlnames.globalnames.org Description for production server
 
 // TODO swap for development
-// @host bhlnames.globalnames.org
 // @host localhost:8888
+// @host bhlnames.globalnames.org
 // @BasePath /api/v1
 
 // @externalDocs.description  OpenAPI

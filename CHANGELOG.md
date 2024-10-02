@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## [v0.2.5] - 2024-10-02 Wed
+
+Fix servers urls in documentation.
+
 ## [v0.2.4] - 2024-10-02 Wed
 
 Fix [#64]: parse names correctly when they come from API names_ref
