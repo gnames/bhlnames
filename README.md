@@ -2,9 +2,10 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14262195.svg)](https://doi.org/10.5281/zenodo.14262195)
 
-bhlnames takes one or more scientific names and finds their occurrences in
-Biodiversity Heritage Library. The app also creates an apparent link between a
-name-string/publication input and the corresponding BHL reference.
+BHLnames takes one or more scientific names and finds their occurrences in
+Biodiversity Heritage Library (BHL). The app also creates an apparent link
+between a name-string/publication input and the corresponding BHL reference.
+It can be used to find nomenclatural events in BHL by a name and a citation.
 
 ## Introduction
 
