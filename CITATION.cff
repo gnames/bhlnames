@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "BHLnames -- finder of nomenclatural events, taxa information in Biodiversity Heritage Library."
+date-released: 2024-12-02
+version: v0.2.6
+authors:
+  - family-names: "Mozzherin"
+    given-names: "Dmitry"
+    orcid: "https://orcid.org/0000-0003-1593-1417"
+  - family-names: "Ower"
+    given-names: "Geoffrey"
+    orcid: "https://orcid.org/0000-0002-9770-2345"
+repository-code: "https://github.com/gnames/bhlnames"
+doi: 10.5281/zenodo.14262195
+license: MIT
