@@ -193,7 +193,7 @@ bhlnames name names.txt --no_synonyms
 To find a link to a name-string with its original reference you can use a
 CSV.
 
-Mimumal fields are:
+Minimal fields are:
 
 ```csv
 Id,NameString,RefString
