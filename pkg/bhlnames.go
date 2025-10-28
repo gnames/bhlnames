@@ -157,6 +157,11 @@ func (bn bhlnames) RefByPageID(pageID int) (*bhl.Reference, error) {
 	return bn.rf.RefByPageID(pageID)
 }
 
+// RefByItemIDPageNum returns a reference metadata for a given itemID and pageNum.
+func (bn bhlnames) RefByItemIDPageNum(itemID, pageNum int) (*bhl.Reference, error) {
+	return bn.rf.RefByItemIDPageNum(itemID, pageNum)
+}
+
 func (bn bhlnames) RefsByExtID(
 	extID string,
 	dataSourceID int,

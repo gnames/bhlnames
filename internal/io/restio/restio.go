@@ -75,6 +75,7 @@ func (r *restio) Run() {
 	r.GET(apiPath+"/ping", ping)
 	r.GET(apiPath+"/version", ver())
 	r.GET(apiPath+"/references/:page_id", refs(r.bn))
+	r.GET(apiPath+"/items_page_nums", refsByItemPageNum(r.bn))
 	r.GET(apiPath+"/items/:item_id", itemStatsGet(r.bn))
 	r.GET(apiPath+"/name_refs/:name", nameRefsGet(r.bn))
 	r.POST(apiPath+"/name_refs", nameRefsPost(r.bn))
@@ -145,6 +146,38 @@ func refs(bn bhlnames.BHLnames) func(echo.Context) error {
 			return err
 		}
 		res, err := bn.RefByPageID(pageID)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusOK, res)
+	}
+}
+
+// refsByItemPageNum takes itemID, pageNum and returns corresponding BHL
+// reference metadata.
+// @Summary Get BHL reference metadata by itemID and pageNum
+// @Description Retrieves the BHL reference metadata by itemID and pageNum.
+// @ID get-refs-by-item-page
+// @Produce application/json
+// @Param item_id query integer true "Item ID of a reference" example(10277)
+// @Param page_num query integer true "Page Number of a reference" example(597)
+// @Success 200 {object} bhl.Reference "Successful response with data about the reference"
+// @Router /items_page_nums [get]
+func refsByItemPageNum(bn bhlnames.BHLnames) func(echo.Context) error {
+	return func(c echo.Context) error {
+		itemIDStr := c.QueryParam("item_id")
+		itemID, err := strconv.Atoi(itemIDStr)
+		if err != nil {
+			return err
+		}
+		pageNumStr := c.QueryParam("page_num")
+		pageNum, err := strconv.Atoi(pageNumStr)
+		if err != nil {
+			return err
+		}
+
+		res, err := bn.RefByItemIDPageNum(itemID, pageNum)
 		if err != nil {
 			return err
 		}

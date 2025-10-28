@@ -22,6 +22,9 @@ type RefFinder interface {
 	// RefByPageID returns a reference for a given pageID.
 	RefByPageID(pageID int) (*bhl.Reference, error)
 
+	// RefByItemIDPageNum returns a reference for a given itemID and pageNum.
+	RefByItemIDPageNum(itemID int, pageNum int) (*bhl.Reference, error)
+
 	// RefsByExtID returns references for a given external ID and data-source ID.
 	// If allRefs is true, it returns all cached references for the external ID.
 	// Otherwise it returns only the best match.

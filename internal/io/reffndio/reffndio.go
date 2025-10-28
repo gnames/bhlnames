@@ -101,6 +101,15 @@ func (rf *reffndio) RefByPageID(pageID int) (*bhl.Reference, error) {
 	return ref, nil
 }
 
+func (rf *reffndio) RefByItemIDPageNum(itemID, pageNum int) (*bhl.Reference, error) {
+	var ref *bhl.Reference
+	ref, err := rf.refByItemIDPageNum(itemID, pageNum)
+	if err != nil {
+		return ref, err
+	}
+	return ref, nil
+}
+
 func (rf *reffndio) RefsByExtID(
 	extID string,
 	dataSourceID int,

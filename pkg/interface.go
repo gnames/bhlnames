@@ -40,6 +40,9 @@ type BHLnames interface {
 	// RefByPageID returns  BHL metadata for a given pageID.
 	RefByPageID(pageID int) (*bhl.Reference, error)
 
+	// RefByItemIDPageNum returns  BHL metadata for a given ItemID and PageNum.
+	RefByItemIDPageNum(itemID, pageNum int) (*bhl.Reference, error)
+
 	// RefsByExtID returns BHL metadata for a given external ID and data-source
 	// ID. If allRefs is true, it returns all cached references for
 	// the external ID. Otherwise it returns only the best match.

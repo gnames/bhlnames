@@ -45,6 +45,25 @@ type refRec struct {
 	editDistance       int
 }
 
+func (rf reffndio) refByItemIDPageNum(itemID, pageNum int) (*bhl.Reference, error) {
+	qs := `SELECT id FROM pages
+	  WHERE item_id = $1 AND page_num = $2
+`
+	r := rf.db.QueryRow(rf.ctx, qs, itemID, pageNum)
+	var pageID int
+	err := r.Scan(&pageID)
+	if err != nil {
+		return nil, err
+	}
+
+	ref, err := rf.refByPageID(pageID)
+	if err != nil {
+		return nil, err
+	}
+
+	return ref, nil
+}
+
 func (rf reffndio) refByPageID(pageID int) (*bhl.Reference, error) {
 	qs := `SELECT
   itm.id, itm.title_id, pg.id, pg.page_num,

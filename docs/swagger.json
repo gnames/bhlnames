@@ -103,6 +103,42 @@
                 }
             }
         },
+        "/items_page_nums": {
+            "get": {
+                "description": "Retrieves the BHL reference metadata by itemID and pageNum.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get BHL reference metadata by itemID and pageNum",
+                "operationId": "get-refs-by-item-page",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 10277,
+                        "description": "Item ID of a reference",
+                        "name": "item_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "example": 597,
+                        "description": "Page Number of a reference",
+                        "name": "page_num",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response with data about the reference",
+                        "schema": {
+                            "$ref": "#/definitions/bhl.Reference"
+                        }
+                    }
+                }
+            }
+        },
         "/name_refs": {
             "post": {
                 "description": "Finds BHL references for a name, does not include references of synonyms.",

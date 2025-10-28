@@ -756,6 +756,31 @@ paths:
           schema:
             $ref: '#/definitions/bhl.Item'
       summary: Get metadata and taxonomic statistics of a BHL item.
+  /items_page_nums:
+    get:
+      description: Retrieves the BHL reference metadata by itemID and pageNum.
+      operationId: get-refs-by-item-page
+      parameters:
+      - description: Item ID of a reference
+        example: 10277
+        in: query
+        name: item_id
+        required: true
+        type: integer
+      - description: Page Number of a reference
+        example: 597
+        in: query
+        name: page_num
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful response with data about the reference
+          schema:
+            $ref: '#/definitions/bhl.Reference'
+      summary: Get BHL reference metadata by itemID and pageNum
   /name_refs:
     post:
       consumes:
